@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
@@ -62,7 +61,10 @@ const Analytics = () => {
           }, {}) || {};
           
           return {
-            data: Object.entries(counts).map(([name, value]) => ({ name, value }))
+            data: Object.entries(counts).map(([name, value]) => ({ 
+              name, 
+              value: Number(value) 
+            }))
           };
         });
 
@@ -78,7 +80,10 @@ const Analytics = () => {
           }, {}) || {};
           
           return {
-            data: Object.entries(counts).map(([village, farmers]) => ({ village, farmers }))
+            data: Object.entries(counts).map(([village, farmers]) => ({ 
+              village, 
+              farmers: Number(farmers) 
+            }))
           };
         });
 
@@ -100,7 +105,7 @@ const Analytics = () => {
           return {
             data: Object.entries(dateGroups).map(([date, production]) => ({ 
               date: new Date(date).toLocaleDateString(), 
-              production 
+              production: Number(production)
             }))
           };
         });
