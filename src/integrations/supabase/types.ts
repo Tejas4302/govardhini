@@ -9,7 +9,221 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      cattle: {
+        Row: {
+          added_by: string
+          age: number
+          breed: string
+          cattle_id: string
+          cattle_type: string
+          created_at: string
+          date_of_onboarding: string
+          farmer_id: string
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          added_by: string
+          age: number
+          breed: string
+          cattle_id: string
+          cattle_type: string
+          created_at?: string
+          date_of_onboarding?: string
+          farmer_id: string
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          added_by?: string
+          age?: number
+          breed?: string
+          cattle_id?: string
+          cattle_type?: string
+          created_at?: string
+          date_of_onboarding?: string
+          farmer_id?: string
+          id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cattle_farmer_id_fkey"
+            columns: ["farmer_id"]
+            isOneToOne: false
+            referencedRelation: "farmers"
+            referencedColumns: ["farmer_id"]
+          },
+        ]
+      }
+      farmers: {
+        Row: {
+          added_by: string
+          created_at: string
+          date_of_onboarding: string
+          farmer_id: string
+          farmer_name: string
+          id: string
+          phone_number: string
+          updated_at: string
+          village: string
+        }
+        Insert: {
+          added_by: string
+          created_at?: string
+          date_of_onboarding?: string
+          farmer_id: string
+          farmer_name: string
+          id?: string
+          phone_number: string
+          updated_at?: string
+          village: string
+        }
+        Update: {
+          added_by?: string
+          created_at?: string
+          date_of_onboarding?: string
+          farmer_id?: string
+          farmer_name?: string
+          id?: string
+          phone_number?: string
+          updated_at?: string
+          village?: string
+        }
+        Relationships: []
+      }
+      feed_requests: {
+        Row: {
+          created_at: string
+          farmer_id: string
+          feed_type: string
+          id: string
+          quantity: number
+          request_date: string
+          request_id: string
+          requested_by: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          farmer_id: string
+          feed_type: string
+          id?: string
+          quantity: number
+          request_date?: string
+          request_id: string
+          requested_by: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          farmer_id?: string
+          feed_type?: string
+          id?: string
+          quantity?: number
+          request_date?: string
+          request_id?: string
+          requested_by?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feed_requests_farmer_id_fkey"
+            columns: ["farmer_id"]
+            isOneToOne: false
+            referencedRelation: "farmers"
+            referencedColumns: ["farmer_id"]
+          },
+        ]
+      }
+      health_checks: {
+        Row: {
+          alert_sent: boolean | null
+          body_temperature: number
+          cattle_id: string
+          check_date: string
+          created_at: string
+          entry_id: string
+          health_issue: string | null
+          id: string
+          issue_type: string | null
+          reported_by: string
+        }
+        Insert: {
+          alert_sent?: boolean | null
+          body_temperature: number
+          cattle_id: string
+          check_date?: string
+          created_at?: string
+          entry_id: string
+          health_issue?: string | null
+          id?: string
+          issue_type?: string | null
+          reported_by: string
+        }
+        Update: {
+          alert_sent?: boolean | null
+          body_temperature?: number
+          cattle_id?: string
+          check_date?: string
+          created_at?: string
+          entry_id?: string
+          health_issue?: string | null
+          id?: string
+          issue_type?: string | null
+          reported_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "health_checks_cattle_id_fkey"
+            columns: ["cattle_id"]
+            isOneToOne: false
+            referencedRelation: "cattle"
+            referencedColumns: ["cattle_id"]
+          },
+        ]
+      }
+      milk_production: {
+        Row: {
+          cattle_id: string
+          created_at: string
+          entry_id: string
+          id: string
+          milk_produced: number
+          production_date: string
+          recorded_by: string
+        }
+        Insert: {
+          cattle_id: string
+          created_at?: string
+          entry_id: string
+          id?: string
+          milk_produced: number
+          production_date?: string
+          recorded_by: string
+        }
+        Update: {
+          cattle_id?: string
+          created_at?: string
+          entry_id?: string
+          id?: string
+          milk_produced?: number
+          production_date?: string
+          recorded_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "milk_production_cattle_id_fkey"
+            columns: ["cattle_id"]
+            isOneToOne: false
+            referencedRelation: "cattle"
+            referencedColumns: ["cattle_id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

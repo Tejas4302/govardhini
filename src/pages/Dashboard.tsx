@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { supabase } from '@/integrations/supabase/client';
 import Navigation from '@/components/Navigation';
 
 interface UserData {
@@ -12,8 +13,22 @@ interface UserData {
   name: string;
 }
 
+interface DashboardStats {
+  totalFarmers: number;
+  totalCattle: number;
+  todayMilk: number;
+  healthAlerts: number;
+}
+
 const Dashboard = () => {
   const [user, setUser] = useState<UserData | null>(null);
+  const [stats, setStats] = useState<DashboardStats>({
+    totalFarmers: 0,
+    totalCattle: 0,
+    todayMilk: 0,
+    healthAlerts: 0
+  });
+  const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -23,7 +38,38 @@ const Dashboard = () => {
       return;
     }
     setUser(JSON.parse(userData));
+    fetchDashboardStats();
   }, [navigate]);
+
+  const fetchDashboardStats = async () => {
+    try {
+      // Get today's date
+      const today = new Date().toISOString().split('T')[0];
+
+      // Fetch all stats in parallel
+      const [farmersResult, cattleResult, milkResult, healthResult] = await Promise.all([
+        supabase.from('farmers').select('id', { count: 'exact' }),
+        supabase.from('cattle').select('id', { count: 'exact' }),
+        supabase.from('milk_production').select('milk_produced').eq('production_date', today),
+        supabase.from('health_checks').select('id', { count: 'exact' }).eq('alert_sent', true)
+      ]);
+
+      // Calculate today's total milk production
+      const todayMilk = milkResult.data?.reduce((sum, record) => sum + (record.milk_produced || 0), 0) || 0;
+
+      setStats({
+        totalFarmers: farmersResult.count || 0,
+        totalCattle: cattleResult.count || 0,
+        todayMilk: Math.round(todayMilk * 100) / 100,
+        healthAlerts: healthResult.count || 0
+      });
+
+    } catch (error) {
+      console.error('Error fetching dashboard stats:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   if (!user) return null;
 
@@ -82,7 +128,7 @@ const Dashboard = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-green-100">Total Farmers</p>
-                  <p className="text-3xl font-bold">248</p>
+                  <p className="text-3xl font-bold">{isLoading ? '...' : stats.totalFarmers}</p>
                 </div>
                 <div className="text-4xl">👨‍🌾</div>
               </div>
@@ -94,7 +140,7 @@ const Dashboard = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-amber-100">Total Cattle</p>
-                  <p className="text-3xl font-bold">892</p>
+                  <p className="text-3xl font-bold">{isLoading ? '...' : stats.totalCattle}</p>
                 </div>
                 <div className="text-4xl">🐄</div>
               </div>
@@ -106,7 +152,7 @@ const Dashboard = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-blue-100">Today's Milk (L)</p>
-                  <p className="text-3xl font-bold">2,847</p>
+                  <p className="text-3xl font-bold">{isLoading ? '...' : stats.todayMilk}</p>
                 </div>
                 <div className="text-4xl">🥛</div>
               </div>
@@ -118,7 +164,7 @@ const Dashboard = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-red-100">Health Alerts</p>
-                  <p className="text-3xl font-bold">12</p>
+                  <p className="text-3xl font-bold">{isLoading ? '...' : stats.healthAlerts}</p>
                 </div>
                 <div className="text-4xl">🚨</div>
               </div>

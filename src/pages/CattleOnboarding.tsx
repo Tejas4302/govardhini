@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,7 +12,13 @@ import { CalendarIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 import Navigation from '@/components/Navigation';
+
+interface Farmer {
+  farmer_id: string;
+  farmer_name: string;
+}
 
 const CattleOnboarding = () => {
   const [formData, setFormData] = useState({
@@ -24,18 +30,42 @@ const CattleOnboarding = () => {
     dateOfOnboarding: new Date(),
   });
   
+  const [farmers, setFarmers] = useState<Farmer[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadingFarmers, setLoadingFarmers] = useState(true);
   const { toast } = useToast();
   const navigate = useNavigate();
   
   const user = JSON.parse(localStorage.getItem('govardhini_user') || '{}');
 
-  // Mock farmer data - in real app, this would come from your database
-  const farmers = [
-    { id: 'FRM001', name: 'Rajesh Kumar' },
-    { id: 'FRM002', name: 'Suresh Patel' },
-    { id: 'FRM003', name: 'Mahesh Singh' },
-    { id: 'FRM004', name: 'Ramesh Yadav' },
-  ];
+  useEffect(() => {
+    fetchFarmers();
+  }, []);
+
+  const fetchFarmers = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('farmers')
+        .select('farmer_id, farmer_name')
+        .order('farmer_name');
+
+      if (error) {
+        console.error('Error fetching farmers:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load farmers list",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      setFarmers(data || []);
+    } catch (error) {
+      console.error('Unexpected error:', error);
+    } finally {
+      setLoadingFarmers(false);
+    }
+  };
 
   const getBreedOptions = () => {
     if (formData.cattleType === 'cow') {
@@ -46,7 +76,7 @@ const CattleOnboarding = () => {
     return [];
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!formData.farmerId || !formData.cattleType || !formData.breed || !formData.age) {
@@ -58,23 +88,56 @@ const CattleOnboarding = () => {
       return;
     }
 
-    // Here you would typically save to your backend/Google Sheets
-    console.log('Cattle data:', { ...formData, addedBy: user.name });
-    
-    toast({
-      title: "Success!",
-      description: `Cattle ${formData.cattleId} has been registered successfully`,
-    });
-    
-    // Reset form
-    setFormData({
-      cattleId: `CTL${Date.now().toString().slice(-6)}`,
-      farmerId: '',
-      cattleType: '',
-      breed: '',
-      age: '',
-      dateOfOnboarding: new Date(),
-    });
+    setIsLoading(true);
+
+    try {
+      const { error } = await supabase
+        .from('cattle')
+        .insert({
+          cattle_id: formData.cattleId,
+          farmer_id: formData.farmerId,
+          cattle_type: formData.cattleType,
+          breed: formData.breed,
+          age: parseInt(formData.age),
+          date_of_onboarding: format(formData.dateOfOnboarding, 'yyyy-MM-dd'),
+          added_by: user.name || 'Current User'
+        });
+
+      if (error) {
+        console.error('Error saving cattle:', error);
+        toast({
+          title: "Error",
+          description: "Failed to register cattle. Please try again.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      toast({
+        title: "Success!",
+        description: `Cattle ${formData.cattleId} has been registered successfully`,
+      });
+      
+      // Reset form
+      setFormData({
+        cattleId: `CTL${Date.now().toString().slice(-6)}`,
+        farmerId: '',
+        cattleType: '',
+        breed: '',
+        age: '',
+        dateOfOnboarding: new Date(),
+      });
+
+    } catch (error) {
+      console.error('Unexpected error:', error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -108,14 +171,18 @@ const CattleOnboarding = () => {
                   
                   <div className="space-y-2">
                     <Label>Farmer *</Label>
-                    <Select value={formData.farmerId} onValueChange={(value) => setFormData({ ...formData, farmerId: value })}>
+                    <Select 
+                      value={formData.farmerId} 
+                      onValueChange={(value) => setFormData({ ...formData, farmerId: value })}
+                      disabled={loadingFarmers}
+                    >
                       <SelectTrigger>
-                        <SelectValue placeholder="Select farmer" />
+                        <SelectValue placeholder={loadingFarmers ? "Loading farmers..." : "Select farmer"} />
                       </SelectTrigger>
                       <SelectContent>
                         {farmers.map((farmer) => (
-                          <SelectItem key={farmer.id} value={farmer.id}>
-                            {farmer.id} - {farmer.name}
+                          <SelectItem key={farmer.farmer_id} value={farmer.farmer_id}>
+                            {farmer.farmer_id} - {farmer.farmer_name}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -214,14 +281,16 @@ const CattleOnboarding = () => {
                     variant="outline"
                     className="flex-1"
                     onClick={() => navigate('/dashboard')}
+                    disabled={isLoading}
                   >
                     Cancel
                   </Button>
                   <Button
                     type="submit"
                     className="flex-1 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700"
+                    disabled={isLoading}
                   >
-                    Register Cattle
+                    {isLoading ? 'Registering...' : 'Register Cattle'}
                   </Button>
                 </div>
               </form>

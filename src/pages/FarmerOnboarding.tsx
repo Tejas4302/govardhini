@@ -12,6 +12,7 @@ import { CalendarIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 import Navigation from '@/components/Navigation';
 
 const FarmerOnboarding = () => {
@@ -23,12 +24,13 @@ const FarmerOnboarding = () => {
     dateOfOnboarding: new Date(),
   });
   
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
   
   const user = JSON.parse(localStorage.getItem('govardhini_user') || '{}');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!formData.farmerName || !formData.phoneNumber || !formData.village) {
@@ -40,22 +42,54 @@ const FarmerOnboarding = () => {
       return;
     }
 
-    // Here you would typically save to your backend/Google Sheets
-    console.log('Farmer data:', { ...formData, addedBy: user.name });
-    
-    toast({
-      title: "Success!",
-      description: `Farmer ${formData.farmerName} has been registered successfully`,
-    });
-    
-    // Reset form
-    setFormData({
-      farmerId: `FRM${Date.now().toString().slice(-6)}`,
-      farmerName: '',
-      phoneNumber: '',
-      village: '',
-      dateOfOnboarding: new Date(),
-    });
+    setIsLoading(true);
+
+    try {
+      const { error } = await supabase
+        .from('farmers')
+        .insert({
+          farmer_id: formData.farmerId,
+          farmer_name: formData.farmerName,
+          phone_number: formData.phoneNumber,
+          village: formData.village,
+          date_of_onboarding: format(formData.dateOfOnboarding, 'yyyy-MM-dd'),
+          added_by: user.name || 'Current User'
+        });
+
+      if (error) {
+        console.error('Error saving farmer:', error);
+        toast({
+          title: "Error",
+          description: "Failed to register farmer. Please try again.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      toast({
+        title: "Success!",
+        description: `Farmer ${formData.farmerName} has been registered successfully`,
+      });
+      
+      // Reset form
+      setFormData({
+        farmerId: `FRM${Date.now().toString().slice(-6)}`,
+        farmerName: '',
+        phoneNumber: '',
+        village: '',
+        dateOfOnboarding: new Date(),
+      });
+
+    } catch (error) {
+      console.error('Unexpected error:', error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -164,14 +198,16 @@ const FarmerOnboarding = () => {
                     variant="outline"
                     className="flex-1"
                     onClick={() => navigate('/dashboard')}
+                    disabled={isLoading}
                   >
                     Cancel
                   </Button>
                   <Button
                     type="submit"
                     className="flex-1 bg-gradient-to-r from-green-600 to-amber-600 hover:from-green-700 hover:to-amber-700"
+                    disabled={isLoading}
                   >
-                    Register Farmer
+                    {isLoading ? 'Registering...' : 'Register Farmer'}
                   </Button>
                 </div>
               </form>

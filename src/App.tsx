@@ -8,6 +8,10 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import FarmerOnboarding from "./pages/FarmerOnboarding";
 import CattleOnboarding from "./pages/CattleOnboarding";
+import HealthCheck from "./pages/HealthCheck";
+import MilkLogging from "./pages/MilkLogging";
+import FeedRequests from "./pages/FeedRequests";
+import Analytics from "./pages/Analytics";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -24,10 +28,10 @@ const App = () => (
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/farmer-onboarding" element={<FarmerOnboarding />} />
           <Route path="/cattle-onboarding" element={<CattleOnboarding />} />
-          <Route path="/health-check" element={<Dashboard />} />
-          <Route path="/milk-logging" element={<Dashboard />} />
-          <Route path="/feed-requests" element={<Dashboard />} />
-          <Route path="/analytics" element={<Dashboard />} />
+          <Route path="/health-check" element={<HealthCheck />} />
+          <Route path="/milk-logging" element={<MilkLogging />} />
+          <Route path="/feed-requests" element={<FeedRequests />} />
+          <Route path="/analytics" element={<Analytics />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
