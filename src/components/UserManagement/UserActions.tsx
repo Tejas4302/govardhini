@@ -13,7 +13,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { CheckCircle, XCircle, AlertTriangle, Trash2 } from 'lucide-react';
+import { CheckCircle, XCircle, AlertTriangle, Trash2, UserCog } from 'lucide-react';
 import { User, RoleChangeData } from '@/types/userManagement';
 import RoleChangeDialog from './RoleChangeDialog';
 
@@ -123,16 +123,117 @@ const UserActions: React.FC<UserActionsProps> = ({
           </Badge>
           
           {user.id !== currentUserId && (
-            <RoleChangeDialog
-              userName={user.full_name}
-              userId={user.id}
-              currentRole={user.active_role}
-              availableRoles={availableRoles}
-              roleChangeData={roleChangeData}
-              setRoleChangeData={setRoleChangeData}
-              onRoleChange={onRoleChange}
-              processingUserId={processingUserId}
-            />
+            <>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    size="sm"
+                    disabled={processingUserId === user.id}
+                    className="bg-blue-600 hover:bg-blue-700 px-2"
+                  >
+                    <UserCog className="w-4 h-4" />
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent className="glass-card border-blue-500/30 bg-slate-800/90 backdrop-blur-xl text-white max-w-md">
+                  <AlertDialogHeader>
+                    <AlertDialogTitle className="text-blue-300">Change User Role</AlertDialogTitle>
+                    <AlertDialogDescription className="text-blue-200">
+                      Change the role for <strong>{user.full_name}</strong>. This will not affect their past contributions.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <div className="space-y-4 py-4">
+                    <div>
+                      <label className="text-emerald-300">Current Role: {user.active_role}</label>
+                    </div>
+                    <div>
+                      <label htmlFor="new-role" className="text-emerald-300">New Role</label>
+                      <select 
+                        className="w-full mt-1 bg-slate-700 border border-emerald-500/30 rounded px-3 py-2 text-white"
+                        onChange={(e) => setRoleChangeData({
+                          userId: user.id,
+                          userName: user.full_name,
+                          currentRole: user.active_role,
+                          newRole: e.target.value,
+                          reason: roleChangeData?.reason || ''
+                        })}
+                      >
+                        <option value="">Select new role</option>
+                        {availableRoles.filter(role => role !== user.active_role).map((role) => (
+                          <option key={role} value={role}>
+                            {role}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label htmlFor="reason" className="text-emerald-300">Reason (Optional)</label>
+                      <input
+                        id="reason"
+                        type="text"
+                        placeholder="Reason for role change"
+                        className="w-full mt-1 bg-slate-700 border border-emerald-500/30 rounded px-3 py-2 text-white"
+                        value={roleChangeData?.reason || ''}
+                        onChange={(e) => setRoleChangeData(roleChangeData ? {
+                          ...roleChangeData, 
+                          reason: e.target.value
+                        } : null)}
+                      />
+                    </div>
+                  </div>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel 
+                      className="border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/20"
+                      onClick={() => setRoleChangeData(null)}
+                    >
+                      Cancel
+                    </AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={onRoleChange}
+                      disabled={!roleChangeData?.newRole}
+                      className="bg-blue-600 hover:bg-blue-700"
+                    >
+                      Change Role
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    disabled={processingUserId === user.id}
+                    className="bg-red-700 hover:bg-red-800 px-2"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent className="glass-card border-red-500/30 bg-slate-800/90 backdrop-blur-xl text-white">
+                  <AlertDialogHeader>
+                    <AlertDialogTitle className="text-red-300 flex items-center">
+                      <AlertTriangle className="w-5 h-5 mr-2" />
+                      Delete User Account
+                    </AlertDialogTitle>
+                    <AlertDialogDescription className="text-red-200">
+                      Are you sure you want to permanently delete <strong>{user.full_name}</strong>'s account? 
+                      This action cannot be undone and will remove all their data from the system.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel className="border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/20">
+                      Cancel
+                    </AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={() => onDelete(user.id, user.full_name)}
+                      className="bg-red-700 hover:bg-red-800"
+                    >
+                      Delete Account
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </>
           )}
         </>
       )}
@@ -141,45 +242,6 @@ const UserActions: React.FC<UserActionsProps> = ({
         <Badge className="bg-red-500/20 text-red-300 border-red-500/30">
           Access Denied
         </Badge>
-      )}
-      
-      {user.id !== currentUserId && (
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button
-              size="sm"
-              variant="destructive"
-              disabled={processingUserId === user.id}
-              className="bg-red-700 hover:bg-red-800"
-            >
-              <Trash2 className="w-4 h-4 mr-1" />
-              Delete
-            </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent className="glass-card border-red-500/30 bg-slate-800/90 backdrop-blur-xl text-white">
-            <AlertDialogHeader>
-              <AlertDialogTitle className="text-red-300 flex items-center">
-                <AlertTriangle className="w-5 h-5 mr-2" />
-                Delete User Account
-              </AlertDialogTitle>
-              <AlertDialogDescription className="text-red-200">
-                Are you sure you want to permanently delete <strong>{user.full_name}</strong>'s account? 
-                This action cannot be undone and will remove all their data from the system.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel className="border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/20">
-                Cancel
-              </AlertDialogCancel>
-              <AlertDialogAction
-                onClick={() => onDelete(user.id, user.full_name)}
-                className="bg-red-700 hover:bg-red-800"
-              >
-                Delete Account
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
       )}
     </div>
   );
