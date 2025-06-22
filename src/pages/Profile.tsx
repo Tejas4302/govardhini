@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,7 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import Navigation from '@/components/Navigation';
 import { User as UserIcon, Phone as PhoneIcon, Image as ImageIcon, Edit as EditIcon, Lock as LockIcon, Trash2 as TrashIcon } from 'lucide-react';
-import { getProfilePhoto, saveProfilePhoto, clearProfilePhoto } from '@/utils/profilePhotoStorage';
+import { getProfilePhoto, saveProfilePhoto, clearProfilePhoto, initializeProfilePhoto } from '@/utils/profilePhotoStorage';
 
 interface UserData {
   id: string;
@@ -58,9 +57,12 @@ const Profile = () => {
       phoneNumber: parsedUser.phone || ''
     });
     
-    // Load persistent profile photo using the storage utility
+    // Initialize profile photo system for this user
+    initializeProfilePhoto(parsedUser.id);
+    
+    // Load persistent profile photo
     const persistentPhoto = getProfilePhoto(parsedUser.id);
-    setProfileImage(persistentPhoto || '');
+    setProfileImage(persistentPhoto || parsedUser.profileImage || '');
   }, [navigate]);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -71,9 +73,12 @@ const Profile = () => {
         const imageDataUrl = reader.result as string;
         setProfileImage(imageDataUrl);
         
-        // Save to persistent storage using the utility
+        // Save to persistent storage and update user object
         if (user) {
           saveProfilePhoto(imageDataUrl, user.id);
+          
+          // Update local user state to reflect the change immediately
+          setUser(prev => prev ? { ...prev, profileImage: imageDataUrl } : null);
           
           toast({
             title: "Success",
@@ -125,11 +130,12 @@ const Profile = () => {
         return;
       }
 
-      // Update localStorage with the new data (but don't store profileImage here)
+      // Update localStorage with the new data (including current profile image)
       const updatedUser = {
         ...user,
         name: formData.fullName,
-        phone: formData.phoneNumber
+        phone: formData.phoneNumber,
+        profileImage: profileImage // Ensure profile image persists
       };
       localStorage.setItem('govardhini_user', JSON.stringify(updatedUser));
       setUser(updatedUser);
@@ -393,7 +399,7 @@ const Profile = () => {
                         });
                         // Reset profile image to persistent storage value
                         const persistentPhoto = getProfilePhoto(user.id);
-                        setProfileImage(persistentPhoto || '');
+                        setProfileImage(persistentPhoto || user.profileImage || '');
                       }}
                       disabled={isLoading}
                       className="glass-card border-white/20 text-white hover:bg-white/10"

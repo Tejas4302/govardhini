@@ -24,9 +24,9 @@ const Navigation = ({ user }: NavigationProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // Get persistent profile photo
+  // Get persistent profile photo with proper fallback
   const persistentProfilePhoto = user.id ? getProfilePhoto(user.id) : null;
-  const profileImageUrl = persistentProfilePhoto || user.profileImage;
+  const profileImageUrl = persistentProfilePhoto || user.profileImage || '';
 
   const handleLogout = () => {
     // Clear user session data
