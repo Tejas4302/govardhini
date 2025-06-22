@@ -9,7 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import Navigation from '@/components/Navigation';
-import { User as UserIcon, Phone as PhoneIcon, Image as ImageIcon, Edit as EditIcon } from 'lucide-react';
+import { User as UserIcon, Phone as PhoneIcon, Image as ImageIcon, Edit as EditIcon, Lock as LockIcon } from 'lucide-react';
 
 interface UserData {
   id: string;
@@ -23,6 +23,7 @@ const Profile = () => {
   const [user, setUser] = useState<UserData | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [profileImage, setProfileImage] = useState<string>('');
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -30,6 +31,12 @@ const Profile = () => {
   const [formData, setFormData] = useState({
     fullName: '',
     phoneNumber: ''
+  });
+
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
   });
 
   useEffect(() => {
@@ -124,6 +131,74 @@ const Profile = () => {
     }
   };
 
+  const handlePasswordChange = async () => {
+    if (!passwordData.newPassword || !passwordData.confirmPassword) {
+      toast({
+        title: "Error",
+        description: "Please fill in all password fields",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      toast({
+        title: "Error",
+        description: "New passwords do not match",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (passwordData.newPassword.length < 6) {
+      toast({
+        title: "Error",
+        description: "Password must be at least 6 characters long",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: passwordData.newPassword
+      });
+
+      if (error) {
+        console.error('Password update error:', error);
+        toast({
+          title: "Error",
+          description: error.message || "Failed to update password",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      setPasswordData({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+      });
+      setIsChangingPassword(false);
+      
+      toast({
+        title: "Success",
+        description: "Password updated successfully"
+      });
+
+    } catch (error) {
+      console.error('Unexpected error:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update password. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   if (!user) return null;
 
   return (
@@ -140,9 +215,10 @@ const Profile = () => {
       </div>
 
       <div className="relative z-10 container mx-auto px-4 py-8">
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-2xl mx-auto space-y-6">
           <h1 className="text-3xl font-bold text-white mb-8 animate-fade-in">Profile Settings</h1>
           
+          {/* Profile Information Card */}
           <Card className="glass-card border-0 text-white animate-slide-up">
             <CardHeader className="text-center pb-6">
               <div className="relative mx-auto w-32 h-32 mb-4">
@@ -258,6 +334,88 @@ const Profile = () => {
                   </Button>
                 )}
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Password Change Card */}
+          <Card className="glass-card border-0 text-white animate-slide-up">
+            <CardHeader>
+              <CardTitle className="text-xl font-bold text-white flex items-center gap-2">
+                <LockIcon className="w-5 h-5" />
+                Change Password
+              </CardTitle>
+            </CardHeader>
+            
+            <CardContent className="space-y-6">
+              {isChangingPassword ? (
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="newPassword" className="text-gray-200">
+                      New Password
+                    </Label>
+                    <Input
+                      id="newPassword"
+                      type="password"
+                      value={passwordData.newPassword}
+                      onChange={(e) => setPasswordData(prev => ({ ...prev, newPassword: e.target.value }))}
+                      className="glass-input text-white placeholder:text-gray-400"
+                      placeholder="Enter new password"
+                      disabled={isLoading}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="confirmPassword" className="text-gray-200">
+                      Confirm New Password
+                    </Label>
+                    <Input
+                      id="confirmPassword"
+                      type="password"
+                      value={passwordData.confirmPassword}
+                      onChange={(e) => setPasswordData(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                      className="glass-input text-white placeholder:text-gray-400"
+                      placeholder="Confirm new password"
+                      disabled={isLoading}
+                    />
+                  </div>
+
+                  <div className="flex gap-4 pt-4">
+                    <Button
+                      onClick={handlePasswordChange}
+                      disabled={isLoading}
+                      className="glass-button flex-1 text-white border-0"
+                    >
+                      {isLoading ? 'Updating...' : 'Update Password'}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setIsChangingPassword(false);
+                        setPasswordData({
+                          currentPassword: '',
+                          newPassword: '',
+                          confirmPassword: ''
+                        });
+                      }}
+                      disabled={isLoading}
+                      className="glass-card border-white/20 text-white hover:bg-white/10"
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex justify-between items-center">
+                  <p className="text-gray-300">Update your account password</p>
+                  <Button
+                    onClick={() => setIsChangingPassword(true)}
+                    className="glass-button text-white border-0 flex items-center gap-2"
+                  >
+                    <LockIcon className="w-4 h-4" />
+                    Change Password
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
