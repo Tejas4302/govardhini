@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { format } from 'date-fns';
 import { CalendarIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -32,19 +34,38 @@ const CattleOnboarding = () => {
   
   const user = JSON.parse(localStorage.getItem('govardhini_user') || '{}');
 
+  const cattleTypes = [
+    { value: 'Cow', label: 'Cow' },
+    { value: 'Buffalo', label: 'Buffalo' },
+  ];
+
   const saveOffline = (data: any) => {
     const offlineData = JSON.parse(localStorage.getItem('offline_cattle') || '[]');
     offlineData.push({ ...data, id: Date.now().toString(), synced: false });
     localStorage.setItem('offline_cattle', JSON.stringify(offlineData));
   };
 
+  const validateForm = () => {
+    const errors = [];
+    
+    if (!formData.farmerName.trim()) errors.push("Farmer name is required");
+    if (!formData.breed.trim()) errors.push("Breed is required");
+    if (!formData.type) errors.push("Cattle type is required");
+    if (!formData.weightKg || parseFloat(formData.weightKg) <= 0) errors.push("Weight must be greater than 0");
+    if (!formData.ownerPhone.trim()) errors.push("Owner phone is required");
+    
+    return errors;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.farmerName || !formData.breed || !formData.type || !formData.weightKg || !formData.ownerPhone) {
+    // Client-side validation
+    const validationErrors = validateForm();
+    if (validationErrors.length > 0) {
       toast({
-        title: "Error",
-        description: "Please fill in all required fields",
+        title: "Validation Error",
+        description: validationErrors.join(", "),
         variant: "destructive"
       });
       return;
@@ -53,50 +74,77 @@ const CattleOnboarding = () => {
     setIsLoading(true);
 
     try {
-      const { error } = await supabase.from('cattle_profiles').insert({
-        cattle_id: formData.cattleId,
-        farmer_name: formData.farmerName,
-        breed: formData.breed,
+      // Trim whitespace from text inputs
+      const cleanedData = {
+        cattle_id: formData.cattleId.trim(),
+        farmer_name: formData.farmerName.trim(),
+        breed: formData.breed.trim(),
         type: formData.type,
         dob: format(formData.dob, 'yyyy-MM-dd'),
         lactation: formData.lactation,
         weight_kg: parseFloat(formData.weightKg),
-        owner_phone: formData.ownerPhone,
+        owner_phone: formData.ownerPhone.trim(),
         added_by: user.id || 'offline-user'
-      });
+      };
+
+      const { error } = await supabase.from('cattle_profiles').insert(cleanedData);
 
       if (error) {
-        saveOffline(formData);
-        toast({
-          title: "Saved Offline 📱",
-          description: "No internet connection. Data saved locally and will sync when online.",
-          variant: "default"
-        });
+        console.error('Database error:', error);
+        
+        // Check for specific database constraint errors
+        if (error.message.includes('cattle_profiles_type_check')) {
+          toast({
+            title: "Invalid Cattle Type",
+            description: "Cattle type must be either 'Cow' or 'Buffalo'. Please select from the dropdown.",
+            variant: "destructive"
+          });
+        } else if (error.message.includes('duplicate key')) {
+          toast({
+            title: "Duplicate Entry",
+            description: "A cattle with this ID already exists. Please use a different ID.",
+            variant: "destructive"
+          });
+        } else if (error.message.includes('Failed to fetch') || error.message.includes('network') || error.code === 'PGRST301') {
+          // Only save offline for actual network errors
+          saveOffline(formData);
+          toast({
+            title: "Saved Offline 📱",
+            description: "No internet connection. Data saved locally and will sync when online.",
+            variant: "default"
+          });
+        } else {
+          toast({
+            title: "Database Error",
+            description: error.message || "Failed to save cattle data. Please check your inputs and try again.",
+            variant: "destructive"
+          });
+        }
       } else {
         toast({
           title: "Success! ✅",
           description: `Cattle ${formData.cattleId} has been registered successfully`,
         });
+        
+        // Reset form
+        setFormData({
+          cattleId: `CTL${Date.now().toString().slice(-6)}`,
+          farmerName: '',
+          breed: '',
+          type: '',
+          dob: new Date(),
+          lactation: false,
+          weightKg: '',
+          ownerPhone: '',
+        });
       }
-      
-      // Reset form
-      setFormData({
-        cattleId: `CTL${Date.now().toString().slice(-6)}`,
-        farmerName: '',
-        breed: '',
-        type: '',
-        dob: new Date(),
-        lactation: false,
-        weightKg: '',
-        ownerPhone: '',
-      });
 
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Network error:', error);
       saveOffline(formData);
       toast({
         title: "Saved Offline 📱",
-        description: "Data saved locally. Will sync when connection is restored.",
+        description: "Connection failed. Data saved locally and will sync when online.",
       });
     } finally {
       setIsLoading(false);
@@ -154,13 +202,18 @@ const CattleOnboarding = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="type" className="text-white">Cattle Type *</Label>
-                    <Input
-                      id="type"
-                      placeholder="e.g., Cow, Buffalo"
-                      value={formData.type}
-                      onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                      className="glass-input text-white placeholder:text-gray-400 border-white/20"
-                    />
+                    <Select value={formData.type} onValueChange={(value) => setFormData({ ...formData, type: value })}>
+                      <SelectTrigger className="glass-input text-white border-white/20 bg-white/10 backdrop-blur-lg">
+                        <SelectValue placeholder="Select cattle type" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white/90 backdrop-blur-lg border-white/20">
+                        {cattleTypes.map((type) => (
+                          <SelectItem key={type.value} value={type.value}>
+                            {type.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                   
                   <div className="space-y-2">
@@ -211,8 +264,9 @@ const CattleOnboarding = () => {
                       placeholder="Enter weight in kg"
                       value={formData.weightKg}
                       onChange={(e) => setFormData({ ...formData, weightKg: e.target.value })}
-                      min="50"
+                      min="1"
                       max="1000"
+                      step="0.1"
                       className="glass-input text-white placeholder:text-gray-400 border-white/20"
                     />
                   </div>
