@@ -17,6 +17,7 @@ interface UserData {
   phone?: string;
   role: string;
   name: string;
+  profileImage?: string;
 }
 
 const Profile = () => {
@@ -51,6 +52,8 @@ const Profile = () => {
       fullName: parsedUser.name,
       phoneNumber: parsedUser.phone || ''
     });
+    // Load existing profile image if available
+    setProfileImage(parsedUser.profileImage || '');
   }, [navigate]);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -104,11 +107,12 @@ const Profile = () => {
         return;
       }
 
-      // Update localStorage
+      // Update localStorage with the new data including profile image
       const updatedUser = {
         ...user,
         name: formData.fullName,
-        phone: formData.phoneNumber
+        phone: formData.phoneNumber,
+        profileImage: profileImage
       };
       localStorage.setItem('govardhini_user', JSON.stringify(updatedUser));
       setUser(updatedUser);
@@ -317,6 +321,8 @@ const Profile = () => {
                           fullName: user.name,
                           phoneNumber: user.phone || ''
                         });
+                        // Reset profile image to original
+                        setProfileImage(user.profileImage || '');
                       }}
                       disabled={isLoading}
                       className="glass-card border-white/20 text-white hover:bg-white/10"
