@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -130,7 +129,7 @@ const UserActions: React.FC<UserActionsProps> = ({
                     size="sm"
                     variant="ghost"
                     disabled={processingUserId === user.id}
-                    className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 p-2"
+                    className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 w-8 h-8 p-0 flex items-center justify-center transition-colors"
                   >
                     <UserCog className="w-4 h-4" />
                   </Button>
@@ -205,7 +204,7 @@ const UserActions: React.FC<UserActionsProps> = ({
                     size="sm"
                     variant="ghost"
                     disabled={processingUserId === user.id}
-                    className="text-red-400 hover:text-red-300 hover:bg-red-500/10 p-2"
+                    className="text-red-400 hover:text-red-300 hover:bg-red-500/10 w-8 h-8 p-0 flex items-center justify-center transition-colors"
                   >
                     <Trash2 className="w-4 h-4" />
                   </Button>
