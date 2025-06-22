@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import Navigation from '@/components/Navigation';
+import { Clock, Users, Beef, User } from 'lucide-react';
 
 interface Activity {
   id: string;
@@ -95,59 +96,78 @@ const RecentActivities = () => {
 
   const getActivityIcon = (type: string) => {
     switch (type) {
-      case 'farmer': return '👨‍🌾';
-      case 'cattle': return '🐄';
-      case 'user': return '👤';
-      default: return '📝';
+      case 'farmer': return Users;
+      case 'cattle': return Beef;
+      case 'user': return User;
+      default: return Clock;
     }
   };
 
   const getActivityColor = (type: string) => {
     switch (type) {
-      case 'farmer': return 'from-green-500 to-emerald-600';
+      case 'farmer': return 'from-emerald-500 to-green-600';
       case 'cattle': return 'from-amber-500 to-orange-600';
-      case 'user': return 'from-purple-500 to-indigo-600';
+      case 'user': return 'from-teal-500 to-cyan-600';
       default: return 'from-gray-500 to-slate-600';
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-green-900 to-teal-900">
       <Navigation user={user} />
+      
+      {/* Enhanced animated background */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -inset-10 opacity-30">
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-emerald-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
+          <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-teal-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-1000"></div>
+          <div className="absolute bottom-1/4 left-1/3 w-96 h-96 bg-green-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-2000"></div>
+        </div>
+      </div>
       
       <div className="relative z-10 container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
-          <Card className="glass-card border-0">
+          <h1 className="text-4xl font-bold text-white mb-8 animate-fade-in">Recent Activities</h1>
+          
+          <Card className="glass-card border-emerald-500/20 bg-gradient-to-br from-emerald-500/5 to-green-500/5 animate-fade-in">
             <CardHeader>
-              <CardTitle className="text-2xl font-bold text-white">Recent Activities</CardTitle>
-              <CardDescription className="text-gray-300">Latest system activities and updates</CardDescription>
+              <CardTitle className="text-2xl font-bold text-white flex items-center">
+                <Clock className="w-8 h-8 mr-3 text-emerald-400" />
+                System Activities
+              </CardTitle>
+              <CardDescription className="text-emerald-300">Latest system activities and updates</CardDescription>
             </CardHeader>
             
             <CardContent>
               {isLoading ? (
-                <div className="text-center text-white">Loading activities...</div>
+                <div className="text-center text-white py-8">
+                  <div className="animate-pulse">Loading activities...</div>
+                </div>
               ) : (
                 <div className="space-y-4">
-                  {activities.map((activity) => (
-                    <Card key={activity.id} className="glass-card border-white/10">
-                      <CardContent className="p-4">
-                        <div className="flex items-center space-x-4">
-                          <div className={`w-12 h-12 bg-gradient-to-r ${getActivityColor(activity.type)} rounded-xl flex items-center justify-center text-2xl shadow-lg`}>
-                            {getActivityIcon(activity.type)}
+                  {activities.map((activity, index) => {
+                    const IconComponent = getActivityIcon(activity.type);
+                    return (
+                      <Card key={activity.id} className="glass-card border-emerald-500/10 hover:border-emerald-400/30 transition-all animate-slide-up" style={{animationDelay: `${index * 0.1}s`}}>
+                        <CardContent className="p-4">
+                          <div className="flex items-center space-x-4">
+                            <div className={`w-12 h-12 bg-gradient-to-r ${getActivityColor(activity.type)} rounded-xl flex items-center justify-center shadow-lg`}>
+                              <IconComponent className="w-6 h-6 text-white" />
+                            </div>
+                            <div className="flex-1">
+                              <p className="text-white font-medium">{activity.description}</p>
+                              <p className="text-emerald-400 text-sm">
+                                {new Date(activity.date).toLocaleDateString()} at {new Date(activity.date).toLocaleTimeString()}
+                              </p>
+                            </div>
+                            <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/30">
+                              {activity.type.toUpperCase()}
+                            </Badge>
                           </div>
-                          <div className="flex-1">
-                            <p className="text-white font-medium">{activity.description}</p>
-                            <p className="text-gray-400 text-sm">
-                              {new Date(activity.date).toLocaleDateString()} at {new Date(activity.date).toLocaleTimeString()}
-                            </p>
-                          </div>
-                          <Badge className="bg-white/20 text-white border-0">
-                            {activity.type.toUpperCase()}
-                          </Badge>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
                 </div>
               )}
             </CardContent>

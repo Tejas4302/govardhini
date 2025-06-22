@@ -7,6 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import Navigation from '@/components/Navigation';
 import { useNavigate } from 'react-router-dom';
+import { Search, MapPin, Phone } from 'lucide-react';
 
 interface Farmer {
   id: string;
@@ -65,15 +66,29 @@ const SearchFarmers = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-green-900 to-teal-900">
       <Navigation user={user} />
+      
+      {/* Enhanced animated background */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -inset-10 opacity-30">
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-emerald-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
+          <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-teal-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-1000"></div>
+          <div className="absolute bottom-1/4 left-1/3 w-96 h-96 bg-green-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-2000"></div>
+        </div>
+      </div>
       
       <div className="relative z-10 container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
-          <Card className="glass-card border-0">
+          <h1 className="text-4xl font-bold text-white mb-8 animate-fade-in">Search Farmers</h1>
+          
+          <Card className="glass-card border-emerald-500/20 bg-gradient-to-br from-emerald-500/5 to-green-500/5 animate-fade-in">
             <CardHeader>
-              <CardTitle className="text-2xl font-bold text-white">Search Farmers</CardTitle>
-              <CardDescription className="text-gray-300">Find farmers by name, phone, location or other details</CardDescription>
+              <CardTitle className="text-2xl font-bold text-white flex items-center">
+                <Search className="w-8 h-8 mr-3 text-emerald-400" />
+                Find Farmers
+              </CardTitle>
+              <CardDescription className="text-emerald-300">Search by name, phone, location or other details</CardDescription>
             </CardHeader>
             
             <CardContent>
@@ -83,12 +98,12 @@ const SearchFarmers = () => {
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   onKeyPress={handleKeyPress}
-                  className="flex-1 bg-white/10 border-white/20 text-white placeholder:text-gray-400"
+                  className="flex-1 glass-input border-emerald-500/30 text-white placeholder:text-emerald-300"
                 />
                 <Button 
                   onClick={searchFarmers}
                   disabled={isLoading}
-                  className="bg-green-600 hover:bg-green-700"
+                  className="grass-green hover:bg-emerald-700 text-white font-semibold px-8"
                 >
                   {isLoading ? 'Searching...' : 'Search'}
                 </Button>
@@ -98,21 +113,30 @@ const SearchFarmers = () => {
                 <div className="space-y-4">
                   <h3 className="text-lg font-semibold text-white">Search Results ({farmers.length})</h3>
                   {farmers.map((farmer) => (
-                    <Card key={farmer.id} className="glass-card border-white/10 cursor-pointer hover:border-white/30 transition-all"
+                    <Card key={farmer.id} className="glass-card border-emerald-500/20 cursor-pointer hover:border-emerald-400/50 transition-all hover:bg-emerald-500/10 animate-slide-up"
                           onClick={() => navigate(`/farmer/${farmer.id}`)}>
                       <CardContent className="p-4">
                         <div className="flex items-center justify-between">
-                          <div>
-                            <h4 className="text-white font-semibold">{farmer.full_name}</h4>
-                            <p className="text-gray-300 text-sm">{farmer.phone_number}</p>
-                            <p className="text-gray-400 text-sm">
-                              {farmer.town_or_village}, {farmer.taluk}, {farmer.district}
-                            </p>
+                          <div className="flex items-center space-x-4">
+                            <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-green-600 rounded-full flex items-center justify-center shadow-lg">
+                              <span className="text-white text-xl">👨‍🌾</span>
+                            </div>
+                            <div>
+                              <h4 className="text-white font-semibold text-lg">{farmer.full_name}</h4>
+                              <div className="flex items-center text-emerald-300 text-sm mt-1">
+                                <Phone className="w-4 h-4 mr-1" />
+                                {farmer.phone_number}
+                              </div>
+                              <div className="flex items-center text-emerald-400 text-sm mt-1">
+                                <MapPin className="w-4 h-4 mr-1" />
+                                {farmer.town_or_village}, {farmer.taluk}, {farmer.district}
+                              </div>
+                            </div>
                           </div>
                           <Button
                             variant="outline"
                             size="sm"
-                            className="border-white/20 text-white hover:bg-white/10"
+                            className="border-emerald-400/30 text-emerald-200 hover:bg-emerald-500/20 hover:border-emerald-400"
                           >
                             View Profile
                           </Button>
@@ -124,8 +148,9 @@ const SearchFarmers = () => {
               )}
 
               {farmers.length === 0 && searchTerm && !isLoading && (
-                <div className="text-center text-gray-400 py-8">
-                  No farmers found matching your search criteria.
+                <div className="text-center text-emerald-400 py-8">
+                  <Search className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                  <p className="text-lg">No farmers found matching your search criteria.</p>
                 </div>
               )}
             </CardContent>

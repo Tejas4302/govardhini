@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import Navigation from '@/components/Navigation';
+import { FileText, Download, Users, Beef, User, Heart } from 'lucide-react';
 
 const SystemReports = () => {
   const [isGenerating, setIsGenerating] = useState<string | null>(null);
@@ -108,68 +109,86 @@ const SystemReports = () => {
       title: 'Farmers Report',
       description: 'Complete list of all registered farmers',
       type: 'farmers',
-      icon: '👨‍🌾',
-      gradient: 'from-green-500 to-emerald-600'
+      icon: Users,
+      gradient: 'from-emerald-500 to-green-600'
     },
     {
       title: 'Cattle Report',
       description: 'All cattle profiles and details',
       type: 'cattle',
-      icon: '🐄',
+      icon: Beef,
       gradient: 'from-amber-500 to-orange-600'
     },
     {
       title: 'Users Report',
       description: 'System users and their roles',
       type: 'users',
-      icon: '👤',
-      gradient: 'from-purple-500 to-indigo-600'
+      icon: User,
+      gradient: 'from-teal-500 to-cyan-600'
     },
     {
       title: 'Health Checkups Report',
       description: 'All health checkup records',
       type: 'health',
-      icon: '❤️',
+      icon: Heart,
       gradient: 'from-red-500 to-pink-600'
     }
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-green-900 to-teal-900">
       <Navigation user={user} />
+      
+      {/* Enhanced animated background */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -inset-10 opacity-30">
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-emerald-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
+          <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-teal-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-1000"></div>
+          <div className="absolute bottom-1/4 left-1/3 w-96 h-96 bg-green-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-2000"></div>
+        </div>
+      </div>
       
       <div className="relative z-10 container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
-          <Card className="glass-card border-0">
+          <h1 className="text-4xl font-bold text-white mb-8 animate-fade-in">System Reports</h1>
+          
+          <Card className="glass-card border-emerald-500/20 bg-gradient-to-br from-emerald-500/5 to-green-500/5 animate-fade-in">
             <CardHeader>
-              <CardTitle className="text-2xl font-bold text-white">System Reports</CardTitle>
-              <CardDescription className="text-gray-300">Generate and download comprehensive system reports</CardDescription>
+              <CardTitle className="text-2xl font-bold text-white flex items-center">
+                <FileText className="w-8 h-8 mr-3 text-emerald-400" />
+                Generate Reports
+              </CardTitle>
+              <CardDescription className="text-emerald-300">Generate and download comprehensive system reports</CardDescription>
             </CardHeader>
             
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {reports.map((report) => (
-                  <Card key={report.type} className="glass-card border-white/10">
-                    <CardContent className="p-6">
-                      <div className="flex items-center space-x-4 mb-4">
-                        <div className={`w-12 h-12 bg-gradient-to-r ${report.gradient} rounded-xl flex items-center justify-center text-2xl shadow-lg`}>
-                          {report.icon}
+                {reports.map((report, index) => {
+                  const IconComponent = report.icon;
+                  return (
+                    <Card key={report.type} className="glass-card border-emerald-500/10 hover:border-emerald-400/30 transition-all hover:bg-emerald-500/10 animate-slide-up" style={{animationDelay: `${index * 0.1}s`}}>
+                      <CardContent className="p-6">
+                        <div className="flex items-center space-x-4 mb-4">
+                          <div className={`w-12 h-12 bg-gradient-to-r ${report.gradient} rounded-xl flex items-center justify-center shadow-lg`}>
+                            <IconComponent className="w-6 h-6 text-white" />
+                          </div>
+                          <div>
+                            <h3 className="text-white font-semibold text-lg">{report.title}</h3>
+                            <p className="text-emerald-300 text-sm">{report.description}</p>
+                          </div>
                         </div>
-                        <div>
-                          <h3 className="text-white font-semibold">{report.title}</h3>
-                          <p className="text-gray-300 text-sm">{report.description}</p>
-                        </div>
-                      </div>
-                      <Button
-                        onClick={() => generateReport(report.type)}
-                        disabled={isGenerating === report.type}
-                        className="w-full bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700"
-                      >
-                        {isGenerating === report.type ? 'Generating...' : 'Download CSV'}
-                      </Button>
-                    </CardContent>
-                  </Card>
-                ))}
+                        <Button
+                          onClick={() => generateReport(report.type)}
+                          disabled={isGenerating === report.type}
+                          className="w-full grass-button text-white hover:bg-emerald-700 font-semibold"
+                        >
+                          <Download className="w-4 h-4 mr-2" />
+                          {isGenerating === report.type ? 'Generating...' : 'Download CSV'}
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
               </div>
             </CardContent>
           </Card>

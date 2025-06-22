@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,7 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import Navigation from '@/components/Navigation';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, User, MapPin } from 'lucide-react';
 import { getAllStates } from '@/utils/comprehensiveLocationData';
 import { searchPincodeByLocation, debounce } from '@/utils/pincodeSearch';
 
@@ -172,14 +171,15 @@ const FarmerOnboarding = () => {
   const availableStates = getAllStates();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-green-900 to-teal-900">
       <Navigation user={user} />
       
-      {/* Animated background */}
+      {/* Enhanced animated background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -inset-10 opacity-20">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-green-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
-          <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-emerald-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-1000"></div>
+        <div className="absolute -inset-10 opacity-30">
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-emerald-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
+          <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-teal-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-1000"></div>
+          <div className="absolute bottom-1/4 left-1/3 w-96 h-96 bg-green-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-2000"></div>
         </div>
       </div>
       
@@ -189,26 +189,29 @@ const FarmerOnboarding = () => {
           <Button
             onClick={() => navigate(-1)}
             variant="outline"
-            className="mb-4 glass-input text-white border-white/20 hover:bg-white/20"
+            className="mb-4 glass-input text-white border-emerald-500/30 hover:bg-emerald-500/20"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back
           </Button>
 
-          <Card className="glass-card border-0 animate-fade-in">
+          <Card className="glass-card border-emerald-500/20 bg-gradient-to-br from-emerald-500/5 to-green-500/5 animate-fade-in">
             <CardHeader className="text-center">
-              <div className="mx-auto w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center mb-4 shadow-lg">
+              <div className="mx-auto w-16 h-16 bg-gradient-to-br from-emerald-500 to-green-600 rounded-full flex items-center justify-center mb-4 shadow-lg">
                 <span className="text-white text-3xl">👨‍🌾</span>
               </div>
               <CardTitle className="text-2xl font-bold text-white">Farmer Registration</CardTitle>
-              <CardDescription className="text-gray-300">Add a new farmer to the system</CardDescription>
+              <CardDescription className="text-emerald-300">Add a new farmer to the system</CardDescription>
             </CardHeader>
             
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Personal Information */}
                 <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-white border-b border-white/20 pb-2">👤 Personal Information</h3>
+                  <h3 className="text-lg font-semibold text-white border-b border-emerald-500/20 pb-2 flex items-center">
+                    <User className="w-5 h-5 mr-2 text-emerald-400" />
+                    Personal Information
+                  </h3>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
@@ -218,7 +221,7 @@ const FarmerOnboarding = () => {
                         placeholder="Enter farmer's full name"
                         value={formData.fullName}
                         onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                        className="glass-input text-white placeholder:text-gray-400 border-white/20"
+                        className="glass-input text-white placeholder:text-emerald-400 border-emerald-500/30"
                       />
                     </div>
                     
@@ -229,7 +232,7 @@ const FarmerOnboarding = () => {
                         placeholder="Enter 10-digit phone number"
                         value={formData.phoneNumber}
                         onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
-                        className="glass-input text-white placeholder:text-gray-400 border-white/20"
+                        className="glass-input text-white placeholder:text-emerald-400 border-emerald-500/30"
                       />
                     </div>
                   </div>
@@ -241,23 +244,26 @@ const FarmerOnboarding = () => {
                       placeholder="Enter 12-digit Aadhaar number"
                       value={formData.aadhaarNumber}
                       onChange={(e) => setFormData({ ...formData, aadhaarNumber: e.target.value })}
-                      className="glass-input text-white placeholder:text-gray-400 border-white/20"
+                      className="glass-input text-white placeholder:text-emerald-400 border-emerald-500/30"
                     />
                   </div>
                 </div>
 
                 {/* Address Information */}
                 <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-white border-b border-white/20 pb-2">📍 Address Information</h3>
+                  <h3 className="text-lg font-semibold text-white border-b border-emerald-500/20 pb-2 flex items-center">
+                    <MapPin className="w-5 h-5 mr-2 text-emerald-400" />
+                    Address Information
+                  </h3>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="state" className="text-white">State *</Label>
                       <Select value={formData.state} onValueChange={handleStateChange}>
-                        <SelectTrigger className="glass-input text-white border-white/20">
+                        <SelectTrigger className="glass-input text-white border-emerald-500/30">
                           <SelectValue placeholder="Select state" />
                         </SelectTrigger>
-                        <SelectContent className="bg-slate-800 border-white/20 z-50">
+                        <SelectContent className="bg-slate-800 border-emerald-500/30 z-50">
                           {availableStates.map((state) => (
                             <SelectItem key={state} value={state} className="text-white hover:bg-slate-700">
                               {state}
@@ -274,7 +280,7 @@ const FarmerOnboarding = () => {
                         placeholder="Enter district name"
                         value={formData.district}
                         onChange={(e) => handleInputChange('district', e.target.value)}
-                        className="glass-input text-white placeholder:text-gray-400 border-white/20"
+                        className="glass-input text-white placeholder:text-gray-400 border-emerald-500/30"
                         disabled={!formData.state}
                       />
                     </div>
@@ -288,7 +294,7 @@ const FarmerOnboarding = () => {
                         placeholder="Enter taluk/tehsil name"
                         value={formData.taluk}
                         onChange={(e) => handleInputChange('taluk', e.target.value)}
-                        className="glass-input text-white placeholder:text-gray-400 border-white/20"
+                        className="glass-input text-white placeholder:text-gray-400 border-emerald-500/30"
                         disabled={!formData.state}
                       />
                     </div>
@@ -300,7 +306,7 @@ const FarmerOnboarding = () => {
                         placeholder="Enter town or village name"
                         value={formData.townOrVillage}
                         onChange={(e) => handleInputChange('townOrVillage', e.target.value)}
-                        className="glass-input text-white placeholder:text-gray-400 border-white/20"
+                        className="glass-input text-white placeholder:text-gray-400 border-emerald-500/30"
                         disabled={!formData.state}
                       />
                     </div>
@@ -315,7 +321,7 @@ const FarmerOnboarding = () => {
                       placeholder="Pincode will be auto-filled or enter manually"
                       value={formData.pincode}
                       onChange={(e) => handleInputChange('pincode', e.target.value)}
-                      className="glass-input text-white placeholder:text-gray-400 border-white/20"
+                      className="glass-input text-white placeholder:text-gray-400 border-emerald-500/30"
                     />
                   </div>
                 </div>
@@ -325,7 +331,7 @@ const FarmerOnboarding = () => {
                   <Input 
                     value={user.name || 'Current User'} 
                     readOnly 
-                    className="glass-input text-white placeholder:text-gray-400 border-white/20 opacity-70" 
+                    className="glass-input text-white placeholder:text-emerald-400 border-emerald-500/30 opacity-70" 
                   />
                 </div>
                 
@@ -333,7 +339,7 @@ const FarmerOnboarding = () => {
                   <Button
                     type="button"
                     variant="outline"
-                    className="flex-1 glass-input text-white border-white/20 hover:bg-white/20"
+                    className="flex-1 glass-input text-white border-emerald-500/30 hover:bg-emerald-500/20"
                     onClick={() => navigate('/dashboard')}
                     disabled={isLoading}
                   >
@@ -341,7 +347,7 @@ const FarmerOnboarding = () => {
                   </Button>
                   <Button
                     type="submit"
-                    className="flex-1 glass-button text-white"
+                    className="flex-1 grass-green hover:bg-emerald-700 text-white font-semibold"
                     disabled={isLoading}
                   >
                     {isLoading ? 'Registering...' : 'Register Farmer 👨‍🌾'}

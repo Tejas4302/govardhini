@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import Navigation from '@/components/Navigation';
+import { Users, CheckCircle, XCircle, Clock } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -97,75 +98,100 @@ const UserManagement = () => {
 
   const getStatusBadge = (status: string) => {
     const variants = {
-      pending: 'default',
-      approved: 'secondary',
-      rejected: 'destructive'
-    } as const;
+      pending: { className: 'bg-amber-500/20 text-amber-300 border-amber-500/30', icon: Clock },
+      approved: { className: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30', icon: CheckCircle },
+      rejected: { className: 'bg-red-500/20 text-red-300 border-red-500/30', icon: XCircle }
+    };
+    
+    const variant = variants[status as keyof typeof variants] || variants.pending;
+    const IconComponent = variant.icon;
     
     return (
-      <Badge variant={variants[status as keyof typeof variants] || 'default'}>
+      <Badge className={variant.className}>
+        <IconComponent className="w-3 h-3 mr-1" />
         {status.toUpperCase()}
       </Badge>
     );
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-green-900 to-teal-900">
       <Navigation user={user} />
+      
+      {/* Enhanced animated background */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -inset-10 opacity-30">
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-emerald-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
+          <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-teal-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-1000"></div>
+          <div className="absolute bottom-1/4 left-1/3 w-96 h-96 bg-green-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-2000"></div>
+        </div>
+      </div>
       
       <div className="relative z-10 container mx-auto px-4 py-8">
         <div className="max-w-6xl mx-auto">
-          <Card className="glass-card border-0">
+          <h1 className="text-4xl font-bold text-white mb-8 animate-fade-in">User Management</h1>
+          
+          <Card className="glass-card border-emerald-500/20 bg-gradient-to-br from-emerald-500/5 to-green-500/5 animate-fade-in">
             <CardHeader>
-              <CardTitle className="text-2xl font-bold text-white">User Management</CardTitle>
-              <CardDescription className="text-gray-300">Approve or reject user registrations</CardDescription>
+              <CardTitle className="text-2xl font-bold text-white flex items-center">
+                <Users className="w-8 h-8 mr-3 text-emerald-400" />
+                Manage Users
+              </CardTitle>
+              <CardDescription className="text-emerald-300">Approve or reject user registrations</CardDescription>
             </CardHeader>
             
             <CardContent>
               {isLoading ? (
-                <div className="text-center text-white">Loading users...</div>
+                <div className="text-center text-white py-8">
+                  <div className="animate-pulse">Loading users...</div>
+                </div>
               ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="text-white">Name</TableHead>
-                      <TableHead className="text-white">Phone</TableHead>
-                      <TableHead className="text-white">Designation</TableHead>
-                      <TableHead className="text-white">Status</TableHead>
-                      <TableHead className="text-white">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {users.map((user) => (
-                      <TableRow key={user.id}>
-                        <TableCell className="text-white">{user.full_name}</TableCell>
-                        <TableCell className="text-white">{user.phone_number}</TableCell>
-                        <TableCell className="text-white">{user.designation}</TableCell>
-                        <TableCell>{getStatusBadge(user.status)}</TableCell>
-                        <TableCell>
-                          {user.status === 'pending' && (
-                            <div className="flex gap-2">
-                              <Button
-                                size="sm"
-                                onClick={() => updateUserStatus(user.id, 'approved')}
-                                className="bg-green-600 hover:bg-green-700"
-                              >
-                                Approve
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="destructive"
-                                onClick={() => updateUserStatus(user.id, 'rejected')}
-                              >
-                                Reject
-                              </Button>
-                            </div>
-                          )}
-                        </TableCell>
+                <div className="glass-card border-emerald-500/20 bg-emerald-500/5 rounded-lg overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="border-emerald-500/20">
+                        <TableHead className="text-emerald-200 font-semibold">Name</TableHead>
+                        <TableHead className="text-emerald-200 font-semibold">Phone</TableHead>
+                        <TableHead className="text-emerald-200 font-semibold">Designation</TableHead>
+                        <TableHead className="text-emerald-200 font-semibold">Status</TableHead>
+                        <TableHead className="text-emerald-200 font-semibold">Actions</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {users.map((user, index) => (
+                        <TableRow key={user.id} className="border-emerald-500/10 hover:bg-emerald-500/10 transition-colors animate-slide-up" style={{animationDelay: `${index * 0.1}s`}}>
+                          <TableCell className="text-white font-medium">{user.full_name}</TableCell>
+                          <TableCell className="text-emerald-300">{user.phone_number}</TableCell>
+                          <TableCell className="text-emerald-300">{user.designation}</TableCell>
+                          <TableCell>{getStatusBadge(user.status)}</TableCell>
+                          <TableCell>
+                            {user.status === 'pending' && (
+                              <div className="flex gap-2">
+                                <Button
+                                  size="sm"
+                                  onClick={() => updateUserStatus(user.id, 'approved')}
+                                  className="grass-green hover:bg-emerald-700 text-white"
+                                >
+                                  <CheckCircle className="w-4 h-4 mr-1" />
+                                  Approve
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="destructive"
+                                  onClick={() => updateUserStatus(user.id, 'rejected')}
+                                  className="bg-red-600 hover:bg-red-700"
+                                >
+                                  <XCircle className="w-4 h-4 mr-1" />
+                                  Reject
+                                </Button>
+                              </div>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
               )}
             </CardContent>
           </Card>
