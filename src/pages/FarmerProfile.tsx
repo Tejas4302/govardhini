@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -59,8 +58,16 @@ const FarmerProfile = () => {
   console.log('User object:', user);
   console.log('User designation:', user.designation);
   console.log('User designation type:', typeof user.designation);
+  console.log('User designation value:', user.designation?.value);
+  console.log('User role:', user.role);
   
-  const isAdmin = user.designation?.toLowerCase() === 'admin' || user.designation?.toLowerCase() === 'office_staff';
+  // Fixed admin check to handle object structure and also check user.role
+  const isAdmin = user.designation?.value?.toLowerCase() === 'admin' || 
+                  user.designation?.value?.toLowerCase() === 'office_staff' ||
+                  user.role?.toLowerCase() === 'admin' ||
+                  user.designation?.toLowerCase() === 'admin' ||
+                  user.designation?.toLowerCase() === 'office_staff';
+  
   console.log('Is Admin:', isAdmin);
 
   useEffect(() => {

@@ -39,7 +39,13 @@ const FarmersList = () => {
   const navigate = useNavigate();
   
   const user = JSON.parse(localStorage.getItem('govardhini_user') || '{}');
-  const isAdmin = user.designation?.toLowerCase() === 'admin' || user.designation?.toLowerCase() === 'office_staff';
+  
+  // Fixed admin check to handle object structure and also check user.role
+  const isAdmin = user.designation?.value?.toLowerCase() === 'admin' || 
+                  user.designation?.value?.toLowerCase() === 'office_staff' ||
+                  user.role?.toLowerCase() === 'admin' ||
+                  user.designation?.toLowerCase() === 'admin' ||
+                  user.designation?.toLowerCase() === 'office_staff';
 
   useEffect(() => {
     fetchFarmers();
