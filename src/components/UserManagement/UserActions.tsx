@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -129,9 +130,9 @@ const UserActions: React.FC<UserActionsProps> = ({
                     size="sm"
                     variant="ghost"
                     disabled={processingUserId === user.id}
-                    className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 w-8 h-8 p-0 flex items-center justify-center transition-colors"
+                    className="text-blue-400 hover:text-blue-300 border-0 bg-transparent hover:bg-transparent min-w-[32px] min-h-[32px] w-8 h-8 p-0 flex items-center justify-center shrink-0"
                   >
-                    <UserCog className="w-4 h-4" />
+                    <UserCog className="w-4 h-4 flex-shrink-0" />
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent className="glass-card border-blue-500/30 bg-slate-800/90 backdrop-blur-xl text-white max-w-md">
@@ -204,9 +205,9 @@ const UserActions: React.FC<UserActionsProps> = ({
                     size="sm"
                     variant="ghost"
                     disabled={processingUserId === user.id}
-                    className="text-red-400 hover:text-red-300 hover:bg-red-500/10 w-8 h-8 p-0 flex items-center justify-center transition-colors"
+                    className="text-red-400 hover:text-red-300 border-0 bg-transparent hover:bg-transparent min-w-[32px] min-h-[32px] w-8 h-8 p-0 flex items-center justify-center shrink-0"
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 className="w-4 h-4 flex-shrink-0" />
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent className="glass-card border-red-500/30 bg-slate-800/90 backdrop-blur-xl text-white">
