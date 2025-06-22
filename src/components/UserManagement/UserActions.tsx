@@ -128,8 +128,9 @@ const UserActions: React.FC<UserActionsProps> = ({
                 <AlertDialogTrigger asChild>
                   <Button
                     size="sm"
+                    variant="ghost"
                     disabled={processingUserId === user.id}
-                    className="bg-blue-600 hover:bg-blue-700 px-2"
+                    className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 p-2"
                   >
                     <UserCog className="w-4 h-4" />
                   </Button>
@@ -202,9 +203,9 @@ const UserActions: React.FC<UserActionsProps> = ({
                 <AlertDialogTrigger asChild>
                   <Button
                     size="sm"
-                    variant="destructive"
+                    variant="ghost"
                     disabled={processingUserId === user.id}
-                    className="bg-red-700 hover:bg-red-800 px-2"
+                    className="text-red-400 hover:text-red-300 hover:bg-red-500/10 p-2"
                   >
                     <Trash2 className="w-4 h-4" />
                   </Button>
