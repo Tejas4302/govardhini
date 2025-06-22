@@ -1,65 +1,73 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { format } from 'date-fns';
+import { CalendarIcon } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import Navigation from '@/components/Navigation';
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Calendar } from 'lucide-react';
-
-interface Cattle {
-  cattle_id: string;
-  farmer_name: string;
-  breed: string;
-  lactation: boolean;
-}
 
 const MilkLogging = () => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [cattle, setCattle] = useState<Cattle[]>([]);
-  const [milkData, setMilkData] = useState({
+  const [formData, setFormData] = useState({
+    entryId: `MP${Date.now().toString().slice(-6)}`,
     cattleId: '',
-    date: new Date().toISOString().split('T')[0],
+    productionDate: new Date(),
     quantityLitres: '',
-    shift: ''
+    shift: '',
   });
+  
+  const [isLoading, setIsLoading] = useState(false);
+  const [validatingCattle, setValidatingCattle] = useState(false);
+  const [cattleExists, setCattleExists] = useState<boolean | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
   
   const user = JSON.parse(localStorage.getItem('govardhini_user') || '{}');
 
-  useEffect(() => {
-    fetchLactatingCattle();
-  }, []);
+  const validateCattleId = async (cattleId: string) => {
+    if (!cattleId.trim()) {
+      setCattleExists(null);
+      return;
+    }
 
-  const fetchLactatingCattle = async () => {
+    setValidatingCattle(true);
     try {
       const { data, error } = await supabase
         .from('cattle_profiles')
-        .select('cattle_id, farmer_name, breed, lactation')
-        .eq('lactation', true)
-        .order('farmer_name');
+        .select('cattle_id')
+        .eq('cattle_id', cattleId)
+        .single();
 
-      if (error) throw error;
-      setCattle(data || []);
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error validating cattle:', error);
+        setCattleExists(null);
+      } else {
+        setCattleExists(!!data);
+      }
     } catch (error) {
-      console.error('Error fetching cattle:', error);
-      toast({
-        title: "Error",
-        description: "Failed to fetch lactating cattle",
-        variant: "destructive"
-      });
+      console.error('Unexpected error:', error);
+      setCattleExists(null);
+    } finally {
+      setValidatingCattle(false);
     }
+  };
+
+  const saveOffline = (data: any) => {
+    const offlineData = JSON.parse(localStorage.getItem('offline_milk') || '[]');
+    offlineData.push({ ...data, id: Date.now().toString(), synced: false });
+    localStorage.setItem('offline_milk', JSON.stringify(offlineData));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!milkData.cattleId || !milkData.quantityLitres || !milkData.date) {
+    if (!formData.cattleId || !formData.quantityLitres) {
       toast({
         title: "Error",
         description: "Please fill in all required fields",
@@ -68,162 +76,253 @@ const MilkLogging = () => {
       return;
     }
 
+    if (parseFloat(formData.quantityLitres) < 0) {
+      toast({
+        title: "Error",
+        description: "Milk production cannot be negative",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (cattleExists === false) {
+      toast({
+        title: "Cattle Not Found",
+        description: "The cattle ID you entered doesn't exist. Please register the cattle first or check the ID.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setIsLoading(true);
 
     try {
-      const { error } = await supabase
-        .from('milk_production')
-        .insert({
-          cattle_id: milkData.cattleId,
-          date: milkData.date,
-          quantity_litres: parseFloat(milkData.quantityLitres),
-          shift: milkData.shift || null,
-          recorded_by: user.id
+      const { error } = await supabase.from('milk_production').insert({
+        cattle_id: formData.cattleId,
+        date: format(formData.productionDate, 'yyyy-MM-dd'),
+        quantity_litres: parseFloat(formData.quantityLitres),
+        shift: formData.shift || null,
+        recorded_by: user.id || 'offline-user'
+      });
+
+      if (error) {
+        console.error('Database error:', error);
+        
+        // Check if it's a foreign key constraint error
+        if (error.code === '23503' && error.message.includes('cattle_id_fkey')) {
+          toast({
+            title: "Cattle Not Found",
+            description: "The cattle ID doesn't exist. Please register the cattle first.",
+            variant: "destructive"
+          });
+          return;
+        }
+        
+        // Check if it's a network/connection error
+        if (error.message.includes('Failed to fetch') || error.message.includes('network')) {
+          saveOffline(formData);
+          toast({
+            title: "Saved Offline 📱",
+            description: "No internet connection. Data saved locally and will sync when online.",
+            variant: "default"
+          });
+        } else {
+          toast({
+            title: "Database Error",
+            description: error.message || "Failed to save milk production",
+            variant: "destructive"
+          });
+        }
+      } else {
+        toast({
+          title: "Success! ✅",
+          description: `Milk production of ${formData.quantityLitres}L recorded successfully`,
         });
-
-      if (error) throw error;
-
-      toast({
-        title: "Milk Production Recorded",
-        description: `${milkData.quantityLitres}L milk production has been logged.`,
-      });
-
-      // Reset form
-      setMilkData({
-        cattleId: '',
-        date: new Date().toISOString().split('T')[0],
-        quantityLitres: '',
-        shift: ''
-      });
+        
+        // Reset form
+        setFormData({
+          entryId: `MP${Date.now().toString().slice(-6)}`,
+          cattleId: '',
+          productionDate: new Date(),
+          quantityLitres: '',
+          shift: '',
+        });
+        setCattleExists(null);
+      }
 
     } catch (error) {
-      console.error('Error recording milk production:', error);
+      console.error('Unexpected error:', error);
+      saveOffline(formData);
       toast({
-        title: "Error",
-        description: "Failed to record milk production",
-        variant: "destructive"
+        title: "Network Error 📱",
+        description: "Connection failed. Data saved locally and will sync when online.",
       });
     } finally {
       setIsLoading(false);
     }
   };
 
+  const handleCattleIdChange = (value: string) => {
+    setFormData({ ...formData, cattleId: value });
+    
+    // Debounce validation
+    const timeoutId = setTimeout(() => {
+      validateCattleId(value);
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-green-900 to-emerald-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
       <Navigation user={user} />
       
-      {/* Enhanced animated background */}
+      {/* Animated background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -inset-10 opacity-30">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-emerald-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
-          <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-teal-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-1000"></div>
-          <div className="absolute bottom-1/4 left-1/3 w-96 h-96 bg-green-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-2000"></div>
+        <div className="absolute -inset-10 opacity-20">
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
+          <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-cyan-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-1000"></div>
         </div>
       </div>
       
       <div className="relative z-10 container mx-auto px-4 py-8">
         <div className="max-w-2xl mx-auto">
-          {/* Back Button and Header */}
-          <div className="flex items-center mb-8">
-            <Button
-              variant="ghost"
-              onClick={() => navigate('/dashboard')}
-              className="mr-4 text-emerald-300 hover:text-emerald-100 hover:bg-emerald-500/20"
-            >
-              <ArrowLeft className="w-5 h-5 mr-2" />
-              Back to Dashboard
-            </Button>
-            <h1 className="text-4xl font-bold text-white animate-fade-in">Milk Logging</h1>
-          </div>
-          
-          <Card className="glass-card border-emerald-500/20 bg-gradient-to-br from-emerald-500/5 to-green-500/5 animate-fade-in">
-            <CardHeader>
-              <CardTitle className="text-2xl font-bold text-white flex items-center">
-                <span className="text-3xl mr-3">🥛</span>
-                Record Milk Production
-              </CardTitle>
-              <CardDescription className="text-emerald-300">Log daily milk production for lactating cattle</CardDescription>
+          <Card className="glass-card border-0 animate-fade-in">
+            <CardHeader className="text-center">
+              <div className="mx-auto w-16 h-16 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-full flex items-center justify-center mb-4 shadow-lg">
+                <span className="text-white text-3xl">🥛</span>
+              </div>
+              <CardTitle className="text-2xl font-bold text-white">Milk Production Logging</CardTitle>
+              <CardDescription className="text-gray-300">Record daily milk production</CardDescription>
             </CardHeader>
             
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="space-y-2">
-                  <Label htmlFor="cattle" className="text-emerald-200 flex items-center gap-2">
-                    <span className="text-2xl">🐄</span>
-                    Select Lactating Cattle *
-                  </Label>
-                  <Select value={milkData.cattleId} onValueChange={(value) => setMilkData(prev => ({ ...prev, cattleId: value }))}>
-                    <SelectTrigger className="glass-input border-emerald-500/30 text-white">
-                      <SelectValue placeholder="Choose lactating cattle" />
-                    </SelectTrigger>
-                    <SelectContent className="glass-card border-emerald-500/30 bg-slate-800/90 backdrop-blur-xl">
-                      {cattle.map((animal) => (
-                        <SelectItem key={animal.cattle_id} value={animal.cattle_id} className="text-white hover:bg-emerald-500/20">
-                          {animal.cattle_id} - {animal.farmer_name} ({animal.breed})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {cattle.length === 0 && (
-                    <p className="text-emerald-400 text-sm">No lactating cattle found. Please ensure cattle are marked as lactating in their profile.</p>
-                  )}
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="date" className="text-emerald-200 flex items-center gap-2">
-                      <Calendar className="w-4 h-4" />
-                      Production Date *
-                    </Label>
+                    <Label htmlFor="entryId" className="text-white">Entry ID</Label>
                     <Input
-                      id="date"
-                      type="date"
-                      value={milkData.date}
-                      onChange={(e) => setMilkData(prev => ({ ...prev, date: e.target.value }))}
-                      className="glass-input border-emerald-500/30 text-white"
-                      disabled={isLoading}
+                      id="entryId"
+                      value={formData.entryId}
+                      className="glass-input text-white placeholder:text-gray-400 border-white/20"
+                      readOnly
                     />
                   </div>
-
+                  
                   <div className="space-y-2">
-                    <Label htmlFor="quantity" className="text-emerald-200 flex items-center gap-2">
-                      <span className="text-xl">🥛</span>
-                      Quantity (Litres) *
+                    <Label htmlFor="cattleId" className="text-white">
+                      Cattle ID *
+                      {validatingCattle && <span className="text-blue-400 ml-2">Validating...</span>}
+                      {cattleExists === true && <span className="text-green-400 ml-2">✓ Found</span>}
+                      {cattleExists === false && <span className="text-red-400 ml-2">✗ Not found</span>}
                     </Label>
                     <Input
-                      id="quantity"
+                      id="cattleId"
+                      placeholder="Enter cattle ID"
+                      value={formData.cattleId}
+                      onChange={(e) => handleCattleIdChange(e.target.value)}
+                      className={cn(
+                        "glass-input text-white placeholder:text-gray-400 border-white/20",
+                        cattleExists === false && "border-red-500"
+                      )}
+                    />
+                    {cattleExists === false && (
+                      <p className="text-red-400 text-sm">
+                        Cattle not found. <Button 
+                          type="button" 
+                          variant="link" 
+                          className="text-blue-400 p-0 h-auto"
+                          onClick={() => navigate('/cattle-onboarding')}
+                        >
+                          Register cattle first
+                        </Button>
+                      </p>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-white">Production Date</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full justify-start text-left font-normal glass-input text-white border-white/20 hover:bg-white/20",
+                            !formData.productionDate && "text-gray-400"
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {formData.productionDate ? format(formData.productionDate, "PPP") : "Pick a date"}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0 bg-white/10 backdrop-blur-lg border-white/20" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={formData.productionDate}
+                          onSelect={(date) => date && setFormData({ ...formData, productionDate: date })}
+                          initialFocus
+                          className="pointer-events-auto"
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="quantityLitres" className="text-white">Milk Produced (Liters) *</Label>
+                    <Input
+                      id="quantityLitres"
                       type="number"
                       step="0.1"
-                      placeholder="Enter milk quantity"
-                      value={milkData.quantityLitres}
-                      onChange={(e) => setMilkData(prev => ({ ...prev, quantityLitres: e.target.value }))}
-                      className="glass-input border-emerald-500/30 text-white placeholder:text-emerald-300"
-                      disabled={isLoading}
+                      placeholder="Enter milk production"
+                      value={formData.quantityLitres}
+                      onChange={(e) => setFormData({ ...formData, quantityLitres: e.target.value })}
+                      min="0"
+                      max="100"
+                      className="glass-input text-white placeholder:text-gray-400 border-white/20"
                     />
                   </div>
                 </div>
-
+                
                 <div className="space-y-2">
-                  <Label htmlFor="shift" className="text-emerald-200">Milking Shift (Optional)</Label>
-                  <Select value={milkData.shift} onValueChange={(value) => setMilkData(prev => ({ ...prev, shift: value }))}>
-                    <SelectTrigger className="glass-input border-emerald-500/30 text-white">
-                      <SelectValue placeholder="Select milking shift (optional)" />
-                    </SelectTrigger>
-                    <SelectContent className="glass-card border-emerald-500/30 bg-slate-800/90 backdrop-blur-xl">
-                      <SelectItem value="Morning" className="text-white hover:bg-emerald-500/20">Morning</SelectItem>
-                      <SelectItem value="Evening" className="text-white hover:bg-emerald-500/20">Evening</SelectItem>
-                      <SelectItem value="Night" className="text-white hover:bg-emerald-500/20">Night</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Label htmlFor="shift" className="text-white">Shift (Optional)</Label>
+                  <Input
+                    id="shift"
+                    placeholder="e.g., Morning, Evening"
+                    value={formData.shift}
+                    onChange={(e) => setFormData({ ...formData, shift: e.target.value })}
+                    className="glass-input text-white placeholder:text-gray-400 border-white/20"
+                  />
                 </div>
-
-                <Button
-                  type="submit"
-                  disabled={isLoading || cattle.length === 0}
-                  className="w-full bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-semibold py-3"
-                >
-                  {isLoading ? 'Recording...' : 'Record Milk Production'}
-                </Button>
+                
+                <div className="space-y-2">
+                  <Label className="text-white">Recorded By</Label>
+                  <Input 
+                    value={user.name || 'Current User'} 
+                    readOnly 
+                    className="glass-input text-white placeholder:text-gray-400 border-white/20 opacity-70" 
+                  />
+                </div>
+                
+                <div className="flex gap-4 pt-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="flex-1 glass-input text-white border-white/20 hover:bg-white/20"
+                    onClick={() => navigate('/dashboard')}
+                    disabled={isLoading}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    className="flex-1 glass-button text-white"
+                    disabled={isLoading || cattleExists === false}
+                  >
+                    {isLoading ? 'Logging...' : 'Log Milk Production 🥛'}
+                  </Button>
+                </div>
               </form>
             </CardContent>
           </Card>

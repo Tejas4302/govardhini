@@ -3,11 +3,10 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import Navigation from '@/components/Navigation';
-import { Users, CheckCircle, XCircle, Clock, ArrowLeft, Settings } from 'lucide-react';
+import { Users, CheckCircle, XCircle, Clock, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import {
   Table,
@@ -30,17 +29,16 @@ interface User {
 const UserManagement = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [updatingUserId, setUpdatingUserId] = useState<string | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
   
   const user = JSON.parse(localStorage.getItem('govardhini_user') || '{}');
 
   useEffect(() => {
-    fetchUsers();
+    fetchPendingUsers();
   }, []);
 
-  const fetchUsers = async () => {
+  const fetchPendingUsers = async () => {
     try {
       const { data, error } = await supabase
         .from('users')
@@ -62,19 +60,10 @@ const UserManagement = () => {
   };
 
   const updateUserStatus = async (userId: string, status: string) => {
-    setUpdatingUserId(userId);
     try {
-      const updateData: any = { 
-        status,
-        ...(status === 'approved' && {
-          approved_by: user.id,
-          approved_at: new Date().toISOString()
-        })
-      };
-
       const { error } = await supabase
         .from('users')
-        .update(updateData)
+        .update({ status })
         .eq('id', userId);
 
       if (error) throw error;
@@ -98,7 +87,7 @@ const UserManagement = () => {
         description: `User ${status} successfully`,
       });
 
-      fetchUsers();
+      fetchPendingUsers();
     } catch (error) {
       console.error('Error updating user status:', error);
       toast({
@@ -106,46 +95,6 @@ const UserManagement = () => {
         description: "Failed to update user status",
         variant: "destructive"
       });
-    } finally {
-      setUpdatingUserId(null);
-    }
-  };
-
-  const updateUserRole = async (userId: string, newRole: string) => {
-    setUpdatingUserId(userId);
-    try {
-      const { error } = await supabase
-        .from('users')
-        .update({ designation: newRole })
-        .eq('id', userId);
-
-      if (error) throw error;
-
-      // Update role assignment
-      await supabase
-        .from('user_role_assignments')
-        .update({ 
-          role_assigned: newRole,
-          assigned_by: user.id,
-          assigned_at: new Date().toISOString()
-        })
-        .eq('user_id', userId);
-
-      toast({
-        title: "Success",
-        description: `User role updated to ${newRole}`,
-      });
-
-      fetchUsers();
-    } catch (error) {
-      console.error('Error updating user role:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update user role",
-        variant: "destructive"
-      });
-    } finally {
-      setUpdatingUserId(null);
     }
   };
 
@@ -166,8 +115,6 @@ const UserManagement = () => {
       </Badge>
     );
   };
-
-  const isAdmin = user.role === 'admin' || user.role === 'Admin';
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-green-900 to-emerald-900">
@@ -203,9 +150,7 @@ const UserManagement = () => {
                 <Users className="w-8 h-8 mr-3 text-emerald-400" />
                 Manage Users
               </CardTitle>
-              <CardDescription className="text-emerald-300">
-                {isAdmin ? 'Approve, reject, and manage user roles' : 'View user registrations'}
-              </CardDescription>
+              <CardDescription className="text-emerald-300">Approve or reject user registrations</CardDescription>
             </CardHeader>
             
             <CardContent>
@@ -222,68 +167,39 @@ const UserManagement = () => {
                         <TableHead className="text-emerald-200 font-semibold">Phone</TableHead>
                         <TableHead className="text-emerald-200 font-semibold">Designation</TableHead>
                         <TableHead className="text-emerald-200 font-semibold">Status</TableHead>
-                        {isAdmin && <TableHead className="text-emerald-200 font-semibold">Actions</TableHead>}
+                        <TableHead className="text-emerald-200 font-semibold">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {users.map((userData, index) => (
-                        <TableRow key={userData.id} className="border-emerald-500/10 hover:bg-emerald-500/10 transition-colors animate-slide-up" style={{animationDelay: `${index * 0.1}s`}}>
-                          <TableCell className="text-white font-medium">{userData.full_name}</TableCell>
-                          <TableCell className="text-emerald-300">{userData.phone_number}</TableCell>
+                      {users.map((user, index) => (
+                        <TableRow key={user.id} className="border-emerald-500/10 hover:bg-emerald-500/10 transition-colors animate-slide-up" style={{animationDelay: `${index * 0.1}s`}}>
+                          <TableCell className="text-white font-medium">{user.full_name}</TableCell>
+                          <TableCell className="text-emerald-300">{user.phone_number}</TableCell>
+                          <TableCell className="text-emerald-300">{user.designation}</TableCell>
+                          <TableCell>{getStatusBadge(user.status)}</TableCell>
                           <TableCell>
-                            {isAdmin && userData.status === 'approved' && userData.id !== user.id ? (
-                              <Select 
-                                value={userData.designation} 
-                                onValueChange={(value) => updateUserRole(userData.id, value)}
-                                disabled={updatingUserId === userData.id}
-                              >
-                                <SelectTrigger className="glass-input border-emerald-500/30 text-emerald-300 w-auto">
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent className="glass-card border-emerald-500/30 bg-slate-800/90 backdrop-blur-xl">
-                                  <SelectItem value="Admin" className="text-white hover:bg-emerald-500/20">Admin</SelectItem>
-                                  <SelectItem value="Field Officer" className="text-white hover:bg-emerald-500/20">Field Officer</SelectItem>
-                                  <SelectItem value="Office Staff" className="text-white hover:bg-emerald-500/20">Office Staff</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            ) : (
-                              <span className="text-emerald-300">{userData.designation}</span>
+                            {user.status === 'pending' && (
+                              <div className="flex gap-2">
+                                <Button
+                                  size="sm"
+                                  onClick={() => updateUserStatus(user.id, 'approved')}
+                                  className="bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white"
+                                >
+                                  <CheckCircle className="w-4 h-4 mr-1" />
+                                  Approve
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="destructive"
+                                  onClick={() => updateUserStatus(user.id, 'rejected')}
+                                  className="bg-red-600 hover:bg-red-700"
+                                >
+                                  <XCircle className="w-4 h-4 mr-1" />
+                                  Reject
+                                </Button>
+                              </div>
                             )}
                           </TableCell>
-                          <TableCell>{getStatusBadge(userData.status)}</TableCell>
-                          {isAdmin && (
-                            <TableCell>
-                              {userData.status === 'pending' && (
-                                <div className="flex gap-2">
-                                  <Button
-                                    size="sm"
-                                    onClick={() => updateUserStatus(userData.id, 'approved')}
-                                    disabled={updatingUserId === userData.id}
-                                    className="bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white"
-                                  >
-                                    <CheckCircle className="w-4 h-4 mr-1" />
-                                    Approve
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    variant="destructive"
-                                    onClick={() => updateUserStatus(userData.id, 'rejected')}
-                                    disabled={updatingUserId === userData.id}
-                                    className="bg-red-600 hover:bg-red-700"
-                                  >
-                                    <XCircle className="w-4 h-4 mr-1" />
-                                    Reject
-                                  </Button>
-                                </div>
-                              )}
-                              {userData.status === 'approved' && userData.id !== user.id && (
-                                <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/30">
-                                  <Settings className="w-3 h-3 mr-1" />
-                                  Role Editable
-                                </Badge>
-                              )}
-                            </TableCell>
-                          )}
                         </TableRow>
                       ))}
                     </TableBody>

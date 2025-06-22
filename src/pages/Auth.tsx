@@ -79,39 +79,16 @@ const Auth = () => {
         return;
       }
 
-      // Check if user is approved
-      if (data.status !== 'approved') {
-        let message = "Your account is pending approval from an administrator.";
-        if (data.status === 'rejected') {
-          message = "Your account has been rejected. Please contact an administrator.";
-        }
-        toast({
-          title: "Account Not Approved",
-          description: message,
-          variant: "destructive"
-        });
-        return;
-      }
-
-      // Restore profile image from previous session
-      const savedProfileImage = localStorage.getItem('govardhini_profile_image');
-      
-      // Store user data in localStorage with profile image restoration
+      // Store user data in localStorage
       const userData = {
         id: data.id,
         name: data.full_name,
         phone: data.phone_number,
         role: data.designation.toLowerCase().replace(' ', '_'),
-        email: data.phone_number,
-        profileImage: savedProfileImage || '' // Restore previous profile image
+        email: data.phone_number // Using phone as fallback for email field
       };
       
       localStorage.setItem('govardhini_user', JSON.stringify(userData));
-      
-      // Clear the temporary profile image storage
-      if (savedProfileImage) {
-        localStorage.removeItem('govardhini_profile_image');
-      }
       
       toast({
         title: "Welcome to Govardhini!",
@@ -188,8 +165,7 @@ const Auth = () => {
           full_name: signupData.fullName,
           phone_number: signupData.phoneNumber,
           password_hash: hashedPassword,
-          designation: signupData.designation,
-          status: 'pending' // New users start as pending
+          designation: signupData.designation
         })
         .select()
         .single();
@@ -206,7 +182,7 @@ const Auth = () => {
 
       toast({
         title: "Account Created!",
-        description: "Your account has been created and is pending approval from an administrator. You will be able to login once approved.",
+        description: "Please login with your credentials",
       });
 
       // Clear signup form and switch to login tab
@@ -388,10 +364,6 @@ const Auth = () => {
                 >
                   {isLoading ? 'Creating Account...' : 'Create Account'}
                 </Button>
-                
-                <p className="text-emerald-300 text-sm text-center">
-                  Account will be pending approval by an administrator
-                </p>
               </form>
             </TabsContent>
           </Tabs>

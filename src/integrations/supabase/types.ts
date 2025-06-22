@@ -266,27 +266,6 @@ export type Database = {
           },
         ]
       }
-      user_permissions: {
-        Row: {
-          created_at: string | null
-          id: string
-          permission: string
-          role: string
-        }
-        Insert: {
-          created_at?: string | null
-          id?: string
-          permission: string
-          role: string
-        }
-        Update: {
-          created_at?: string | null
-          id?: string
-          permission?: string
-          role?: string
-        }
-        Relationships: []
-      }
       user_role_assignments: {
         Row: {
           assigned_at: string
@@ -331,8 +310,6 @@ export type Database = {
       }
       users: {
         Row: {
-          approved_at: string | null
-          approved_by: string | null
           created_at: string
           designation: string
           full_name: string
@@ -342,8 +319,6 @@ export type Database = {
           status: string
         }
         Insert: {
-          approved_at?: string | null
-          approved_by?: string | null
           created_at?: string
           designation: string
           full_name: string
@@ -353,8 +328,6 @@ export type Database = {
           status?: string
         }
         Update: {
-          approved_at?: string | null
-          approved_by?: string | null
           created_at?: string
           designation?: string
           full_name?: string
@@ -370,10 +343,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      user_has_permission: {
-        Args: { user_id: string; required_permission: string }
-        Returns: boolean
-      }
+      [_ in never]: never
     }
     Enums: {
       [_ in never]: never
