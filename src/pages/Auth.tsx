@@ -297,7 +297,7 @@ const Auth = () => {
           </div>
           <CardTitle className="text-3xl font-bold text-white">Govardhini</CardTitle>
           <CardDescription className="text-emerald-300 text-lg">
-            Digital Cattle Management System
+            GOVARDHINI GAU SUPOSHANA
           </CardDescription>
         </CardHeader>
         <CardContent>

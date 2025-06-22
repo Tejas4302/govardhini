@@ -138,30 +138,30 @@ const Dashboard = () => {
       action: () => navigate('/analytics'),
       gradient: 'from-purple-500 to-indigo-600'
     },
-    {
-      title: 'System Reports',
-      description: 'Generate comprehensive reports',
-      icon: FileText,
-      action: () => navigate('/system-reports'),
-      gradient: 'from-orange-500 to-red-600'
-    },
     // Admin-only cards
     ...(isAdmin ? [
+      {
+        title: 'System Reports',
+        description: 'Generate comprehensive reports',
+        icon: FileText,
+        action: () => navigate('/system-reports'),
+        gradient: 'from-orange-500 to-red-600'
+      },
       {
         title: 'User Management',
         description: 'Manage user access',
         icon: UserCheck,
         action: () => navigate('/user-management'),
         gradient: 'from-pink-500 to-rose-600'
+      },
+      {
+        title: 'Recent Activities',
+        description: 'View system activities',
+        icon: Activity,
+        action: () => navigate('/recent-activities'),
+        gradient: 'from-violet-500 to-purple-600'
       }
-    ] : []),
-    {
-      title: 'Recent Activities',
-      description: 'View system activities',
-      icon: Activity,
-      action: () => navigate('/recent-activities'),
-      gradient: 'from-violet-500 to-purple-600'
-    }
+    ] : [])
   ];
 
   return (
@@ -185,7 +185,7 @@ const Dashboard = () => {
               Welcome to Govardhini
             </h1>
             <p className="text-emerald-300 text-lg animate-fade-in" style={{animationDelay: '0.1s'}}>
-              Agricultural Cattle Management System
+              DEFINING GAU SEVA THROUGH GOVARDHINI
             </p>
           </div>
 
