@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { validateUserStatus } from '@/utils/authValidation';
 
 const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -61,6 +62,19 @@ const Auth = () => {
         return;
       }
 
+      // First validate user status
+      const validation = await validateUserStatus(loginData.phone);
+      
+      if (!validation.isValid) {
+        toast({
+          title: "Login Failed",
+          description: validation.message || "Account not approved",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Then verify password
       const hashedPassword = await hashPassword(loginData.password);
 
       const { data, error } = await supabase
@@ -68,6 +82,7 @@ const Auth = () => {
         .select('*')
         .eq('phone_number', loginData.phone)
         .eq('password_hash', hashedPassword)
+        .eq('status', 'approved') // Additional security check
         .single();
 
       if (error || !data) {
@@ -79,13 +94,16 @@ const Auth = () => {
         return;
       }
 
-      // Store user data in localStorage
+      // Store user data in localStorage with enhanced security info
       const userData = {
         id: data.id,
         name: data.full_name,
         phone: data.phone_number,
         role: data.designation.toLowerCase().replace(' ', '_'),
-        email: data.phone_number // Using phone as fallback for email field
+        designation: data.designation,
+        status: data.status,
+        email: data.phone_number,
+        loginTime: new Date().toISOString()
       };
       
       localStorage.setItem('govardhini_user', JSON.stringify(userData));
@@ -109,6 +127,25 @@ const Auth = () => {
     }
   };
 
+  const validatePhoneNumber = (phone: string): boolean => {
+    // Indian phone number validation (10 digits)
+    const phoneRegex = /^[6-9]\d{9}$/;
+    return phoneRegex.test(phone);
+  };
+
+  const validatePassword = (password: string): { isValid: boolean; message?: string } => {
+    if (password.length < 6) {
+      return { isValid: false, message: "Password must be at least 6 characters long" };
+    }
+    if (!/(?=.*[a-z])/.test(password)) {
+      return { isValid: false, message: "Password must contain at least one lowercase letter" };
+    }
+    if (!/(?=.*\d)/.test(password)) {
+      return { isValid: false, message: "Password must contain at least one number" };
+    }
+    return { isValid: true };
+  };
+
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -123,6 +160,16 @@ const Auth = () => {
         return;
       }
 
+      // Validate phone number format
+      if (!validatePhoneNumber(signupData.phoneNumber)) {
+        toast({
+          title: "Error",
+          description: "Please enter a valid 10-digit Indian phone number",
+          variant: "destructive"
+        });
+        return;
+      }
+
       if (signupData.password !== signupData.confirmPassword) {
         toast({
           title: "Error",
@@ -132,10 +179,12 @@ const Auth = () => {
         return;
       }
 
-      if (signupData.password.length < 6) {
+      // Validate password strength
+      const passwordValidation = validatePassword(signupData.password);
+      if (!passwordValidation.isValid) {
         toast({
           title: "Error",
-          description: "Password must be at least 6 characters long",
+          description: passwordValidation.message,
           variant: "destructive"
         });
         return;
@@ -157,15 +206,32 @@ const Auth = () => {
         return;
       }
 
+      // Check if phone exists in farmers table to prevent conflicts
+      const { data: existingFarmer } = await supabase
+        .from('farmers')
+        .select('phone_number')
+        .eq('phone_number', signupData.phoneNumber)
+        .single();
+
+      if (existingFarmer) {
+        toast({
+          title: "Error",
+          description: "This phone number is already registered as a farmer. Please use a different number.",
+          variant: "destructive"
+        });
+        return;
+      }
+
       const hashedPassword = await hashPassword(signupData.password);
 
       const { data, error } = await supabase
         .from('users')
         .insert({
-          full_name: signupData.fullName,
+          full_name: signupData.fullName.trim(),
           phone_number: signupData.phoneNumber,
           password_hash: hashedPassword,
-          designation: signupData.designation
+          designation: signupData.designation,
+          status: 'pending' // Explicitly set to pending
         })
         .select()
         .single();
@@ -182,7 +248,8 @@ const Auth = () => {
 
       toast({
         title: "Account Created!",
-        description: "Please login with your credentials",
+        description: "Your account has been created and is pending admin approval. You will be notified once approved.",
+        duration: 5000
       });
 
       // Clear signup form and switch to login tab
@@ -259,6 +326,7 @@ const Auth = () => {
                     onChange={(e) => setLoginData(prev => ({ ...prev, phone: e.target.value }))}
                     className="glass-input border-emerald-500/30 text-white placeholder:text-emerald-300"
                     disabled={isLoading}
+                    maxLength={10}
                   />
                 </div>
                 
@@ -305,11 +373,12 @@ const Auth = () => {
                   <Input
                     id="phoneNumber"
                     type="tel"
-                    placeholder="Enter your phone number"
+                    placeholder="Enter 10-digit phone number"
                     value={signupData.phoneNumber}
                     onChange={(e) => setSignupData(prev => ({ ...prev, phoneNumber: e.target.value }))}
                     className="glass-input border-emerald-500/30 text-white placeholder:text-emerald-300"
                     disabled={isLoading}
+                    maxLength={10}
                   />
                 </div>
                 
@@ -336,12 +405,13 @@ const Auth = () => {
                   <Input
                     id="signupPassword"
                     type="password"
-                    placeholder="Create a password (min 6 characters)"
+                    placeholder="Create a strong password"
                     value={signupData.password}
                     onChange={(e) => setSignupData(prev => ({ ...prev, password: e.target.value }))}
                     className="glass-input border-emerald-500/30 text-white placeholder:text-emerald-300"
                     disabled={isLoading}
                   />
+                  <p className="text-xs text-emerald-300">Must contain at least 6 characters, one letter and one number</p>
                 </div>
                 
                 <div className="space-y-2">
@@ -364,6 +434,10 @@ const Auth = () => {
                 >
                   {isLoading ? 'Creating Account...' : 'Create Account'}
                 </Button>
+                
+                <p className="text-xs text-emerald-300 text-center">
+                  Account requires admin approval before login
+                </p>
               </form>
             </TabsContent>
           </Tabs>

@@ -6,7 +6,8 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import Navigation from '@/components/Navigation';
-import { Users, CheckCircle, XCircle, Clock, ArrowLeft } from 'lucide-react';
+import AdminGuard from '@/components/AdminGuard';
+import { Users, CheckCircle, XCircle, Clock, ArrowLeft, AlertTriangle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import {
   Table,
@@ -16,6 +17,17 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 interface User {
   id: string;
@@ -29,23 +41,34 @@ interface User {
 const UserManagement = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [processingUserId, setProcessingUserId] = useState<string | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
   
   const user = JSON.parse(localStorage.getItem('govardhini_user') || '{}');
 
   useEffect(() => {
-    fetchPendingUsers();
+    fetchUsers();
   }, []);
 
-  const fetchPendingUsers = async () => {
+  const fetchUsers = async () => {
     try {
+      setIsLoading(true);
       const { data, error } = await supabase
         .from('users')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching users:', error);
+        toast({
+          title: "Error",
+          description: "Failed to fetch users. Please check your admin permissions.",
+          variant: "destructive"
+        });
+        return;
+      }
+      
       setUsers(data || []);
     } catch (error) {
       console.error('Error fetching users:', error);
@@ -59,35 +82,56 @@ const UserManagement = () => {
     }
   };
 
-  const updateUserStatus = async (userId: string, status: string) => {
+  const updateUserStatus = async (userId: string, status: string, userName: string) => {
     try {
+      setProcessingUserId(userId);
+      
+      const updateData: any = { 
+        status,
+        approved_at: status === 'approved' ? new Date().toISOString() : null,
+        approved_by: status === 'approved' ? user.id : null
+      };
+
       const { error } = await supabase
         .from('users')
-        .update({ status })
+        .update(updateData)
         .eq('id', userId);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error updating user status:', error);
+        toast({
+          title: "Error",
+          description: `Failed to ${status} user. Please check your admin permissions.`,
+          variant: "destructive"
+        });
+        return;
+      }
 
       // Create role assignment for approved users
       if (status === 'approved') {
         const userToApprove = users.find(u => u.id === userId);
         if (userToApprove) {
-          await supabase
+          const { error: roleError } = await supabase
             .from('user_role_assignments')
             .insert({
               user_id: userId,
               assigned_by: user.id,
               role_assigned: userToApprove.designation
             });
+
+          if (roleError) {
+            console.error('Error creating role assignment:', roleError);
+            // Don't show error to user as the main action succeeded
+          }
         }
       }
 
       toast({
         title: "Success",
-        description: `User ${status} successfully`,
+        description: `User ${userName} has been ${status} successfully`,
       });
 
-      fetchPendingUsers();
+      await fetchUsers();
     } catch (error) {
       console.error('Error updating user status:', error);
       toast({
@@ -95,6 +139,8 @@ const UserManagement = () => {
         description: "Failed to update user status",
         variant: "destructive"
       });
+    } finally {
+      setProcessingUserId(null);
     }
   };
 
@@ -116,101 +162,188 @@ const UserManagement = () => {
     );
   };
 
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-IN', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-green-900 to-emerald-900">
-      <Navigation user={user} />
-      
-      {/* Enhanced animated background */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -inset-10 opacity-30">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-emerald-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
-          <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-teal-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-1000"></div>
-          <div className="absolute bottom-1/4 left-1/3 w-96 h-96 bg-green-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-2000"></div>
-        </div>
-      </div>
-      
-      <div className="relative z-10 container mx-auto px-4 py-8">
-        <div className="max-w-6xl mx-auto">
-          {/* Back Button and Header */}
-          <div className="flex items-center mb-8">
-            <Button
-              variant="ghost"
-              onClick={() => navigate('/dashboard')}
-              className="mr-4 text-emerald-300 hover:text-emerald-100 hover:bg-emerald-500/20"
-            >
-              <ArrowLeft className="w-5 h-5 mr-2" />
-              Back to Dashboard
-            </Button>
-            <h1 className="text-4xl font-bold text-white animate-fade-in">User Management</h1>
+    <AdminGuard>
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-green-900 to-emerald-900">
+        <Navigation user={user} />
+        
+        {/* Enhanced animated background */}
+        <div className="fixed inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -inset-10 opacity-30">
+            <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-emerald-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
+            <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-teal-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-1000"></div>
+            <div className="absolute bottom-1/4 left-1/3 w-96 h-96 bg-green-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-2000"></div>
           </div>
-          
-          <Card className="glass-card border-emerald-500/20 bg-gradient-to-br from-emerald-500/5 to-green-500/5 animate-fade-in">
-            <CardHeader>
-              <CardTitle className="text-2xl font-bold text-white flex items-center">
-                <Users className="w-8 h-8 mr-3 text-emerald-400" />
-                Manage Users
-              </CardTitle>
-              <CardDescription className="text-emerald-300">Approve or reject user registrations</CardDescription>
-            </CardHeader>
+        </div>
+        
+        <div className="relative z-10 container mx-auto px-4 py-8">
+          <div className="max-w-6xl mx-auto">
+            {/* Back Button and Header */}
+            <div className="flex items-center mb-8">
+              <Button
+                variant="ghost"
+                onClick={() => navigate('/dashboard')}
+                className="mr-4 text-emerald-300 hover:text-emerald-100 hover:bg-emerald-500/20"
+              >
+                <ArrowLeft className="w-5 h-5 mr-2" />
+                Back to Dashboard
+              </Button>
+              <h1 className="text-4xl font-bold text-white animate-fade-in">User Management</h1>
+            </div>
             
-            <CardContent>
-              {isLoading ? (
-                <div className="text-center text-white py-8">
-                  <div className="animate-pulse">Loading users...</div>
-                </div>
-              ) : (
-                <div className="glass-card border-emerald-500/20 bg-emerald-500/5 rounded-lg overflow-hidden">
-                  <Table>
-                    <TableHeader>
-                      <TableRow className="border-emerald-500/20">
-                        <TableHead className="text-emerald-200 font-semibold">Name</TableHead>
-                        <TableHead className="text-emerald-200 font-semibold">Phone</TableHead>
-                        <TableHead className="text-emerald-200 font-semibold">Designation</TableHead>
-                        <TableHead className="text-emerald-200 font-semibold">Status</TableHead>
-                        <TableHead className="text-emerald-200 font-semibold">Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {users.map((user, index) => (
-                        <TableRow key={user.id} className="border-emerald-500/10 hover:bg-emerald-500/10 transition-colors animate-slide-up" style={{animationDelay: `${index * 0.1}s`}}>
-                          <TableCell className="text-white font-medium">{user.full_name}</TableCell>
-                          <TableCell className="text-emerald-300">{user.phone_number}</TableCell>
-                          <TableCell className="text-emerald-300">{user.designation}</TableCell>
-                          <TableCell>{getStatusBadge(user.status)}</TableCell>
-                          <TableCell>
-                            {user.status === 'pending' && (
-                              <div className="flex gap-2">
-                                <Button
-                                  size="sm"
-                                  onClick={() => updateUserStatus(user.id, 'approved')}
-                                  className="bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white"
-                                >
-                                  <CheckCircle className="w-4 h-4 mr-1" />
-                                  Approve
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant="destructive"
-                                  onClick={() => updateUserStatus(user.id, 'rejected')}
-                                  className="bg-red-600 hover:bg-red-700"
-                                >
-                                  <XCircle className="w-4 h-4 mr-1" />
-                                  Reject
-                                </Button>
-                              </div>
-                            )}
-                          </TableCell>
+            <Card className="glass-card border-emerald-500/20 bg-gradient-to-br from-emerald-500/5 to-green-500/5 animate-fade-in">
+              <CardHeader>
+                <CardTitle className="text-2xl font-bold text-white flex items-center">
+                  <Users className="w-8 h-8 mr-3 text-emerald-400" />
+                  Manage Users
+                </CardTitle>
+                <CardDescription className="text-emerald-300">
+                  Approve or reject user registrations. Only approved users can access the system.
+                </CardDescription>
+              </CardHeader>
+              
+              <CardContent>
+                {isLoading ? (
+                  <div className="text-center text-white py-8">
+                    <div className="animate-pulse">Loading users...</div>
+                  </div>
+                ) : users.length === 0 ? (
+                  <div className="text-center text-emerald-300 py-8">
+                    <Users className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                    <p>No users found</p>
+                  </div>
+                ) : (
+                  <div className="glass-card border-emerald-500/20 bg-emerald-500/5 rounded-lg overflow-hidden">
+                    <Table>
+                      <TableHeader>
+                        <TableRow className="border-emerald-500/20">
+                          <TableHead className="text-emerald-200 font-semibold">Name</TableHead>
+                          <TableHead className="text-emerald-200 font-semibold">Phone</TableHead>
+                          <TableHead className="text-emerald-200 font-semibold">Designation</TableHead>
+                          <TableHead className="text-emerald-200 font-semibold">Status</TableHead>
+                          <TableHead className="text-emerald-200 font-semibold">Registered</TableHead>
+                          <TableHead className="text-emerald-200 font-semibold">Actions</TableHead>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                      </TableHeader>
+                      <TableBody>
+                        {users.map((userData, index) => (
+                          <TableRow 
+                            key={userData.id} 
+                            className="border-emerald-500/10 hover:bg-emerald-500/10 transition-colors animate-slide-up" 
+                            style={{animationDelay: `${index * 0.1}s`}}
+                          >
+                            <TableCell className="text-white font-medium">{userData.full_name}</TableCell>
+                            <TableCell className="text-emerald-300">{userData.phone_number}</TableCell>
+                            <TableCell className="text-emerald-300">{userData.designation}</TableCell>
+                            <TableCell>{getStatusBadge(userData.status)}</TableCell>
+                            <TableCell className="text-emerald-300 text-sm">{formatDate(userData.created_at)}</TableCell>
+                            <TableCell>
+                              {userData.status === 'pending' && (
+                                <div className="flex gap-2">
+                                  <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                      <Button
+                                        size="sm"
+                                        disabled={processingUserId === userData.id}
+                                        className="bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white"
+                                      >
+                                        <CheckCircle className="w-4 h-4 mr-1" />
+                                        Approve
+                                      </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent className="glass-card border-emerald-500/30 bg-slate-800/90 backdrop-blur-xl text-white">
+                                      <AlertDialogHeader>
+                                        <AlertDialogTitle className="text-emerald-300">Approve User</AlertDialogTitle>
+                                        <AlertDialogDescription className="text-emerald-200">
+                                          Are you sure you want to approve <strong>{userData.full_name}</strong> ({userData.designation})? 
+                                          They will be able to access the system immediately.
+                                        </AlertDialogDescription>
+                                      </AlertDialogHeader>
+                                      <AlertDialogFooter>
+                                        <AlertDialogCancel className="border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/20">
+                                          Cancel
+                                        </AlertDialogCancel>
+                                        <AlertDialogAction
+                                          onClick={() => updateUserStatus(userData.id, 'approved', userData.full_name)}
+                                          className="bg-emerald-600 hover:bg-emerald-700"
+                                        >
+                                          Approve User
+                                        </AlertDialogAction>
+                                      </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                  </AlertDialog>
+
+                                  <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                      <Button
+                                        size="sm"
+                                        variant="destructive"
+                                        disabled={processingUserId === userData.id}
+                                        className="bg-red-600 hover:bg-red-700"
+                                      >
+                                        <XCircle className="w-4 h-4 mr-1" />
+                                        Reject
+                                      </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent className="glass-card border-red-500/30 bg-slate-800/90 backdrop-blur-xl text-white">
+                                      <AlertDialogHeader>
+                                        <AlertDialogTitle className="text-red-300 flex items-center">
+                                          <AlertTriangle className="w-5 h-5 mr-2" />
+                                          Reject User
+                                        </AlertDialogTitle>
+                                        <AlertDialogDescription className="text-red-200">
+                                          Are you sure you want to reject <strong>{userData.full_name}</strong>? 
+                                          They will not be able to access the system and will need to contact admin.
+                                        </AlertDialogDescription>
+                                      </AlertDialogHeader>
+                                      <AlertDialogFooter>
+                                        <AlertDialogCancel className="border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/20">
+                                          Cancel
+                                        </AlertDialogCancel>
+                                        <AlertDialogAction
+                                          onClick={() => updateUserStatus(userData.id, 'rejected', userData.full_name)}
+                                          className="bg-red-600 hover:bg-red-700"
+                                        >
+                                          Reject User
+                                        </AlertDialogAction>
+                                      </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                  </AlertDialog>
+                                </div>
+                              )}
+                              {userData.status === 'approved' && (
+                                <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/30">
+                                  Active User
+                                </Badge>
+                              )}
+                              {userData.status === 'rejected' && (
+                                <Badge className="bg-red-500/20 text-red-300 border-red-500/30">
+                                  Access Denied
+                                </Badge>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
-    </div>
+    </AdminGuard>
   );
 };
 
