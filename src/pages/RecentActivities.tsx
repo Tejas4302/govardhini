@@ -1,11 +1,13 @@
 
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import Navigation from '@/components/Navigation';
-import { Clock, Users, Beef, User } from 'lucide-react';
+import { Clock, Users, User, ArrowLeft } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface Activity {
   id: string;
@@ -19,6 +21,7 @@ const RecentActivities = () => {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
+  const navigate = useNavigate();
   
   const user = JSON.parse(localStorage.getItem('govardhini_user') || '{}');
 
@@ -97,7 +100,7 @@ const RecentActivities = () => {
   const getActivityIcon = (type: string) => {
     switch (type) {
       case 'farmer': return Users;
-      case 'cattle': return Beef;
+      case 'cattle': return () => <span className="text-xl">🐄</span>; // Cow icon instead of Beef
       case 'user': return User;
       default: return Clock;
     }
@@ -127,7 +130,18 @@ const RecentActivities = () => {
       
       <div className="relative z-10 container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-4xl font-bold text-white mb-8 animate-fade-in">Recent Activities</h1>
+          {/* Back Button and Header */}
+          <div className="flex items-center mb-8">
+            <Button
+              variant="ghost"
+              onClick={() => navigate('/dashboard')}
+              className="mr-4 text-emerald-300 hover:text-emerald-100 hover:bg-emerald-500/20"
+            >
+              <ArrowLeft className="w-5 h-5 mr-2" />
+              Back to Dashboard
+            </Button>
+            <h1 className="text-4xl font-bold text-white animate-fade-in">Recent Activities</h1>
+          </div>
           
           <Card className="glass-card border-emerald-500/20 bg-gradient-to-br from-emerald-500/5 to-green-500/5 animate-fade-in">
             <CardHeader>
@@ -152,7 +166,10 @@ const RecentActivities = () => {
                         <CardContent className="p-4">
                           <div className="flex items-center space-x-4">
                             <div className={`w-12 h-12 bg-gradient-to-r ${getActivityColor(activity.type)} rounded-xl flex items-center justify-center shadow-lg`}>
-                              <IconComponent className="w-6 h-6 text-white" />
+                              {typeof IconComponent === 'function' && IconComponent.name === '' ? 
+                                <IconComponent /> : 
+                                <IconComponent className="w-6 h-6 text-white" />
+                              }
                             </div>
                             <div className="flex-1">
                               <p className="text-white font-medium">{activity.description}</p>

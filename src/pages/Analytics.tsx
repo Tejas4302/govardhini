@@ -1,12 +1,13 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Area, AreaChart } from 'recharts';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import Navigation from '@/components/Navigation';
-import { TrendingUp, TrendingDown, Users, Beef, Droplet, AlertTriangle } from 'lucide-react';
+import { TrendingUp, TrendingDown, Users, AlertTriangle, ArrowLeft } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface AnalyticsData {
   totalFarmers: number;
@@ -40,6 +41,7 @@ const Analytics = () => {
   const { toast } = useToast();
   
   const user = JSON.parse(localStorage.getItem('govardhini_user') || '{}');
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchAnalyticsData();
@@ -183,7 +185,18 @@ const Analytics = () => {
       
       <div className="relative z-10 container mx-auto px-4 py-8">
         <div className="max-w-7xl mx-auto">
-          <h1 className="text-4xl font-bold text-white mb-8 animate-fade-in">Analytics Dashboard</h1>
+          {/* Back Button and Header */}
+          <div className="flex items-center mb-8">
+            <Button
+              variant="ghost"
+              onClick={() => navigate('/dashboard')}
+              className="mr-4 text-emerald-300 hover:text-emerald-100 hover:bg-emerald-500/20"
+            >
+              <ArrowLeft className="w-5 h-5 mr-2" />
+              Back to Dashboard
+            </Button>
+            <h1 className="text-4xl font-bold text-white animate-fade-in">Analytics Dashboard</h1>
+          </div>
 
           {/* Enhanced Key Metrics Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -214,7 +227,7 @@ const Analytics = () => {
                       <span className="text-teal-400 text-sm">+8.2%</span>
                     </div>
                   </div>
-                  <Beef className="w-12 h-12 text-teal-400" />
+                  <span className="text-5xl">🐄</span>
                 </div>
               </CardContent>
             </Card>
@@ -230,7 +243,7 @@ const Analytics = () => {
                       <span className="text-cyan-400 text-sm">+{data.weeklyMilkTrend}%</span>
                     </div>
                   </div>
-                  <Droplet className="w-12 h-12 text-cyan-400" />
+                  <span className="text-5xl">🥛</span>
                 </div>
               </CardContent>
             </Card>

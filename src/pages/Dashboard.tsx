@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,7 +9,6 @@ import { supabase } from '@/integrations/supabase/client';
 import Navigation from '@/components/Navigation';
 import { 
   Users, 
-  Beef, 
   Heart, 
   TrendingUp, 
   Calendar,
@@ -93,7 +93,7 @@ const Dashboard = () => {
     {
       title: 'Add Cattle',
       description: 'Register new cattle',
-      icon: Beef,
+      icon: () => <span className="text-2xl">🐄</span>, // Cow icon instead of Beef
       action: () => navigate('/cattle-onboarding'),
       gradient: 'from-amber-500 to-orange-600'
     },
@@ -209,11 +209,11 @@ const Dashboard = () => {
                     <p className="text-amber-300 text-sm font-medium">Total Cattle</p>
                     <p className="text-3xl font-bold text-white">{stats.totalCattle}</p>
                     <div className="flex items-center mt-2">
-                      <Beef className="w-4 h-4 text-amber-400 mr-1" />
+                      <span className="text-lg mr-1">🐄</span>
                       <span className="text-amber-400 text-sm">Managed</span>
                     </div>
                   </div>
-                  <Beef className="w-12 h-12 text-amber-400" />
+                  <span className="text-5xl">🐄</span>
                 </div>
               </CardContent>
             </Card>
@@ -258,7 +258,10 @@ const Dashboard = () => {
                       style={{animationDelay: `${index * 0.1}s`}}
                     >
                       <div className="flex flex-col items-center space-y-2">
-                        <IconComponent className="w-8 h-8" />
+                        {typeof IconComponent === 'function' && IconComponent.name === '' ? 
+                          <IconComponent /> : 
+                          <IconComponent className="w-8 h-8" />
+                        }
                         <div className="text-center">
                           <p className="font-semibold">{action.title}</p>
                           <p className="text-xs opacity-90">{action.description}</p>
