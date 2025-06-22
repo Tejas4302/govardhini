@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -24,6 +23,11 @@ interface DashboardStats {
   pendingApprovals: number;
 }
 
+interface DebugData {
+  farmers: any[];
+  cattle: any[];
+}
+
 const Dashboard = () => {
   const [user, setUser] = useState<UserData | null>(null);
   const [stats, setStats] = useState<DashboardStats>({
@@ -33,6 +37,8 @@ const Dashboard = () => {
     healthAlerts: 0,
     pendingApprovals: 0
   });
+  const [debugData, setDebugData] = useState<DebugData>({ farmers: [], cattle: [] });
+  const [showDebug, setShowDebug] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const navigate = useNavigate();
@@ -83,8 +89,8 @@ const Dashboard = () => {
       const today = new Date().toISOString().split('T')[0];
 
       const [farmersResult, cattleResult, milkResult, healthResult, pendingUsersResult] = await Promise.all([
-        supabase.from('farmers').select('id', { count: 'exact' }),
-        supabase.from('cattle_profiles').select('id', { count: 'exact' }),
+        supabase.from('farmers').select('*'),
+        supabase.from('cattle_profiles').select('*'),
         supabase.from('milk_production').select('quantity_litres').eq('date', today),
         supabase.from('health_checkups').select('id', { count: 'exact' }).not('issue', 'is', null),
         supabase.from('users').select('id', { count: 'exact' }).eq('status', 'pending')
@@ -92,9 +98,18 @@ const Dashboard = () => {
 
       const todayMilk = milkResult.data?.reduce((sum, record) => sum + (record.quantity_litres || 0), 0) || 0;
 
+      // Store debug data
+      setDebugData({
+        farmers: farmersResult.data || [],
+        cattle: cattleResult.data || []
+      });
+
+      console.log('Debug - Farmers found:', farmersResult.data);
+      console.log('Debug - Cattle found:', cattleResult.data);
+
       setStats({
-        totalFarmers: farmersResult.count || 0,
-        totalCattle: cattleResult.count || 0,
+        totalFarmers: farmersResult.data?.length || 0,
+        totalCattle: cattleResult.data?.length || 0,
         todayMilk: Math.round(todayMilk * 100) / 100,
         healthAlerts: healthResult.count || 0,
         pendingApprovals: pendingUsersResult.count || 0
@@ -172,14 +187,23 @@ const Dashboard = () => {
           <div className="animate-fade-in">
             <div className="flex items-center justify-between mb-2">
               <h1 className="text-3xl font-bold text-white">Dashboard</h1>
-              <Button
-                onClick={handleManualRefresh}
-                disabled={isRefreshing}
-                className="glass-button flex items-center gap-2"
-              >
-                <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-                {isRefreshing ? 'Refreshing...' : 'Refresh'}
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  onClick={() => setShowDebug(!showDebug)}
+                  className="glass-button"
+                  variant="outline"
+                >
+                  {showDebug ? 'Hide Debug' : 'Show Debug'}
+                </Button>
+                <Button
+                  onClick={handleManualRefresh}
+                  disabled={isRefreshing}
+                  className="glass-button flex items-center gap-2"
+                >
+                  <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+                  {isRefreshing ? 'Refreshing...' : 'Refresh'}
+                </Button>
+              </div>
             </div>
             <div className="flex items-center gap-3">
               <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 text-white border-0 px-4 py-2 rounded-full">
@@ -189,6 +213,54 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
+
+      {/* Debug Information */}
+      {showDebug && (
+        <div className="relative z-10 container mx-auto px-4 mb-6">
+          <Card className="glass-card border-yellow-500/50 text-white">
+            <CardHeader>
+              <CardTitle className="text-yellow-300">Debug Information</CardTitle>
+              <CardDescription className="text-yellow-200">
+                Current database records for troubleshooting
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <h4 className="font-semibold text-yellow-300 mb-2">
+                  Farmers ({debugData.farmers.length} records):
+                </h4>
+                {debugData.farmers.length === 0 ? (
+                  <p className="text-gray-300">No farmers found in database</p>
+                ) : (
+                  <div className="space-y-2 max-h-32 overflow-y-auto">
+                    {debugData.farmers.map((farmer, index) => (
+                      <div key={farmer.id} className="text-sm bg-black/20 p-2 rounded">
+                        {index + 1}. {farmer.full_name} ({farmer.phone_number}) - ID: {farmer.id}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div>
+                <h4 className="font-semibold text-yellow-300 mb-2">
+                  Cattle ({debugData.cattle.length} records):
+                </h4>
+                {debugData.cattle.length === 0 ? (
+                  <p className="text-gray-300">No cattle found in database</p>
+                ) : (
+                  <div className="space-y-2 max-h-32 overflow-y-auto">
+                    {debugData.cattle.map((cattle, index) => (
+                      <div key={cattle.id} className="text-sm bg-black/20 p-2 rounded">
+                        {index + 1}. {cattle.cattle_id} - Owner: {cattle.farmer_name} ({cattle.owner_phone}) - Farmer ID: {cattle.farmer_id || 'NULL'}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       <div className="relative z-10 container mx-auto px-4 py-6">
         <div className="mb-8">
