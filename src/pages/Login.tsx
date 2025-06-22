@@ -40,50 +40,50 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-amber-50 to-orange-50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md shadow-xl border-0 bg-white/90 backdrop-blur">
+    <div className="min-h-screen bg-gradient-to-br from-wheat-beige via-clay-white to-wheat-beige flex items-center justify-center p-4">
+      <Card className="w-full max-w-md shadow-xl border-0 bg-clay-white/95 backdrop-blur">
         <CardHeader className="text-center pb-6">
-          <div className="mx-auto w-16 h-16 bg-gradient-to-br from-green-600 to-amber-600 rounded-full flex items-center justify-center mb-4">
-            <span className="text-white text-2xl font-bold">🐄</span>
+          <div className="mx-auto w-16 h-16 bg-gradient-to-br from-leafy-green to-deep-green rounded-full flex items-center justify-center mb-4">
+            <span className="text-wheat-beige text-2xl font-bold">🐄</span>
           </div>
-          <CardTitle className="text-2xl font-bold text-gray-800">Govardhini</CardTitle>
-          <CardDescription className="text-gray-600">
+          <CardTitle className="text-2xl font-bold text-forest-green">Govardhini</CardTitle>
+          <CardDescription className="text-muted-brown">
             Digital Cattle Management System
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email or Phone</Label>
+              <Label htmlFor="email" className="text-charcoal">Email or Phone</Label>
               <Input
                 id="email"
                 type="email"
                 placeholder="Enter your email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="border-gray-300"
+                className="border-muted-brown/30 focus:border-leafy-green"
               />
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password" className="text-charcoal">Password</Label>
               <Input
                 id="password"
                 type="password"
                 placeholder="Enter your password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="border-gray-300"
+                className="border-muted-brown/30 focus:border-leafy-green"
               />
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="role">Select Role</Label>
+              <Label htmlFor="role" className="text-charcoal">Select Role</Label>
               <Select value={role} onValueChange={setRole}>
-                <SelectTrigger className="border-gray-300">
+                <SelectTrigger className="border-muted-brown/30 focus:border-leafy-green">
                   <SelectValue placeholder="Choose your role" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-clay-white border-muted-brown/30">
                   <SelectItem value="field_officer">Field Officer</SelectItem>
                   <SelectItem value="office_staff">Office Staff</SelectItem>
                   <SelectItem value="admin">Admin</SelectItem>
@@ -93,7 +93,7 @@ const Login = () => {
             
             <Button 
               type="submit" 
-              className="w-full bg-gradient-to-r from-green-600 to-amber-600 hover:from-green-700 hover:to-amber-700 text-white font-semibold py-3 transition-all duration-200"
+              className="w-full bg-gradient-to-r from-leafy-green to-deep-green hover:from-leafy-green/90 hover:to-deep-green/90 text-wheat-beige font-semibold py-3 transition-all duration-200"
             >
               Login to Govardhini
             </Button>

@@ -206,35 +206,35 @@ const Profile = () => {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-wheat-beige via-clay-white to-wheat-beige">
       <Navigation user={user} />
       
-      {/* Animated background */}
+      {/* Agricultural background pattern */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -inset-10 opacity-30">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-green-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
-          <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-blue-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-1000"></div>
-          <div className="absolute bottom-1/4 left-1/3 w-96 h-96 bg-purple-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-2000"></div>
+        <div className="absolute -inset-10 opacity-20">
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-leafy-green rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
+          <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-deep-green rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-1000"></div>
+          <div className="absolute bottom-1/4 left-1/3 w-96 h-96 bg-forest-green rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-2000"></div>
         </div>
       </div>
 
       <div className="relative z-10 container mx-auto px-4 py-8">
         <div className="max-w-2xl mx-auto space-y-6">
-          <h1 className="text-3xl font-bold text-white mb-8 animate-fade-in">Profile Settings</h1>
+          <h1 className="text-3xl font-bold text-forest-green mb-8 animate-fade-in">Profile Settings</h1>
           
           {/* Profile Information Card */}
-          <Card className="glass-card border-0 text-white animate-slide-up">
+          <Card className="glass-card border-0 text-charcoal animate-slide-up">
             <CardHeader className="text-center pb-6">
               <div className="relative mx-auto w-32 h-32 mb-4">
-                <Avatar className="w-32 h-32 border-4 border-white/20">
+                <Avatar className="w-32 h-32 border-4 border-leafy-green/20">
                   <AvatarImage src={profileImage} alt="Profile" />
-                  <AvatarFallback className="bg-gradient-to-br from-green-500 to-emerald-600 text-white text-2xl">
+                  <AvatarFallback className="bg-gradient-to-br from-leafy-green to-deep-green text-wheat-beige text-2xl">
                     {user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
                 <Button
                   size="sm"
-                  className="absolute bottom-0 right-0 glass-button border-0 p-2 h-10 w-10"
+                  className="absolute bottom-0 right-0 bg-leafy-green hover:bg-leafy-green/90 text-wheat-beige border-0 p-2 h-10 w-10"
                   onClick={() => document.getElementById('image-upload')?.click()}
                 >
                   <ImageIcon className="w-4 h-4" />
@@ -247,14 +247,14 @@ const Profile = () => {
                   onChange={handleImageUpload}
                 />
               </div>
-              <CardTitle className="text-2xl font-bold text-white">{user.name}</CardTitle>
-              <p className="text-gray-300">{user.role.replace('_', ' ').toUpperCase()}</p>
+              <CardTitle className="text-2xl font-bold text-forest-green">{user.name}</CardTitle>
+              <p className="text-muted-brown">{user.role.replace('_', ' ').toUpperCase()}</p>
             </CardHeader>
             
             <CardContent className="space-y-6">
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="fullName" className="text-gray-200 flex items-center gap-2">
+                  <Label htmlFor="fullName" className="text-charcoal flex items-center gap-2">
                     <UserIcon className="w-4 h-4" />
                     Full Name
                   </Label>
@@ -264,18 +264,18 @@ const Profile = () => {
                       type="text"
                       value={formData.fullName}
                       onChange={(e) => setFormData(prev => ({ ...prev, fullName: e.target.value }))}
-                      className="glass-input text-white placeholder:text-gray-400"
+                      className="glass-input text-charcoal placeholder:text-muted-brown"
                       disabled={isLoading}
                     />
                   ) : (
-                    <div className="glass-input p-3 text-white rounded-md">
+                    <div className="glass-input p-3 text-charcoal rounded-md">
                       {user.name}
                     </div>
                   )}
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="phoneNumber" className="text-gray-200 flex items-center gap-2">
+                  <Label htmlFor="phoneNumber" className="text-charcoal flex items-center gap-2">
                     <PhoneIcon className="w-4 h-4" />
                     Phone Number
                   </Label>
@@ -285,19 +285,19 @@ const Profile = () => {
                       type="tel"
                       value={formData.phoneNumber}
                       onChange={(e) => setFormData(prev => ({ ...prev, phoneNumber: e.target.value }))}
-                      className="glass-input text-white placeholder:text-gray-400"
+                      className="glass-input text-charcoal placeholder:text-muted-brown"
                       disabled={isLoading}
                     />
                   ) : (
-                    <div className="glass-input p-3 text-white rounded-md">
+                    <div className="glass-input p-3 text-charcoal rounded-md">
                       {user.phone || 'Not set'}
                     </div>
                   )}
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-gray-200">Role</Label>
-                  <div className="glass-input p-3 text-gray-400 rounded-md bg-gray-700/30">
+                  <Label className="text-charcoal">Role</Label>
+                  <div className="glass-input p-3 text-muted-brown rounded-md bg-muted-brown/10">
                     {user.role.replace('_', ' ').toUpperCase()} (Cannot be changed)
                   </div>
                 </div>
@@ -309,7 +309,7 @@ const Profile = () => {
                     <Button
                       onClick={handleSave}
                       disabled={isLoading}
-                      className="glass-button flex-1 text-white border-0"
+                      className="bg-leafy-green hover:bg-leafy-green/90 text-wheat-beige flex-1 border-0"
                     >
                       {isLoading ? 'Saving...' : 'Save Changes'}
                     </Button>
@@ -325,7 +325,7 @@ const Profile = () => {
                         setProfileImage(user.profileImage || '');
                       }}
                       disabled={isLoading}
-                      className="glass-card border-white/20 text-white hover:bg-white/10"
+                      className="border-muted-brown/20 text-charcoal hover:bg-muted-brown/10"
                     >
                       Cancel
                     </Button>
@@ -333,7 +333,7 @@ const Profile = () => {
                 ) : (
                   <Button
                     onClick={() => setIsEditing(true)}
-                    className="glass-button flex-1 text-white border-0 flex items-center gap-2"
+                    className="bg-leafy-green hover:bg-leafy-green/90 text-wheat-beige flex-1 border-0 flex items-center gap-2"
                   >
                     <EditIcon className="w-4 h-4" />
                     Edit Profile
@@ -344,9 +344,9 @@ const Profile = () => {
           </Card>
 
           {/* Password Change Card */}
-          <Card className="glass-card border-0 text-white animate-slide-up">
+          <Card className="glass-card border-0 text-charcoal animate-slide-up">
             <CardHeader>
-              <CardTitle className="text-xl font-bold text-white flex items-center gap-2">
+              <CardTitle className="text-xl font-bold text-forest-green flex items-center gap-2">
                 <LockIcon className="w-5 h-5" />
                 Change Password
               </CardTitle>
@@ -356,7 +356,7 @@ const Profile = () => {
               {isChangingPassword ? (
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="newPassword" className="text-gray-200">
+                    <Label htmlFor="newPassword" className="text-charcoal">
                       New Password
                     </Label>
                     <Input
@@ -364,14 +364,14 @@ const Profile = () => {
                       type="password"
                       value={passwordData.newPassword}
                       onChange={(e) => setPasswordData(prev => ({ ...prev, newPassword: e.target.value }))}
-                      className="glass-input text-white placeholder:text-gray-400"
+                      className="glass-input text-charcoal placeholder:text-muted-brown"
                       placeholder="Enter new password"
                       disabled={isLoading}
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="confirmPassword" className="text-gray-200">
+                    <Label htmlFor="confirmPassword" className="text-charcoal">
                       Confirm New Password
                     </Label>
                     <Input
@@ -379,7 +379,7 @@ const Profile = () => {
                       type="password"
                       value={passwordData.confirmPassword}
                       onChange={(e) => setPasswordData(prev => ({ ...prev, confirmPassword: e.target.value }))}
-                      className="glass-input text-white placeholder:text-gray-400"
+                      className="glass-input text-charcoal placeholder:text-muted-brown"
                       placeholder="Confirm new password"
                       disabled={isLoading}
                     />
@@ -389,7 +389,7 @@ const Profile = () => {
                     <Button
                       onClick={handlePasswordChange}
                       disabled={isLoading}
-                      className="glass-button flex-1 text-white border-0"
+                      className="bg-leafy-green hover:bg-leafy-green/90 text-wheat-beige flex-1 border-0"
                     >
                       {isLoading ? 'Updating...' : 'Update Password'}
                     </Button>
@@ -404,7 +404,7 @@ const Profile = () => {
                         });
                       }}
                       disabled={isLoading}
-                      className="glass-card border-white/20 text-white hover:bg-white/10"
+                      className="border-muted-brown/20 text-charcoal hover:bg-muted-brown/10"
                     >
                       Cancel
                     </Button>
@@ -412,10 +412,10 @@ const Profile = () => {
                 </div>
               ) : (
                 <div className="flex justify-between items-center">
-                  <p className="text-gray-300">Update your account password</p>
+                  <p className="text-muted-brown">Update your account password</p>
                   <Button
                     onClick={() => setIsChangingPassword(true)}
-                    className="glass-button text-white border-0 flex items-center gap-2"
+                    className="bg-leafy-green hover:bg-leafy-green/90 text-wheat-beige border-0 flex items-center gap-2"
                   >
                     <LockIcon className="w-4 h-4" />
                     Change Password

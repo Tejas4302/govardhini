@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -217,17 +218,17 @@ const Dashboard = () => {
 
   const getQuickActions = () => {
     const baseActions = [
-      { title: 'Farmers Directory', desc: 'View all farmers & profiles', icon: '👨‍🌾', path: '/farmers', gradient: 'from-emerald-500 to-green-600' },
-      { title: 'Farmer Registration', desc: 'Register new farmers', icon: '➕', path: '/farmer-onboarding', gradient: 'from-green-500 to-emerald-600' },
-      { title: 'Recent Activities', desc: 'View latest system activities', icon: '📊', path: '/recent-activities', gradient: 'from-purple-500 to-indigo-600' },
-      { title: 'Search Farmers', desc: 'Advanced farmer search & filtering', icon: '🔍', path: '/search-farmers', gradient: 'from-amber-500 to-orange-600' },
+      { title: 'Farmers Directory', desc: 'View all farmers & profiles', icon: '👨‍🌾', path: '/farmers', gradient: 'from-leafy-green to-deep-green' },
+      { title: 'Farmer Registration', desc: 'Register new farmers', icon: '➕', path: '/farmer-onboarding', gradient: 'from-deep-green to-leafy-green' },
+      { title: 'Recent Activities', desc: 'View latest system activities', icon: '📊', path: '/recent-activities', gradient: 'from-forest-green to-muted-brown' },
+      { title: 'Search Farmers', desc: 'Advanced farmer search & filtering', icon: '🔍', path: '/search-farmers', gradient: 'from-mustard-yellow to-deep-green' },
     ];
 
     if (user.role === 'admin' || user.role === 'office_staff') {
       baseActions.push(
-        { title: 'User Management', desc: 'Approve pending users', icon: '👤', path: '/user-management', gradient: 'from-purple-500 to-indigo-600' },
-        { title: 'System Reports', desc: 'Generate & download reports', icon: '📋', path: '/system-reports', gradient: 'from-red-500 to-pink-600' },
-        { title: 'Analytics', desc: 'View reports & charts', icon: '📈', path: '/analytics', gradient: 'from-indigo-500 to-purple-600' }
+        { title: 'User Management', desc: 'Approve pending users', icon: '👤', path: '/user-management', gradient: 'from-forest-green to-muted-brown' },
+        { title: 'System Reports', desc: 'Generate & download reports', icon: '📋', path: '/system-reports', gradient: 'from-earthy-red to-deep-green' },
+        { title: 'Analytics', desc: 'View reports & charts', icon: '📈', path: '/analytics', gradient: 'from-leafy-green to-forest-green' }
       );
     }
 
@@ -235,15 +236,15 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-wheat-beige via-clay-white to-wheat-beige">
       <Navigation user={user} />
       
-      {/* Animated background */}
+      {/* Agricultural background pattern */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -inset-10 opacity-30">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-green-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
-          <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-blue-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-1000"></div>
-          <div className="absolute bottom-1/4 left-1/3 w-96 h-96 bg-purple-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-2000"></div>
+        <div className="absolute -inset-10 opacity-20">
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-leafy-green rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
+          <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-deep-green rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-1000"></div>
+          <div className="absolute bottom-1/4 left-1/3 w-96 h-96 bg-forest-green rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-2000"></div>
         </div>
       </div>
 
@@ -251,11 +252,11 @@ const Dashboard = () => {
         <div className="container mx-auto">
           <div className="animate-fade-in">
             <div className="flex items-center justify-between mb-2">
-              <h1 className="text-3xl font-bold text-white">Dashboard</h1>
+              <h1 className="text-3xl font-bold text-forest-green">Dashboard</h1>
               <div className="flex gap-2">
                 <Button
                   onClick={() => setShowDebug(!showDebug)}
-                  className="glass-button"
+                  className="bg-forest-green hover:bg-forest-green/90 text-wheat-beige"
                   variant="outline"
                 >
                   {showDebug ? 'Hide Debug' : 'Show Debug'}
@@ -263,14 +264,14 @@ const Dashboard = () => {
                 <Button
                   onClick={handleCleanupOrphanedCattle}
                   disabled={isCleaningUp}
-                  className="glass-button bg-red-500 hover:bg-red-600"
+                  className="bg-earthy-red hover:bg-earthy-red/90 text-wheat-beige"
                 >
                   {isCleaningUp ? 'Cleaning...' : 'Clean Orphaned Data'}
                 </Button>
                 <Button
                   onClick={handleManualRefresh}
                   disabled={isRefreshing}
-                  className="glass-button flex items-center gap-2"
+                  className="bg-leafy-green hover:bg-leafy-green/90 text-wheat-beige flex items-center gap-2"
                 >
                   <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
                   {isRefreshing ? 'Refreshing...' : 'Refresh'}
@@ -278,7 +279,7 @@ const Dashboard = () => {
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 text-white border-0 px-4 py-2 rounded-full">
+              <Badge className="bg-gradient-to-r from-leafy-green to-deep-green text-wheat-beige border-0 px-4 py-2 rounded-full">
                 {user.role.replace('_', ' ').toUpperCase()}
               </Badge>
             </div>
@@ -289,24 +290,24 @@ const Dashboard = () => {
       {/* Debug Information */}
       {showDebug && (
         <div className="relative z-10 container mx-auto px-4 mb-6">
-          <Card className="glass-card border-yellow-500/50 text-white">
+          <Card className="glass-card border-mustard-yellow/50 text-charcoal">
             <CardHeader>
-              <CardTitle className="text-yellow-300">Debug Information</CardTitle>
-              <CardDescription className="text-yellow-200">
+              <CardTitle className="text-mustard-yellow">Debug Information</CardTitle>
+              <CardDescription className="text-muted-brown">
                 Current database records for troubleshooting
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <h4 className="font-semibold text-yellow-300 mb-2">
+                <h4 className="font-semibold text-mustard-yellow mb-2">
                   Farmers ({debugData.farmers.length} records):
                 </h4>
                 {debugData.farmers.length === 0 ? (
-                  <p className="text-gray-300">No farmers found in database</p>
+                  <p className="text-muted-brown">No farmers found in database</p>
                 ) : (
                   <div className="space-y-2 max-h-32 overflow-y-auto">
                     {debugData.farmers.map((farmer, index) => (
-                      <div key={farmer.id} className="text-sm bg-black/20 p-2 rounded">
+                      <div key={farmer.id} className="text-sm bg-wheat-beige/50 p-2 rounded">
                         {index + 1}. {farmer.full_name} ({farmer.phone_number}) - ID: {farmer.id}
                       </div>
                     ))}
@@ -314,17 +315,17 @@ const Dashboard = () => {
                 )}
               </div>
               <div>
-                <h4 className="font-semibold text-yellow-300 mb-2">
+                <h4 className="font-semibold text-mustard-yellow mb-2">
                   Cattle ({debugData.cattle.length} records):
                 </h4>
                 {debugData.cattle.length === 0 ? (
-                  <p className="text-gray-300">No cattle found in database</p>
+                  <p className="text-muted-brown">No cattle found in database</p>
                 ) : (
                   <div className="space-y-2 max-h-32 overflow-y-auto">
                     {debugData.cattle.map((cattle, index) => (
-                      <div key={cattle.id} className="text-sm bg-black/20 p-2 rounded">
+                      <div key={cattle.id} className="text-sm bg-wheat-beige/50 p-2 rounded">
                         {index + 1}. {cattle.cattle_id} - Owner: {cattle.farmer_name} ({cattle.owner_phone}) - Farmer ID: {cattle.farmer_id || 'NULL'}
-                        {!cattle.farmer_id && <span className="text-red-400 ml-2">⚠️ ORPHANED</span>}
+                        {!cattle.farmer_id && <span className="text-earthy-red ml-2">⚠️ ORPHANED</span>}
                       </div>
                     ))}
                   </div>
@@ -337,18 +338,18 @@ const Dashboard = () => {
 
       <div className="relative z-10 container mx-auto px-4 py-6">
         <div className="mb-8">
-          <h2 className="text-xl font-semibold text-white mb-6 animate-slide-up">Key Metrics</h2>
+          <h2 className="text-xl font-semibold text-forest-green mb-6 animate-slide-up">Key Metrics</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
             <Card 
-              className="metric-card text-white border-0 animate-fade-in cursor-pointer hover:scale-105 transition-transform" 
+              className="metric-card text-charcoal border-0 animate-fade-in cursor-pointer hover:scale-105 transition-transform" 
               style={{animationDelay: '0.1s'}}
               onClick={() => handleMetricClick('farmers')}
             >
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-gray-300 text-sm font-medium">Total Farmers</p>
-                    <p className="text-3xl font-bold mt-2">{isLoading ? '...' : stats.totalFarmers}</p>
+                    <p className="text-muted-brown text-sm font-medium">Total Farmers</p>
+                    <p className="text-3xl font-bold mt-2 text-forest-green">{isLoading ? '...' : stats.totalFarmers}</p>
                   </div>
                   <div className="text-4xl opacity-80">👨‍🌾</div>
                 </div>
@@ -356,15 +357,15 @@ const Dashboard = () => {
             </Card>
             
             <Card 
-              className="metric-card text-white border-0 animate-fade-in cursor-pointer hover:scale-105 transition-transform" 
+              className="metric-card text-charcoal border-0 animate-fade-in cursor-pointer hover:scale-105 transition-transform" 
               style={{animationDelay: '0.2s'}}
               onClick={() => handleMetricClick('cattle')}
             >
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-gray-300 text-sm font-medium">Total Cattle</p>
-                    <p className="text-3xl font-bold mt-2">{isLoading ? '...' : stats.totalCattle}</p>
+                    <p className="text-muted-brown text-sm font-medium">Total Cattle</p>
+                    <p className="text-3xl font-bold mt-2 text-forest-green">{isLoading ? '...' : stats.totalCattle}</p>
                   </div>
                   <div className="text-4xl opacity-80">🐄</div>
                 </div>
@@ -372,15 +373,15 @@ const Dashboard = () => {
             </Card>
 
             <Card 
-              className="metric-card text-white border-0 animate-fade-in cursor-pointer hover:scale-105 transition-transform" 
+              className="metric-card text-charcoal border-0 animate-fade-in cursor-pointer hover:scale-105 transition-transform" 
               style={{animationDelay: '0.3s'}}
               onClick={() => handleMetricClick('milk')}
             >
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-gray-300 text-sm font-medium">Today's Milk</p>
-                    <p className="text-3xl font-bold mt-2">{isLoading ? '...' : stats.todayMilk}L</p>
+                    <p className="text-muted-brown text-sm font-medium">Today's Milk</p>
+                    <p className="text-3xl font-bold mt-2 text-leafy-green">{isLoading ? '...' : stats.todayMilk}L</p>
                   </div>
                   <div className="text-4xl opacity-80">🥛</div>
                 </div>
@@ -388,15 +389,15 @@ const Dashboard = () => {
             </Card>
 
             <Card 
-              className="metric-card text-white border-0 animate-fade-in cursor-pointer hover:scale-105 transition-transform" 
+              className="metric-card text-charcoal border-0 animate-fade-in cursor-pointer hover:scale-105 transition-transform" 
               style={{animationDelay: '0.4s'}}
               onClick={() => handleMetricClick('health')}
             >
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-gray-300 text-sm font-medium">Health Alerts</p>
-                    <p className="text-3xl font-bold mt-2">{isLoading ? '...' : stats.healthAlerts}</p>
+                    <p className="text-muted-brown text-sm font-medium">Health Alerts</p>
+                    <p className="text-3xl font-bold mt-2 text-earthy-red">{isLoading ? '...' : stats.healthAlerts}</p>
                   </div>
                   <div className="text-4xl opacity-80">🚨</div>
                 </div>
@@ -405,15 +406,15 @@ const Dashboard = () => {
 
             {(user.role === 'admin' || user.role === 'office_staff') && (
               <Card 
-                className="metric-card text-white border-0 animate-fade-in cursor-pointer hover:scale-105 transition-transform" 
+                className="metric-card text-charcoal border-0 animate-fade-in cursor-pointer hover:scale-105 transition-transform" 
                 style={{animationDelay: '0.5s'}}
                 onClick={() => handleMetricClick('approvals')}
               >
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-gray-300 text-sm font-medium">Pending Approvals</p>
-                      <p className="text-3xl font-bold mt-2">{isLoading ? '...' : stats.pendingApprovals}</p>
+                      <p className="text-muted-brown text-sm font-medium">Pending Approvals</p>
+                      <p className="text-3xl font-bold mt-2 text-mustard-yellow">{isLoading ? '...' : stats.pendingApprovals}</p>
                     </div>
                     <div className="text-4xl opacity-80">⏳</div>
                   </div>
@@ -424,13 +425,13 @@ const Dashboard = () => {
         </div>
 
         <div className="mb-8">
-          <h2 className="text-xl font-semibold text-white mb-6 animate-slide-up" style={{animationDelay: '0.5s'}}>Quick Actions</h2>
+          <h2 className="text-xl font-semibold text-forest-green mb-6 animate-slide-up" style={{animationDelay: '0.5s'}}>Quick Actions</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {getQuickActions().map((action, index) => (
               <Button
                 key={index}
                 variant="outline"
-                className={`glass-card h-auto p-6 flex items-center justify-start space-x-4 text-white border-white/20 hover:border-white/40 animate-fade-in`}
+                className={`glass-card h-auto p-6 flex items-center justify-start space-x-4 text-charcoal border-muted-brown/20 hover:border-leafy-green/40 animate-fade-in`}
                 style={{animationDelay: `${0.6 + index * 0.1}s`}}
                 onClick={() => navigate(action.path)}
               >
@@ -438,8 +439,8 @@ const Dashboard = () => {
                   {action.icon}
                 </div>
                 <div className="text-left">
-                  <p className="font-semibold text-white">{action.title}</p>
-                  <p className="text-sm text-gray-300">{action.desc}</p>
+                  <p className="font-semibold text-charcoal">{action.title}</p>
+                  <p className="text-sm text-muted-brown">{action.desc}</p>
                 </div>
               </Button>
             ))}
@@ -448,13 +449,13 @@ const Dashboard = () => {
 
         {/* Health Status Alert */}
         {stats.healthAlerts > 0 && (
-          <Card className="glass-card border-red-500/50 text-white animate-fade-in" style={{animationDelay: '1s'}}>
+          <Card className="glass-card border-earthy-red/50 text-charcoal animate-fade-in" style={{animationDelay: '1s'}}>
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-red-200 text-sm font-medium">Health Alerts</p>
-                  <p className="text-3xl font-bold text-red-300">{stats.healthAlerts}</p>
-                  <p className="text-red-200 text-sm">Require immediate attention</p>
+                  <p className="text-earthy-red text-sm font-medium">Health Alerts</p>
+                  <p className="text-3xl font-bold text-earthy-red">{stats.healthAlerts}</p>
+                  <p className="text-earthy-red text-sm">Require immediate attention</p>
                 </div>
                 <div className="text-4xl animate-pulse">🚨</div>
               </div>
@@ -464,13 +465,13 @@ const Dashboard = () => {
 
         {/* Pending Approvals Alert */}
         {stats.pendingApprovals > 0 && (user.role === 'admin' || user.role === 'office_staff') && (
-          <Card className="glass-card border-yellow-500/50 text-white animate-fade-in mt-4" style={{animationDelay: '1.1s'}}>
+          <Card className="glass-card border-mustard-yellow/50 text-charcoal animate-fade-in mt-4" style={{animationDelay: '1.1s'}}>
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-yellow-200 text-sm font-medium">Pending User Approvals</p>
-                  <p className="text-3xl font-bold text-yellow-300">{stats.pendingApprovals}</p>
-                  <p className="text-yellow-200 text-sm">Users waiting for approval</p>
+                  <p className="text-mustard-yellow text-sm font-medium">Pending User Approvals</p>
+                  <p className="text-3xl font-bold text-mustard-yellow">{stats.pendingApprovals}</p>
+                  <p className="text-mustard-yellow text-sm">Users waiting for approval</p>
                 </div>
                 <div className="text-4xl animate-pulse">⏳</div>
               </div>

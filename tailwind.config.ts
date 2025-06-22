@@ -62,6 +62,24 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				// Agricultural color palette
+				'forest-green': '#2F4F4F',
+				'leafy-green': '#6DBE45',
+				'wheat-beige': '#F8F4EC',
+				'clay-white': '#FAFAF5',
+				'charcoal': '#212121',
+				'muted-brown': '#5E5A5A',
+				'earthy-red': '#C0392B',
+				'deep-green': '#2E7D32',
+				'mustard-yellow': '#F4C542',
+				success: {
+					DEFAULT: 'hsl(var(--success))',
+					foreground: 'hsl(var(--success-foreground))'
+				},
+				warning: {
+					DEFAULT: 'hsl(var(--warning))',
+					foreground: 'hsl(var(--warning-foreground))'
 				}
 			},
 			borderRadius: {
