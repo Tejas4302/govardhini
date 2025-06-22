@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,13 +9,18 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import Navigation from '@/components/Navigation';
 import { ArrowLeft } from 'lucide-react';
+import { LocationCombobox } from '@/components/LocationCombobox';
 import { 
-  indianStates, 
+  getAllStates, 
   getDistrictsByState, 
   getTaluksByDistrict, 
-  commonTownsAndVillages, 
-  commonPincodes 
-} from '@/utils/locationData';
+  getVillagesByTaluk,
+  getPincodesByLocation,
+  getPincodeByVillage,
+  searchTaluks,
+  searchVillages,
+  searchPincodes
+} from '@/utils/comprehensiveLocationData';
 
 const FarmerOnboarding = () => {
   const [formData, setFormData] = useState({
@@ -35,6 +39,16 @@ const FarmerOnboarding = () => {
   const navigate = useNavigate();
   
   const user = JSON.parse(localStorage.getItem('govardhini_user') || '{}');
+
+  // Auto-populate pincode when village is selected
+  useEffect(() => {
+    if (formData.state && formData.district && formData.taluk && formData.townOrVillage) {
+      const autoPincode = getPincodeByVillage(formData.state, formData.district, formData.taluk, formData.townOrVillage);
+      if (autoPincode && autoPincode !== formData.pincode) {
+        setFormData(prev => ({ ...prev, pincode: autoPincode }));
+      }
+    }
+  }, [formData.state, formData.district, formData.taluk, formData.townOrVillage]);
 
   const saveOffline = (data: any) => {
     const offlineData = JSON.parse(localStorage.getItem('offline_farmers') || '[]');
@@ -113,11 +127,9 @@ const FarmerOnboarding = () => {
         
         await syncOfflineData();
         
-        // Navigate to farmer profile after successful registration
         if (data?.id) {
           navigate(`/farmer/${data.id}`);
         } else {
-          // Reset form if no farmer ID returned
           setFormData({
             fullName: '',
             phoneNumber: '',
@@ -173,8 +185,18 @@ const FarmerOnboarding = () => {
     });
   };
 
+  const handleVillageChange = (village: string) => {
+    setFormData({ 
+      ...formData, 
+      townOrVillage: village 
+    });
+  };
+
+  const availableStates = getAllStates();
   const availableDistricts = getDistrictsByState(formData.state);
-  const availableTaluks = getTaluksByDistrict(formData.district);
+  const availableTaluks = getTaluksByDistrict(formData.state, formData.district);
+  const availableVillages = getVillagesByTaluk(formData.state, formData.district, formData.taluk);
+  const availablePincodes = getPincodesByLocation(formData.state, formData.district, formData.taluk);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
@@ -262,8 +284,8 @@ const FarmerOnboarding = () => {
                         <SelectTrigger className="glass-input text-white border-white/20">
                           <SelectValue placeholder="Select state" />
                         </SelectTrigger>
-                        <SelectContent className="bg-slate-800 border-white/20">
-                          {indianStates.map((state) => (
+                        <SelectContent className="bg-slate-800 border-white/20 z-50">
+                          {availableStates.map((state) => (
                             <SelectItem key={state} value={state} className="text-white hover:bg-slate-700">
                               {state}
                             </SelectItem>
@@ -282,7 +304,7 @@ const FarmerOnboarding = () => {
                         <SelectTrigger className="glass-input text-white border-white/20">
                           <SelectValue placeholder="Select district" />
                         </SelectTrigger>
-                        <SelectContent className="bg-slate-800 border-white/20">
+                        <SelectContent className="bg-slate-800 border-white/20 z-50">
                           {availableDistricts.map((district) => (
                             <SelectItem key={district} value={district} className="text-white hover:bg-slate-700">
                               {district}
@@ -296,95 +318,41 @@ const FarmerOnboarding = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="taluk" className="text-white">Taluk *</Label>
-                      <Select 
-                        value={formData.taluk} 
+                      <LocationCombobox
+                        value={formData.taluk}
                         onValueChange={handleTalukChange}
+                        options={availableTaluks}
+                        placeholder="Search and select taluk"
+                        searchPlaceholder="Type to search taluks..."
                         disabled={!formData.district}
-                      >
-                        <SelectTrigger className="glass-input text-white border-white/20">
-                          <SelectValue placeholder="Select taluk" />
-                        </SelectTrigger>
-                        <SelectContent className="bg-slate-800 border-white/20">
-                          {availableTaluks.length > 0 ? (
-                            availableTaluks.map((taluk) => (
-                              <SelectItem key={taluk} value={taluk} className="text-white hover:bg-slate-700">
-                                {taluk}
-                              </SelectItem>
-                            ))
-                          ) : (
-                            <SelectItem value="custom" className="text-white hover:bg-slate-700">
-                              Enter custom taluk
-                            </SelectItem>
-                          )}
-                        </SelectContent>
-                      </Select>
-                      {formData.taluk === 'custom' && (
-                        <Input
-                          placeholder="Enter taluk name"
-                          value={formData.taluk === 'custom' ? '' : formData.taluk}
-                          onChange={(e) => setFormData({ ...formData, taluk: e.target.value })}
-                          className="glass-input text-white placeholder:text-gray-400 border-white/20 mt-2"
-                        />
-                      )}
+                      />
                     </div>
                     
                     <div className="space-y-2">
                       <Label htmlFor="townOrVillage" className="text-white">Town/Village *</Label>
-                      <Select 
-                        value={formData.townOrVillage} 
-                        onValueChange={(value) => setFormData({ ...formData, townOrVillage: value })}
-                      >
-                        <SelectTrigger className="glass-input text-white border-white/20">
-                          <SelectValue placeholder="Select or type town/village" />
-                        </SelectTrigger>
-                        <SelectContent className="bg-slate-800 border-white/20">
-                          {commonTownsAndVillages.map((town) => (
-                            <SelectItem key={town} value={town} className="text-white hover:bg-slate-700">
-                              {town}
-                            </SelectItem>
-                          ))}
-                          <SelectItem value="custom" className="text-white hover:bg-slate-700">
-                            Enter custom town/village
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                      {formData.townOrVillage === 'custom' && (
-                        <Input
-                          placeholder="Enter town/village name"
-                          onChange={(e) => setFormData({ ...formData, townOrVillage: e.target.value })}
-                          className="glass-input text-white placeholder:text-gray-400 border-white/20 mt-2"
-                        />
-                      )}
+                      <LocationCombobox
+                        value={formData.townOrVillage}
+                        onValueChange={handleVillageChange}
+                        options={availableVillages}
+                        placeholder="Search and select village"
+                        searchPlaceholder="Type to search villages..."
+                        disabled={!formData.taluk}
+                      />
                     </div>
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="pincode" className="text-white">Pincode *</Label>
-                    <Select 
-                      value={formData.pincode} 
-                      onValueChange={(value) => setFormData({ ...formData, pincode: value })}
-                    >
-                      <SelectTrigger className="glass-input text-white border-white/20">
-                        <SelectValue placeholder="Select or enter pincode" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-slate-800 border-white/20">
-                        {commonPincodes.map((pincode) => (
-                          <SelectItem key={pincode} value={pincode} className="text-white hover:bg-slate-700">
-                            {pincode}
-                          </SelectItem>
-                        ))}
-                        <SelectItem value="custom" className="text-white hover:bg-slate-700">
-                          Enter custom pincode
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                    {formData.pincode === 'custom' && (
-                      <Input
-                        placeholder="Enter 6-digit pincode"
-                        onChange={(e) => setFormData({ ...formData, pincode: e.target.value })}
-                        className="glass-input text-white placeholder:text-gray-400 border-white/20 mt-2"
-                      />
-                    )}
+                    <Label htmlFor="pincode" className="text-white">
+                      Pincode * {formData.pincode && <span className="text-green-400">(Auto-filled)</span>}
+                    </Label>
+                    <LocationCombobox
+                      value={formData.pincode}
+                      onValueChange={(pincode) => setFormData({ ...formData, pincode })}
+                      options={availablePincodes}
+                      placeholder="Pincode will be auto-filled"
+                      searchPlaceholder="Type to search pincodes..."
+                      disabled={!formData.taluk}
+                    />
                   </div>
                 </div>
                 
