@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Users } from 'lucide-react';
-import { getProfilePhoto } from '@/utils/profilePhotoStorage';
+import { getProfilePhoto, clearAllProfilePhotos } from '@/utils/profilePhotoStorage';
 
 interface NavigationProps {
   user: {
@@ -31,6 +31,9 @@ const Navigation = ({ user }: NavigationProps) => {
   const handleLogout = () => {
     // Clear user session data
     localStorage.removeItem('govardhini_user');
+    
+    // Clear all profile photos on logout
+    clearAllProfilePhotos();
     
     toast({
       title: "Logged out successfully",

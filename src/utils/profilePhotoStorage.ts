@@ -1,5 +1,5 @@
 
-const PROFILE_PHOTO_KEY = 'govardhini_profile_photo';
+const getProfilePhotoKey = (userId: string) => `govardhini_profile_photo_${userId}`;
 
 export const saveProfilePhoto = (photoUrl: string, userId: string) => {
   const photoData = {
@@ -7,26 +7,31 @@ export const saveProfilePhoto = (photoUrl: string, userId: string) => {
     userId: userId,
     timestamp: Date.now()
   };
-  localStorage.setItem(PROFILE_PHOTO_KEY, JSON.stringify(photoData));
+  localStorage.setItem(getProfilePhotoKey(userId), JSON.stringify(photoData));
 };
 
 export const getProfilePhoto = (userId: string): string | null => {
   try {
-    const stored = localStorage.getItem(PROFILE_PHOTO_KEY);
+    const stored = localStorage.getItem(getProfilePhotoKey(userId));
     if (!stored) return null;
     
     const photoData = JSON.parse(stored);
-    // Return photo only if it belongs to the current user
-    if (photoData.userId === userId) {
-      return photoData.url;
-    }
-    return null;
+    return photoData.url;
   } catch (error) {
     console.error('Error getting profile photo:', error);
     return null;
   }
 };
 
-export const clearProfilePhoto = () => {
-  localStorage.removeItem(PROFILE_PHOTO_KEY);
+export const clearProfilePhoto = (userId: string) => {
+  localStorage.removeItem(getProfilePhotoKey(userId));
+};
+
+export const clearAllProfilePhotos = () => {
+  // Clear all profile photos (for complete logout)
+  Object.keys(localStorage).forEach(key => {
+    if (key.startsWith('govardhini_profile_photo_')) {
+      localStorage.removeItem(key);
+    }
+  });
 };

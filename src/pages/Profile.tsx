@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -251,7 +252,7 @@ const Profile = () => {
 
       // Clear local storage including profile photo
       localStorage.removeItem('govardhini_user');
-      clearProfilePhoto();
+      clearProfilePhoto(user.id);
       
       toast({
         title: "Account Deleted",
