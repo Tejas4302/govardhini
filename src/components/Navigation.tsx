@@ -31,14 +31,14 @@ const Navigation = ({ user }: NavigationProps) => {
   };
 
   return (
-    <nav className="glass-card border-b border-white/20 sticky top-0 z-50 backdrop-blur-xl">
+    <nav className="agricultural-glass border-b border-green-300/30 sticky top-0 z-50 backdrop-blur-xl">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center space-x-4">
             <Button
               variant="ghost"
               onClick={() => navigate('/dashboard')}
-              className="flex items-center space-x-2 hover:bg-white/10 text-white"
+              className="flex items-center space-x-2 hover:bg-green-600/20 text-green-50"
             >
               <span className="text-2xl">🐄</span>
               <span className="font-bold text-xl">Govardhini</span>
@@ -49,15 +49,15 @@ const Navigation = ({ user }: NavigationProps) => {
             <Button
               variant="ghost"
               onClick={() => navigate('/profile')}
-              className="flex items-center space-x-2 hover:bg-white/10 text-white"
+              className="flex items-center space-x-2 hover:bg-green-600/20 text-green-50"
             >
               <Avatar className="w-8 h-8">
                 <AvatarImage src={user.profileImage} alt="Profile" />
-                <AvatarFallback className="bg-gradient-to-br from-green-500 to-emerald-600 text-white text-sm">
+                <AvatarFallback className="grass-green text-white text-sm">
                   {user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
                 </AvatarFallback>
               </Avatar>
-              <span className="text-sm text-gray-300 hidden md:block">
+              <span className="text-sm text-green-200 hidden md:block">
                 {user.name}
               </span>
             </Button>
@@ -65,7 +65,7 @@ const Navigation = ({ user }: NavigationProps) => {
               variant="outline"
               size="sm"
               onClick={handleLogout}
-              className="border-white/20 text-gray-300 hover:bg-white/10 hover:border-red-500/50 hover:text-red-400 transition-all duration-200"
+              className="border-green-300/30 text-green-200 hover:bg-red-700/20 hover:border-red-500/50 hover:text-red-300 transition-all duration-200"
             >
               Logout
             </Button>

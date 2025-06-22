@@ -217,17 +217,17 @@ const Dashboard = () => {
 
   const getQuickActions = () => {
     const baseActions = [
-      { title: 'Farmers Directory', desc: 'View all farmers & profiles', icon: '👨‍🌾', path: '/farmers', gradient: 'from-emerald-500 to-green-600' },
-      { title: 'Farmer Registration', desc: 'Register new farmers', icon: '➕', path: '/farmer-onboarding', gradient: 'from-green-500 to-emerald-600' },
-      { title: 'Recent Activities', desc: 'View latest system activities', icon: '📊', path: '/recent-activities', gradient: 'from-purple-500 to-indigo-600' },
-      { title: 'Search Farmers', desc: 'Advanced farmer search & filtering', icon: '🔍', path: '/search-farmers', gradient: 'from-amber-500 to-orange-600' },
+      { title: 'Farmers Directory', desc: 'View all farmers & profiles', icon: '👨‍🌾', path: '/farmers', gradient: 'from-emerald-600 to-green-700' },
+      { title: 'Farmer Registration', desc: 'Register new farmers', icon: '➕', path: '/farmer-onboarding', gradient: 'from-green-600 to-lime-600' },
+      { title: 'Recent Activities', desc: 'View latest system activities', icon: '📊', path: '/recent-activities', gradient: 'from-amber-600 to-yellow-600' },
+      { title: 'Search Farmers', desc: 'Advanced farmer search & filtering', icon: '🔍', path: '/search-farmers', gradient: 'from-orange-600 to-amber-600' },
     ];
 
     if (user.role === 'admin' || user.role === 'office_staff') {
       baseActions.push(
-        { title: 'User Management', desc: 'Approve pending users', icon: '👤', path: '/user-management', gradient: 'from-purple-500 to-indigo-600' },
-        { title: 'System Reports', desc: 'Generate & download reports', icon: '📋', path: '/system-reports', gradient: 'from-red-500 to-pink-600' },
-        { title: 'Analytics', desc: 'View reports & charts', icon: '📈', path: '/analytics', gradient: 'from-indigo-500 to-purple-600' }
+        { title: 'User Management', desc: 'Approve pending users', icon: '👤', path: '/user-management', gradient: 'from-teal-600 to-green-600' },
+        { title: 'System Reports', desc: 'Generate & download reports', icon: '📋', path: '/system-reports', gradient: 'from-red-700 to-red-600' },
+        { title: 'Analytics', desc: 'View reports & charts', icon: '📈', path: '/analytics', gradient: 'from-emerald-700 to-teal-600' }
       );
     }
 
@@ -235,15 +235,15 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-900 via-green-800 to-teal-900 farm-pattern">
       <Navigation user={user} />
       
-      {/* Animated background */}
+      {/* Animated agricultural background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -inset-10 opacity-30">
+        <div className="absolute -inset-10 opacity-20">
           <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-green-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
-          <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-blue-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-1000"></div>
-          <div className="absolute bottom-1/4 left-1/3 w-96 h-96 bg-purple-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-2000"></div>
+          <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-emerald-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-1000"></div>
+          <div className="absolute bottom-1/4 left-1/3 w-96 h-96 bg-lime-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-2000"></div>
         </div>
       </div>
 
@@ -251,11 +251,11 @@ const Dashboard = () => {
         <div className="container mx-auto">
           <div className="animate-fade-in">
             <div className="flex items-center justify-between mb-2">
-              <h1 className="text-3xl font-bold text-white">Dashboard</h1>
+              <h1 className="text-3xl font-bold text-green-50">Dashboard</h1>
               <div className="flex gap-2">
                 <Button
                   onClick={() => setShowDebug(!showDebug)}
-                  className="glass-button"
+                  className="glass-button text-green-50"
                   variant="outline"
                 >
                   {showDebug ? 'Hide Debug' : 'Show Debug'}
@@ -263,14 +263,14 @@ const Dashboard = () => {
                 <Button
                   onClick={handleCleanupOrphanedCattle}
                   disabled={isCleaningUp}
-                  className="glass-button bg-red-500 hover:bg-red-600"
+                  className="glass-button bg-red-700 hover:bg-red-600 text-white"
                 >
                   {isCleaningUp ? 'Cleaning...' : 'Clean Orphaned Data'}
                 </Button>
                 <Button
                   onClick={handleManualRefresh}
                   disabled={isRefreshing}
-                  className="glass-button flex items-center gap-2"
+                  className="glass-button flex items-center gap-2 text-green-50"
                 >
                   <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
                   {isRefreshing ? 'Refreshing...' : 'Refresh'}
@@ -278,7 +278,7 @@ const Dashboard = () => {
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 text-white border-0 px-4 py-2 rounded-full">
+              <Badge className="wheat-accent text-amber-900 border-0 px-4 py-2 rounded-full font-semibold">
                 {user.role.replace('_', ' ').toUpperCase()}
               </Badge>
             </div>
@@ -289,20 +289,20 @@ const Dashboard = () => {
       {/* Debug Information */}
       {showDebug && (
         <div className="relative z-10 container mx-auto px-4 mb-6">
-          <Card className="glass-card border-yellow-500/50 text-white">
+          <Card className="agricultural-glass border-amber-500/50 text-green-50">
             <CardHeader>
-              <CardTitle className="text-yellow-300">Debug Information</CardTitle>
-              <CardDescription className="text-yellow-200">
+              <CardTitle className="text-amber-200">Debug Information</CardTitle>
+              <CardDescription className="text-amber-100">
                 Current database records for troubleshooting
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <h4 className="font-semibold text-yellow-300 mb-2">
+                <h4 className="font-semibold text-amber-200 mb-2">
                   Farmers ({debugData.farmers.length} records):
                 </h4>
                 {debugData.farmers.length === 0 ? (
-                  <p className="text-gray-300">No farmers found in database</p>
+                  <p className="text-green-200">No farmers found in database</p>
                 ) : (
                   <div className="space-y-2 max-h-32 overflow-y-auto">
                     {debugData.farmers.map((farmer, index) => (
@@ -314,11 +314,11 @@ const Dashboard = () => {
                 )}
               </div>
               <div>
-                <h4 className="font-semibold text-yellow-300 mb-2">
+                <h4 className="font-semibold text-amber-200 mb-2">
                   Cattle ({debugData.cattle.length} records):
                 </h4>
                 {debugData.cattle.length === 0 ? (
-                  <p className="text-gray-300">No cattle found in database</p>
+                  <p className="text-green-200">No cattle found in database</p>
                 ) : (
                   <div className="space-y-2 max-h-32 overflow-y-auto">
                     {debugData.cattle.map((cattle, index) => (
@@ -337,17 +337,17 @@ const Dashboard = () => {
 
       <div className="relative z-10 container mx-auto px-4 py-6">
         <div className="mb-8">
-          <h2 className="text-xl font-semibold text-white mb-6 animate-slide-up">Key Metrics</h2>
+          <h2 className="text-xl font-semibold text-green-50 mb-6 animate-slide-up">Key Metrics</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
             <Card 
-              className="metric-card text-white border-0 animate-fade-in cursor-pointer hover:scale-105 transition-transform" 
+              className="metric-card text-green-50 border-0 animate-fade-in cursor-pointer hover:scale-105 transition-transform" 
               style={{animationDelay: '0.1s'}}
               onClick={() => handleMetricClick('farmers')}
             >
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-gray-300 text-sm font-medium">Total Farmers</p>
+                    <p className="text-green-200 text-sm font-medium">Total Farmers</p>
                     <p className="text-3xl font-bold mt-2">{isLoading ? '...' : stats.totalFarmers}</p>
                   </div>
                   <div className="text-4xl opacity-80">👨‍🌾</div>
@@ -356,14 +356,14 @@ const Dashboard = () => {
             </Card>
             
             <Card 
-              className="metric-card text-white border-0 animate-fade-in cursor-pointer hover:scale-105 transition-transform" 
+              className="metric-card text-green-50 border-0 animate-fade-in cursor-pointer hover:scale-105 transition-transform" 
               style={{animationDelay: '0.2s'}}
               onClick={() => handleMetricClick('cattle')}
             >
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-gray-300 text-sm font-medium">Total Cattle</p>
+                    <p className="text-green-200 text-sm font-medium">Total Cattle</p>
                     <p className="text-3xl font-bold mt-2">{isLoading ? '...' : stats.totalCattle}</p>
                   </div>
                   <div className="text-4xl opacity-80">🐄</div>
@@ -372,14 +372,14 @@ const Dashboard = () => {
             </Card>
 
             <Card 
-              className="metric-card text-white border-0 animate-fade-in cursor-pointer hover:scale-105 transition-transform" 
+              className="metric-card text-green-50 border-0 animate-fade-in cursor-pointer hover:scale-105 transition-transform" 
               style={{animationDelay: '0.3s'}}
               onClick={() => handleMetricClick('milk')}
             >
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-gray-300 text-sm font-medium">Today's Milk</p>
+                    <p className="text-green-200 text-sm font-medium">Today's Milk</p>
                     <p className="text-3xl font-bold mt-2">{isLoading ? '...' : stats.todayMilk}L</p>
                   </div>
                   <div className="text-4xl opacity-80">🥛</div>
@@ -388,14 +388,14 @@ const Dashboard = () => {
             </Card>
 
             <Card 
-              className="metric-card text-white border-0 animate-fade-in cursor-pointer hover:scale-105 transition-transform" 
+              className="metric-card text-green-50 border-0 animate-fade-in cursor-pointer hover:scale-105 transition-transform" 
               style={{animationDelay: '0.4s'}}
               onClick={() => handleMetricClick('health')}
             >
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-gray-300 text-sm font-medium">Health Alerts</p>
+                    <p className="text-green-200 text-sm font-medium">Health Alerts</p>
                     <p className="text-3xl font-bold mt-2">{isLoading ? '...' : stats.healthAlerts}</p>
                   </div>
                   <div className="text-4xl opacity-80">🚨</div>
@@ -405,14 +405,14 @@ const Dashboard = () => {
 
             {(user.role === 'admin' || user.role === 'office_staff') && (
               <Card 
-                className="metric-card text-white border-0 animate-fade-in cursor-pointer hover:scale-105 transition-transform" 
+                className="metric-card text-green-50 border-0 animate-fade-in cursor-pointer hover:scale-105 transition-transform" 
                 style={{animationDelay: '0.5s'}}
                 onClick={() => handleMetricClick('approvals')}
               >
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-gray-300 text-sm font-medium">Pending Approvals</p>
+                      <p className="text-green-200 text-sm font-medium">Pending Approvals</p>
                       <p className="text-3xl font-bold mt-2">{isLoading ? '...' : stats.pendingApprovals}</p>
                     </div>
                     <div className="text-4xl opacity-80">⏳</div>
@@ -424,13 +424,13 @@ const Dashboard = () => {
         </div>
 
         <div className="mb-8">
-          <h2 className="text-xl font-semibold text-white mb-6 animate-slide-up" style={{animationDelay: '0.5s'}}>Quick Actions</h2>
+          <h2 className="text-xl font-semibold text-green-50 mb-6 animate-slide-up" style={{animationDelay: '0.5s'}}>Quick Actions</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {getQuickActions().map((action, index) => (
               <Button
                 key={index}
                 variant="outline"
-                className={`glass-card h-auto p-6 flex items-center justify-start space-x-4 text-white border-white/20 hover:border-white/40 animate-fade-in`}
+                className={`agricultural-glass h-auto p-6 flex items-center justify-start space-x-4 text-green-50 border-green-300/30 hover:border-green-200/50 animate-fade-in`}
                 style={{animationDelay: `${0.6 + index * 0.1}s`}}
                 onClick={() => navigate(action.path)}
               >
@@ -438,8 +438,8 @@ const Dashboard = () => {
                   {action.icon}
                 </div>
                 <div className="text-left">
-                  <p className="font-semibold text-white">{action.title}</p>
-                  <p className="text-sm text-gray-300">{action.desc}</p>
+                  <p className="font-semibold text-green-50">{action.title}</p>
+                  <p className="text-sm text-green-200">{action.desc}</p>
                 </div>
               </Button>
             ))}
@@ -448,7 +448,7 @@ const Dashboard = () => {
 
         {/* Health Status Alert */}
         {stats.healthAlerts > 0 && (
-          <Card className="glass-card border-red-500/50 text-white animate-fade-in" style={{animationDelay: '1s'}}>
+          <Card className="agricultural-glass border-red-500/50 text-green-50 animate-fade-in" style={{animationDelay: '1s'}}>
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -464,13 +464,13 @@ const Dashboard = () => {
 
         {/* Pending Approvals Alert */}
         {stats.pendingApprovals > 0 && (user.role === 'admin' || user.role === 'office_staff') && (
-          <Card className="glass-card border-yellow-500/50 text-white animate-fade-in mt-4" style={{animationDelay: '1.1s'}}>
+          <Card className="agricultural-glass border-amber-500/50 text-green-50 animate-fade-in mt-4" style={{animationDelay: '1.1s'}}>
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-yellow-200 text-sm font-medium">Pending User Approvals</p>
-                  <p className="text-3xl font-bold text-yellow-300">{stats.pendingApprovals}</p>
-                  <p className="text-yellow-200 text-sm">Users waiting for approval</p>
+                  <p className="text-amber-200 text-sm font-medium">Pending User Approvals</p>
+                  <p className="text-3xl font-bold text-amber-300">{stats.pendingApprovals}</p>
+                  <p className="text-amber-200 text-sm">Users waiting for approval</p>
                 </div>
                 <div className="text-4xl animate-pulse">⏳</div>
               </div>
