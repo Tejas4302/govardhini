@@ -142,119 +142,164 @@ const FarmersList = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-green-900 to-teal-900">
       <Navigation user={JSON.parse(localStorage.getItem('govardhini_user') || '{}')} />
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold">Farmers Directory</h1>
-          <Button onClick={() => navigate('/farmer-onboarding')} className="glass-button flex items-center gap-2">
-            <Plus className="w-4 h-4" />
-            Add Farmer
-          </Button>
+      
+      {/* Enhanced animated background */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -inset-10 opacity-30">
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-emerald-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
+          <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-teal-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-1000"></div>
+          <div className="absolute bottom-1/4 left-1/3 w-96 h-96 bg-green-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-2000"></div>
         </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <Card className="glass-card text-white">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="text-lg font-semibold">{stats.totalFarmers}</CardTitle>
-                  <CardDescription className="text-sm text-gray-300">Total Farmers</CardDescription>
-                </div>
-                <Users className="w-6 h-6 text-gray-400" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="glass-card text-white">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="text-lg font-semibold">{stats.activeFarmers}</CardTitle>
-                  <CardDescription className="text-sm text-gray-300">Active Farmers</CardDescription>
-                </div>
-                <Users className="w-6 h-6 text-green-400" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="glass-card text-white">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="text-lg font-semibold">{stats.totalCattle}</CardTitle>
-                  <CardDescription className="text-sm text-gray-300">Total Cattle</CardDescription>
-                </div>
-                <Heart className="w-6 h-6 text-gray-400" />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="mb-4">
-          <Input
-            type="text"
-            placeholder="Search farmers..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="glass-input"
-          />
-        </div>
-
-        {isLoading ? (
-          <div className="text-center">Loading farmers...</div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredFarmers.map(farmer => (
-              <Card key={farmer.id} className="glass-card text-white">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">{farmer.full_name}</CardTitle>
-                  <div className="flex space-x-2">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="hover:bg-white/10 text-white"
-                      onClick={() => navigate(`/farmer/${farmer.id}`)}
-                    >
-                      <Eye className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="hover:bg-white/10 text-white"
-                      onClick={() => navigate(`/farmer-onboarding?farmerId=${farmer.id}`)}
-                    >
-                      <Edit className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="hover:bg-red-500/20 text-red-500"
-                      onClick={() => handleDeleteFarmer(farmer.id)}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-sm text-gray-300">
-                    <div className="flex items-center space-x-2">
-                      <Phone className="w-4 h-4" />
-                      <span>{farmer.phone_number}</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <MapPin className="w-4 h-4" />
-                      <span>{farmer.town_or_village}, {farmer.district}</span>
-                    </div>
-                  </div>
-                  <Badge className="mt-2 w-fit bg-green-500 hover:bg-green-600 text-white">
-                    Active
-                  </Badge>
-                </CardContent>
-              </Card>
-            ))}
+      </div>
+      
+      <div className="relative z-10 container mx-auto px-4 py-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex justify-between items-center mb-8">
+            <h1 className="text-4xl font-bold text-white animate-fade-in">Farmers Directory</h1>
+            <Button onClick={() => navigate('/farmer-onboarding')} className="grass-green hover:bg-emerald-700 text-white font-semibold px-6 animate-fade-in">
+              <Plus className="w-5 h-5 mr-2" />
+              Add Farmer
+            </Button>
           </div>
-        )}
+
+          {/* Enhanced Key Metrics Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <Card className="glass-card text-white border-emerald-500/20 bg-gradient-to-br from-emerald-500/10 to-green-500/10 animate-fade-in" style={{animationDelay: '0.1s'}}>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-emerald-300 text-sm font-medium">Total Farmers</p>
+                    <p className="text-4xl font-bold text-white">{stats.totalFarmers}</p>
+                    <div className="flex items-center mt-2">
+                      <Users className="w-4 h-4 text-emerald-400 mr-1" />
+                      <span className="text-emerald-400 text-sm">Registered</span>
+                    </div>
+                  </div>
+                  <Users className="w-12 h-12 text-emerald-400" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="glass-card text-white border-teal-500/20 bg-gradient-to-br from-teal-500/10 to-cyan-500/10 animate-fade-in" style={{animationDelay: '0.2s'}}>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-teal-300 text-sm font-medium">Active Farmers</p>
+                    <p className="text-4xl font-bold text-white">{stats.activeFarmers}</p>
+                    <div className="flex items-center mt-2">
+                      <Heart className="w-4 h-4 text-teal-400 mr-1" />
+                      <span className="text-teal-400 text-sm">With Cattle</span>
+                    </div>
+                  </div>
+                  <Heart className="w-12 h-12 text-teal-400" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="glass-card text-white border-cyan-500/20 bg-gradient-to-br from-cyan-500/10 to-blue-500/10 animate-fade-in" style={{animationDelay: '0.3s'}}>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-cyan-300 text-sm font-medium">Total Cattle</p>
+                    <p className="text-4xl font-bold text-white">{stats.totalCattle}</p>
+                    <div className="flex items-center mt-2">
+                      <AlertTriangle className="w-4 h-4 text-cyan-400 mr-1" />
+                      <span className="text-cyan-400 text-sm">Managed</span>
+                    </div>
+                  </div>
+                  <AlertTriangle className="w-12 h-12 text-cyan-400" />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Search Section */}
+          <Card className="glass-card border-emerald-500/20 bg-gradient-to-br from-emerald-500/5 to-green-500/5 mb-8 animate-fade-in" style={{animationDelay: '0.4s'}}>
+            <CardHeader>
+              <CardTitle className="text-2xl font-bold text-white flex items-center">
+                <Search className="w-8 h-8 mr-3 text-emerald-400" />
+                Find Farmers
+              </CardTitle>
+              <CardDescription className="text-emerald-300">Search by name or phone number</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Input
+                type="text"
+                placeholder="Search farmers..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="glass-input border-emerald-500/30 text-white placeholder:text-emerald-300"
+              />
+            </CardContent>
+          </Card>
+
+          {/* Farmers Grid */}
+          {isLoading ? (
+            <div className="text-center text-white py-8">
+              <div className="animate-pulse">Loading farmers...</div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredFarmers.map((farmer, index) => (
+                <Card key={farmer.id} className="glass-card text-white border-emerald-500/20 hover:border-emerald-400/50 transition-all hover:bg-emerald-500/10 animate-slide-up" style={{animationDelay: `${index * 0.1}s`}}>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-green-600 rounded-full flex items-center justify-center shadow-lg">
+                        <span className="text-white text-xl">👨‍🌾</span>
+                      </div>
+                      <div>
+                        <CardTitle className="text-lg font-semibold text-white">{farmer.full_name}</CardTitle>
+                      </div>
+                    </div>
+                    <div className="flex space-x-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="hover:bg-emerald-500/20 text-emerald-300 hover:text-white"
+                        onClick={() => navigate(`/farmer/${farmer.id}`)}
+                      >
+                        <Eye className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="hover:bg-emerald-500/20 text-emerald-300 hover:text-white"
+                        onClick={() => navigate(`/farmer-onboarding?farmerId=${farmer.id}`)}
+                      >
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="hover:bg-red-500/20 text-red-400 hover:text-red-300"
+                        onClick={() => handleDeleteFarmer(farmer.id)}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      <div className="flex items-center text-emerald-300 text-sm">
+                        <Phone className="w-4 h-4 mr-2" />
+                        <span>{farmer.phone_number}</span>
+                      </div>
+                      <div className="flex items-center text-emerald-400 text-sm">
+                        <MapPin className="w-4 h-4 mr-2" />
+                        <span>{farmer.town_or_village}, {farmer.district}</span>
+                      </div>
+                    </div>
+                    <Badge className="mt-3 bg-emerald-500/20 text-emerald-300 border-emerald-500/30">
+                      Active
+                    </Badge>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
