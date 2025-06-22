@@ -218,17 +218,17 @@ const Dashboard = () => {
 
   const getQuickActions = () => {
     const baseActions = [
-      { title: 'Farmers Directory', desc: 'View all farmers & profiles', icon: '👨‍🌾', path: '/farmers', gradient: 'from-leafy-green to-deep-green' },
-      { title: 'Farmer Registration', desc: 'Register new farmers', icon: '➕', path: '/farmer-onboarding', gradient: 'from-deep-green to-leafy-green' },
-      { title: 'Recent Activities', desc: 'View latest system activities', icon: '📊', path: '/recent-activities', gradient: 'from-forest-green to-muted-brown' },
-      { title: 'Search Farmers', desc: 'Advanced farmer search & filtering', icon: '🔍', path: '/search-farmers', gradient: 'from-mustard-yellow to-deep-green' },
+      { title: 'Farmers Directory', desc: 'View all farmers & profiles', icon: '👨‍🌾', path: '/farmers', gradient: 'gradient-nature' },
+      { title: 'Farmer Registration', desc: 'Register new farmers', icon: '➕', path: '/farmer-onboarding', gradient: 'gradient-forest' },
+      { title: 'Recent Activities', desc: 'View latest system activities', icon: '📊', path: '/recent-activities', gradient: 'gradient-earth' },
+      { title: 'Search Farmers', desc: 'Advanced farmer search & filtering', icon: '🔍', path: '/search-farmers', gradient: 'gradient-nature' },
     ];
 
     if (user.role === 'admin' || user.role === 'office_staff') {
       baseActions.push(
-        { title: 'User Management', desc: 'Approve pending users', icon: '👤', path: '/user-management', gradient: 'from-forest-green to-muted-brown' },
-        { title: 'System Reports', desc: 'Generate & download reports', icon: '📋', path: '/system-reports', gradient: 'from-earthy-red to-deep-green' },
-        { title: 'Analytics', desc: 'View reports & charts', icon: '📈', path: '/analytics', gradient: 'from-leafy-green to-forest-green' }
+        { title: 'User Management', desc: 'Approve pending users', icon: '👤', path: '/user-management', gradient: 'gradient-forest' },
+        { title: 'System Reports', desc: 'Generate & download reports', icon: '📋', path: '/system-reports', gradient: 'gradient-earth' },
+        { title: 'Analytics', desc: 'View reports & charts', icon: '📈', path: '/analytics', gradient: 'gradient-nature' }
       );
     }
 
@@ -241,7 +241,7 @@ const Dashboard = () => {
       
       {/* Enhanced agricultural background pattern with glassmorphism */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -inset-10 opacity-30">
+        <div className="absolute -inset-10 opacity-20">
           <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-leafy-green rounded-full mix-blend-multiply filter blur-3xl animate-pulse glass-float"></div>
           <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-deep-green rounded-full mix-blend-multiply filter blur-3xl animate-pulse glass-float-delayed"></div>
           <div className="absolute bottom-1/4 left-1/3 w-96 h-96 bg-forest-green rounded-full mix-blend-multiply filter blur-3xl animate-pulse glass-float"></div>
@@ -251,15 +251,15 @@ const Dashboard = () => {
 
       <div className="relative z-10 px-4 py-6">
         <div className="container mx-auto">
-          <div className="animate-fade-in">
+          <div className="animate-bounce-in">
             <div className="flex items-center justify-between mb-2">
-              <h1 className="text-3xl font-bold text-forest-green bg-gradient-to-r from-forest-green to-deep-green bg-clip-text text-transparent">
+              <h1 className="text-4xl font-bold bg-gradient-to-r from-forest-green via-leafy-green to-deep-green bg-clip-text text-transparent animate-gradient">
                 Dashboard
               </h1>
               <div className="flex gap-2">
                 <Button
                   onClick={() => setShowDebug(!showDebug)}
-                  className="glass-button border-none text-wheat-beige"
+                  className="glass-button border-none text-wheat-beige hover-lift"
                   variant="outline"
                 >
                   {showDebug ? 'Hide Debug' : 'Show Debug'}
@@ -267,14 +267,14 @@ const Dashboard = () => {
                 <Button
                   onClick={handleCleanupOrphanedCattle}
                   disabled={isCleaningUp}
-                  className="glass-button bg-gradient-to-r from-earthy-red/90 to-earthy-red border-none text-wheat-beige"
+                  className="glass-button bg-gradient-to-r from-earthy-red/90 to-earthy-red border-none text-wheat-beige hover-lift"
                 >
                   {isCleaningUp ? 'Cleaning...' : 'Clean Orphaned Data'}
                 </Button>
                 <Button
                   onClick={handleManualRefresh}
                   disabled={isRefreshing}
-                  className="glass-button flex items-center gap-2 border-none text-wheat-beige"
+                  className="glass-button flex items-center gap-2 border-none text-wheat-beige hover-lift animate-pulse-glow"
                 >
                   <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
                   {isRefreshing ? 'Refreshing...' : 'Refresh'}
@@ -282,7 +282,7 @@ const Dashboard = () => {
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <Badge className="bg-gradient-to-r from-leafy-green to-deep-green text-wheat-beige border-0 px-4 py-2 rounded-full shadow-lg backdrop-blur-sm">
+              <Badge className="gradient-nature text-wheat-beige border-0 px-4 py-2 rounded-full shadow-lg backdrop-blur-sm animate-pulse-glow">
                 {user.role.replace('_', ' ').toUpperCase()}
               </Badge>
             </div>
@@ -295,7 +295,7 @@ const Dashboard = () => {
         <div className="relative z-10 container mx-auto px-4 mb-6">
           <Card className="glass-card border-mustard-yellow/50 text-charcoal animate-scale-in">
             <CardHeader>
-              <CardTitle className="text-mustard-yellow bg-gradient-to-r from-mustard-yellow to-earthy-red bg-clip-text text-transparent">
+              <CardTitle className="bg-gradient-to-r from-mustard-yellow to-earthy-red bg-clip-text text-transparent">
                 Debug Information
               </CardTitle>
               <CardDescription className="text-muted-brown">
@@ -343,12 +343,12 @@ const Dashboard = () => {
 
       <div className="relative z-10 container mx-auto px-4 py-6">
         <div className="mb-8">
-          <h2 className="text-xl font-semibold text-forest-green mb-6 animate-slide-up bg-gradient-to-r from-forest-green to-deep-green bg-clip-text text-transparent">
+          <h2 className="text-2xl font-semibold mb-6 animate-slide-up bg-gradient-to-r from-forest-green to-deep-green bg-clip-text text-transparent">
             Key Metrics
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
             <Card 
-              className="glass-metric-card text-charcoal border-0 animate-fade-in cursor-pointer" 
+              className="glass-metric-card text-charcoal border-0 animate-bounce-in cursor-pointer hover-lift group" 
               style={{animationDelay: '0.1s'}}
               onClick={() => handleMetricClick('farmers')}
             >
@@ -356,15 +356,17 @@ const Dashboard = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-muted-brown text-sm font-medium">Total Farmers</p>
-                    <p className="text-3xl font-bold mt-2 text-forest-green">{isLoading ? '...' : stats.totalFarmers}</p>
+                    <p className="text-3xl font-bold mt-2 gradient-nature bg-clip-text text-transparent">
+                      {isLoading ? '...' : stats.totalFarmers}
+                    </p>
                   </div>
-                  <div className="text-4xl opacity-80 glass-float">👨‍🌾</div>
+                  <div className="text-4xl opacity-80 glass-float group-hover:scale-125 transition-transform duration-300">👨‍🌾</div>
                 </div>
               </CardContent>
             </Card>
             
             <Card 
-              className="glass-metric-card text-charcoal border-0 animate-fade-in cursor-pointer" 
+              className="glass-metric-card text-charcoal border-0 animate-bounce-in cursor-pointer hover-lift group" 
               style={{animationDelay: '0.2s'}}
               onClick={() => handleMetricClick('cattle')}
             >
@@ -372,15 +374,17 @@ const Dashboard = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-muted-brown text-sm font-medium">Total Cattle</p>
-                    <p className="text-3xl font-bold mt-2 text-forest-green">{isLoading ? '...' : stats.totalCattle}</p>
+                    <p className="text-3xl font-bold mt-2 gradient-forest bg-clip-text text-transparent">
+                      {isLoading ? '...' : stats.totalCattle}
+                    </p>
                   </div>
-                  <div className="text-4xl opacity-80 glass-float-delayed">🐄</div>
+                  <div className="text-4xl opacity-80 glass-float-delayed group-hover:scale-125 transition-transform duration-300">🐄</div>
                 </div>
               </CardContent>
             </Card>
 
             <Card 
-              className="glass-metric-card text-charcoal border-0 animate-fade-in cursor-pointer" 
+              className="glass-metric-card text-charcoal border-0 animate-bounce-in cursor-pointer hover-lift group" 
               style={{animationDelay: '0.3s'}}
               onClick={() => handleMetricClick('milk')}
             >
@@ -388,15 +392,17 @@ const Dashboard = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-muted-brown text-sm font-medium">Today's Milk</p>
-                    <p className="text-3xl font-bold mt-2 text-leafy-green">{isLoading ? '...' : stats.todayMilk}L</p>
+                    <p className="text-3xl font-bold mt-2 text-leafy-green">
+                      {isLoading ? '...' : stats.todayMilk}L
+                    </p>
                   </div>
-                  <div className="text-4xl opacity-80 glass-float">🥛</div>
+                  <div className="text-4xl opacity-80 glass-float group-hover:scale-125 transition-transform duration-300">🥛</div>
                 </div>
               </CardContent>
             </Card>
 
             <Card 
-              className="glass-metric-card text-charcoal border-0 animate-fade-in cursor-pointer" 
+              className="glass-metric-card text-charcoal border-0 animate-bounce-in cursor-pointer hover-lift group" 
               style={{animationDelay: '0.4s'}}
               onClick={() => handleMetricClick('health')}
             >
@@ -404,16 +410,18 @@ const Dashboard = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-muted-brown text-sm font-medium">Health Alerts</p>
-                    <p className="text-3xl font-bold mt-2 text-earthy-red">{isLoading ? '...' : stats.healthAlerts}</p>
+                    <p className="text-3xl font-bold mt-2 text-earthy-red animate-pulse">
+                      {isLoading ? '...' : stats.healthAlerts}
+                    </p>
                   </div>
-                  <div className="text-4xl opacity-80 glass-float-delayed">🚨</div>
+                  <div className="text-4xl opacity-80 glass-float-delayed group-hover:scale-125 transition-transform duration-300">🚨</div>
                 </div>
               </CardContent>
             </Card>
 
             {(user.role === 'admin' || user.role === 'office_staff') && (
               <Card 
-                className="glass-metric-card text-charcoal border-0 animate-fade-in cursor-pointer" 
+                className="glass-metric-card text-charcoal border-0 animate-bounce-in cursor-pointer hover-lift group" 
                 style={{animationDelay: '0.5s'}}
                 onClick={() => handleMetricClick('approvals')}
               >
@@ -421,9 +429,11 @@ const Dashboard = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-muted-brown text-sm font-medium">Pending Approvals</p>
-                      <p className="text-3xl font-bold mt-2 text-mustard-yellow">{isLoading ? '...' : stats.pendingApprovals}</p>
+                      <p className="text-3xl font-bold mt-2 text-mustard-yellow">
+                        {isLoading ? '...' : stats.pendingApprovals}
+                      </p>
                     </div>
-                    <div className="text-4xl opacity-80 glass-float">⏳</div>
+                    <div className="text-4xl opacity-80 glass-float group-hover:scale-125 transition-transform duration-300">⏳</div>
                   </div>
                 </CardContent>
               </Card>
@@ -432,7 +442,7 @@ const Dashboard = () => {
         </div>
 
         <div className="mb-8">
-          <h2 className="text-xl font-semibold text-forest-green mb-6 animate-slide-up bg-gradient-to-r from-forest-green to-deep-green bg-clip-text text-transparent" style={{animationDelay: '0.5s'}}>
+          <h2 className="text-2xl font-semibold mb-6 animate-slide-up bg-gradient-to-r from-forest-green to-deep-green bg-clip-text text-transparent" style={{animationDelay: '0.5s'}}>
             Quick Actions
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -440,15 +450,15 @@ const Dashboard = () => {
               <Button
                 key={index}
                 variant="outline"
-                className={`glass-action-card h-auto p-6 flex items-center justify-start space-x-4 text-charcoal border-0 animate-fade-in hover:scale-105 transition-all duration-300`}
+                className="glass-action-card h-auto p-6 flex items-center justify-start space-x-4 text-charcoal border-0 animate-bounce-in hover-lift hover-glow group"
                 style={{animationDelay: `${0.6 + index * 0.1}s`}}
                 onClick={() => navigate(action.path)}
               >
-                <div className={`w-12 h-12 bg-gradient-to-r ${action.gradient} rounded-xl flex items-center justify-center text-2xl shadow-lg backdrop-blur-sm border border-white/20`}>
+                <div className={`w-12 h-12 ${action.gradient} rounded-xl flex items-center justify-center text-2xl shadow-lg backdrop-blur-sm border border-white/20 group-hover:scale-110 transition-transform duration-300`}>
                   {action.icon}
                 </div>
                 <div className="text-left">
-                  <p className="font-semibold text-charcoal">{action.title}</p>
+                  <p className="font-semibold text-charcoal group-hover:text-forest-green transition-colors duration-300">{action.title}</p>
                   <p className="text-sm text-muted-brown">{action.desc}</p>
                 </div>
               </Button>
@@ -458,12 +468,12 @@ const Dashboard = () => {
 
         {/* Health Status Alert */}
         {stats.healthAlerts > 0 && (
-          <Card className="glass-card border-earthy-red/50 text-charcoal animate-fade-in" style={{animationDelay: '1s'}}>
+          <Card className="glass-card border-earthy-red/50 text-charcoal animate-bounce-in hover-glow" style={{animationDelay: '1s'}}>
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-earthy-red text-sm font-medium">Health Alerts</p>
-                  <p className="text-3xl font-bold text-earthy-red">{stats.healthAlerts}</p>
+                  <p className="text-3xl font-bold text-earthy-red animate-pulse">{stats.healthAlerts}</p>
                   <p className="text-earthy-red text-sm">Require immediate attention</p>
                 </div>
                 <div className="text-4xl animate-pulse glass-float">🚨</div>
@@ -474,12 +484,12 @@ const Dashboard = () => {
 
         {/* Pending Approvals Alert */}
         {stats.pendingApprovals > 0 && (user.role === 'admin' || user.role === 'office_staff') && (
-          <Card className="glass-card border-mustard-yellow/50 text-charcoal animate-fade-in mt-4" style={{animationDelay: '1.1s'}}>
+          <Card className="glass-card border-mustard-yellow/50 text-charcoal animate-bounce-in hover-glow mt-4" style={{animationDelay: '1.1s'}}>
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-mustard-yellow text-sm font-medium">Pending User Approvals</p>
-                  <p className="text-3xl font-bold text-mustard-yellow">{stats.pendingApprovals}</p>
+                  <p className="text-3xl font-bold text-mustard-yellow animate-pulse">{stats.pendingApprovals}</p>
                   <p className="text-mustard-yellow text-sm">Users waiting for approval</p>
                 </div>
                 <div className="text-4xl animate-pulse glass-float-delayed">⏳</div>
