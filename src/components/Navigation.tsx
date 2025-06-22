@@ -1,9 +1,10 @@
+
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { User } from 'lucide-react';
+import { User, Users } from 'lucide-react';
 import { getProfilePhoto, clearProfilePhoto } from '@/utils/profilePhotoStorage';
 
 interface NavigationProps {
