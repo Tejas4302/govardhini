@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -40,7 +39,7 @@ const FarmersList = () => {
   const navigate = useNavigate();
   
   const user = JSON.parse(localStorage.getItem('govardhini_user') || '{}');
-  const isAdmin = user.designation === 'admin' || user.designation === 'office_staff';
+  const isAdmin = user.designation?.toLowerCase() === 'admin' || user.designation?.toLowerCase() === 'office_staff';
 
   useEffect(() => {
     fetchFarmers();

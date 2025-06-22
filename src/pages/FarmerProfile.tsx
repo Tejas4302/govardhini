@@ -158,7 +158,7 @@ const FarmerProfile = () => {
     }
   };
 
-  const isAdmin = user.designation === 'admin' || user.designation === 'office_staff';
+  const isAdmin = user.designation?.toLowerCase() === 'admin' || user.designation?.toLowerCase() === 'office_staff';
 
   if (isLoading) {
     return (
