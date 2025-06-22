@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -55,13 +54,13 @@ const Dashboard = () => {
       const [farmersResult, cattleResult, milkResult, healthResult, feedResult] = await Promise.all([
         supabase.from('farmers').select('id'),
         supabase.from('cattle_profiles').select('farmer_id'),
-        supabase.from('milk_production').select('quantity'),
+        supabase.from('milk_production').select('quantity_litres'),
         supabase.from('health_checkups').select('id').gte('date', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()),
         supabase.from('feed_requests').select('id').eq('status', 'pending')
       ]);
 
       const activeFarmersSet = new Set(cattleResult.data?.map(c => c.farmer_id).filter(Boolean));
-      const totalMilk = milkResult.data?.reduce((sum, record) => sum + (record.quantity || 0), 0) || 0;
+      const totalMilk = milkResult.data?.reduce((sum, record) => sum + (record.quantity_litres || 0), 0) || 0;
 
       setStats({
         totalFarmers: farmersResult.data?.length || 0,

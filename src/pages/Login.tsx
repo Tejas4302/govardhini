@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -57,7 +56,7 @@ const Login = () => {
       }
 
       // Simple password check (in production, use proper hashing)
-      if (users.password !== password) {
+      if (users.password_hash !== password) {
         toast({
           title: "Login Failed",
           description: "Invalid credentials",
@@ -72,7 +71,7 @@ const Login = () => {
         name: users.full_name,
         phone: users.phone_number,
         role: users.designation,
-        email: users.email || ''
+        email: '' // No email field in users table
       };
 
       localStorage.setItem('govardhini_user', JSON.stringify(userData));
