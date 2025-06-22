@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,6 +7,18 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import Navigation from '@/components/Navigation';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Trash2 } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 interface Farmer {
   id: string;
@@ -36,6 +47,7 @@ const FarmerProfile = () => {
   const [farmer, setFarmer] = useState<Farmer | null>(null);
   const [cattle, setCattle] = useState<Cattle[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isDeleting, setIsDeleting] = useState(false);
   const { toast } = useToast();
   
   const user = JSON.parse(localStorage.getItem('govardhini_user') || '{}');
@@ -79,6 +91,46 @@ const FarmerProfile = () => {
     }
   };
 
+  const handleDeleteFarmer = async () => {
+    if (!farmerId) return;
+    
+    setIsDeleting(true);
+    try {
+      // Delete related records first (cascade deletion)
+      await Promise.all([
+        supabase.from('milk_production').delete().in('cattle_id', cattle.map(c => c.cattle_id)),
+        supabase.from('health_checkups').delete().in('cattle_id', cattle.map(c => c.cattle_id)),
+        supabase.from('feed_requests').delete().in('cattle_id', cattle.map(c => c.cattle_id)),
+        supabase.from('sms_notifications').delete().eq('farmer_id', farmerId),
+        supabase.from('cattle_profiles').delete().eq('farmer_id', farmerId)
+      ]);
+
+      // Finally delete the farmer
+      const { error } = await supabase
+        .from('farmers')
+        .delete()
+        .eq('id', farmerId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Farmer and all related records have been deleted successfully",
+      });
+
+      navigate('/farmers');
+    } catch (error) {
+      console.error('Error deleting farmer:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete farmer",
+        variant: "destructive"
+      });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   const handleQuickAction = (action: string, cattleId?: string) => {
     const params = new URLSearchParams({
       farmerId: farmerId!,
@@ -105,6 +157,8 @@ const FarmerProfile = () => {
         break;
     }
   };
+
+  const isAdmin = user.designation === 'admin' || user.designation === 'office_staff';
 
   if (isLoading) {
     return (
@@ -151,6 +205,44 @@ const FarmerProfile = () => {
                   >
                     Add Cattle 🐄
                   </Button>
+                  {isAdmin && (
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="destructive"
+                          className="bg-red-600 hover:bg-red-700"
+                        >
+                          <Trash2 className="w-4 h-4 mr-2" />
+                          Delete Farmer
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent className="glass-card border-red-500/20">
+                        <AlertDialogHeader>
+                          <AlertDialogTitle className="text-white">Delete Farmer</AlertDialogTitle>
+                          <AlertDialogDescription className="text-gray-300">
+                            This will permanently delete {farmer.full_name} and all associated records including:
+                            <br />• {cattle.length} cattle profiles
+                            <br />• All milk production records
+                            <br />• All health checkup records
+                            <br />• All feed requests
+                            <br />• All SMS notifications
+                            <br /><br />
+                            This action cannot be undone. Are you sure you want to proceed?
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel className="glass-button">Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={handleDeleteFarmer}
+                            disabled={isDeleting}
+                            className="bg-red-600 hover:bg-red-700"
+                          >
+                            {isDeleting ? 'Deleting...' : 'Delete Permanently'}
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  )}
                 </div>
               </div>
             </CardHeader>
