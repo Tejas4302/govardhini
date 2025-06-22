@@ -1,12 +1,12 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import Navigation from '@/components/Navigation';
 import AdminGuard from '@/components/AdminGuard';
-import { Users, CheckCircle, XCircle, Clock, ArrowLeft, AlertTriangle, Trash2, UserCog } from 'lucide-react';
+import { Users, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import {
   Table,
@@ -16,48 +16,16 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-
-interface User {
-  id: string;
-  full_name: string;
-  phone_number: string;
-  designation: string;
-  active_role: string;
-  status: string;
-  created_at: string;
-}
+import { User, RoleChangeData } from '@/types/userManagement';
+import UserStatusBadge from '@/components/UserManagement/UserStatusBadge';
+import UserRoleBadge from '@/components/UserManagement/UserRoleBadge';
+import UserActions from '@/components/UserManagement/UserActions';
 
 const UserManagement = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [processingUserId, setProcessingUserId] = useState<string | null>(null);
-  const [roleChangeData, setRoleChangeData] = useState<{
-    userId: string;
-    userName: string;
-    currentRole: string;
-    newRole: string;
-    reason: string;
-  } | null>(null);
+  const [roleChangeData, setRoleChangeData] = useState<RoleChangeData | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
   
@@ -124,7 +92,6 @@ const UserManagement = () => {
         return;
       }
 
-      // Create role assignment for approved users
       if (status === 'approved') {
         const userToApprove = users.find(u => u.id === userId);
         if (userToApprove) {
@@ -138,7 +105,6 @@ const UserManagement = () => {
 
           if (roleError) {
             console.error('Error creating role assignment:', roleError);
-            // Don't show error to user as the main action succeeded
           }
         }
       }
@@ -239,40 +205,6 @@ const UserManagement = () => {
     }
   };
 
-  const getStatusBadge = (status: string) => {
-    const variants = {
-      pending: { className: 'bg-amber-500/20 text-amber-300 border-amber-500/30', icon: Clock },
-      approved: { className: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30', icon: CheckCircle },
-      rejected: { className: 'bg-red-500/20 text-red-300 border-red-500/30', icon: XCircle }
-    };
-    
-    const variant = variants[status as keyof typeof variants] || variants.pending;
-    const IconComponent = variant.icon;
-    
-    return (
-      <Badge className={variant.className}>
-        <IconComponent className="w-3 h-3 mr-1" />
-        {status.toUpperCase()}
-      </Badge>
-    );
-  };
-
-  const getRoleBadge = (originalRole: string, activeRole: string) => {
-    const hasRoleChanged = originalRole !== activeRole;
-    return (
-      <div className="flex flex-col gap-1">
-        <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/30">
-          {activeRole}
-        </Badge>
-        {hasRoleChanged && (
-          <Badge className="bg-gray-500/20 text-gray-300 border-gray-500/30 text-xs">
-            Originally: {originalRole}
-          </Badge>
-        )}
-      </div>
-    );
-  };
-
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-IN', {
       year: 'numeric',
@@ -355,214 +287,25 @@ const UserManagement = () => {
                           >
                             <TableCell className="text-white font-medium">{userData.full_name}</TableCell>
                             <TableCell className="text-emerald-300">{userData.phone_number}</TableCell>
-                            <TableCell>{getRoleBadge(userData.designation, userData.active_role)}</TableCell>
-                            <TableCell>{getStatusBadge(userData.status)}</TableCell>
+                            <TableCell>
+                              <UserRoleBadge originalRole={userData.designation} activeRole={userData.active_role} />
+                            </TableCell>
+                            <TableCell>
+                              <UserStatusBadge status={userData.status} />
+                            </TableCell>
                             <TableCell className="text-emerald-300 text-sm">{formatDate(userData.created_at)}</TableCell>
                             <TableCell>
-                              <div className="flex gap-2 flex-wrap">
-                                {userData.status === 'pending' && (
-                                  <>
-                                    <AlertDialog>
-                                      <AlertDialogTrigger asChild>
-                                        <Button
-                                          size="sm"
-                                          disabled={processingUserId === userData.id}
-                                          className="bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white"
-                                        >
-                                          <CheckCircle className="w-4 h-4 mr-1" />
-                                          Approve
-                                        </Button>
-                                      </AlertDialogTrigger>
-                                      <AlertDialogContent className="glass-card border-emerald-500/30 bg-slate-800/90 backdrop-blur-xl text-white">
-                                        <AlertDialogHeader>
-                                          <AlertDialogTitle className="text-emerald-300">Approve User</AlertDialogTitle>
-                                          <AlertDialogDescription className="text-emerald-200">
-                                            Are you sure you want to approve <strong>{userData.full_name}</strong> ({userData.designation})? 
-                                            They will be able to access the system immediately.
-                                          </AlertDialogDescription>
-                                        </AlertDialogHeader>
-                                        <AlertDialogFooter>
-                                          <AlertDialogCancel className="border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/20">
-                                            Cancel
-                                          </AlertDialogCancel>
-                                          <AlertDialogAction
-                                            onClick={() => updateUserStatus(userData.id, 'approved', userData.full_name)}
-                                            className="bg-emerald-600 hover:bg-emerald-700"
-                                          >
-                                            Approve User
-                                          </AlertDialogAction>
-                                        </AlertDialogFooter>
-                                      </AlertDialogContent>
-                                    </AlertDialog>
-
-                                    <AlertDialog>
-                                      <AlertDialogTrigger asChild>
-                                        <Button
-                                          size="sm"
-                                          variant="destructive"
-                                          disabled={processingUserId === userData.id}
-                                          className="bg-red-600 hover:bg-red-700"
-                                        >
-                                          <XCircle className="w-4 h-4 mr-1" />
-                                          Reject
-                                        </Button>
-                                      </AlertDialogTrigger>
-                                      <AlertDialogContent className="glass-card border-red-500/30 bg-slate-800/90 backdrop-blur-xl text-white">
-                                        <AlertDialogHeader>
-                                          <AlertDialogTitle className="text-red-300 flex items-center">
-                                            <AlertTriangle className="w-5 h-5 mr-2" />
-                                            Reject User
-                                          </AlertDialogTitle>
-                                          <AlertDialogDescription className="text-red-200">
-                                            Are you sure you want to reject <strong>{userData.full_name}</strong>? 
-                                            They will not be able to access the system and will need to contact admin.
-                                          </AlertDialogDescription>
-                                        </AlertDialogHeader>
-                                        <AlertDialogFooter>
-                                          <AlertDialogCancel className="border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/20">
-                                            Cancel
-                                          </AlertDialogCancel>
-                                          <AlertDialogAction
-                                            onClick={() => updateUserStatus(userData.id, 'rejected', userData.full_name)}
-                                            className="bg-red-600 hover:bg-red-700"
-                                          >
-                                            Reject User
-                                          </AlertDialogAction>
-                                        </AlertDialogFooter>
-                                      </AlertDialogContent>
-                                    </AlertDialog>
-                                  </>
-                                )}
-                                {userData.status === 'approved' && (
-                                  <>
-                                    <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/30">
-                                      Active User
-                                    </Badge>
-                                    
-                                    {/* Role Change Button */}
-                                    {userData.id !== user.id && (
-                                      <AlertDialog>
-                                        <AlertDialogTrigger asChild>
-                                          <Button
-                                            size="sm"
-                                            disabled={processingUserId === userData.id}
-                                            className="bg-blue-600 hover:bg-blue-700"
-                                          >
-                                            <UserCog className="w-4 h-4 mr-1" />
-                                            Change Role
-                                          </Button>
-                                        </AlertDialogTrigger>
-                                        <AlertDialogContent className="glass-card border-blue-500/30 bg-slate-800/90 backdrop-blur-xl text-white max-w-md">
-                                          <AlertDialogHeader>
-                                            <AlertDialogTitle className="text-blue-300">Change User Role</AlertDialogTitle>
-                                            <AlertDialogDescription className="text-blue-200">
-                                              Change the role for <strong>{userData.full_name}</strong>. This will not affect their past contributions.
-                                            </AlertDialogDescription>
-                                          </AlertDialogHeader>
-                                          <div className="space-y-4 py-4">
-                                            <div>
-                                              <Label className="text-emerald-300">Current Role: {userData.active_role}</Label>
-                                            </div>
-                                            <div>
-                                              <Label htmlFor="new-role" className="text-emerald-300">New Role</Label>
-                                              <Select 
-                                                onValueChange={(value) => setRoleChangeData({
-                                                  userId: userData.id,
-                                                  userName: userData.full_name,
-                                                  currentRole: userData.active_role,
-                                                  newRole: value,
-                                                  reason: roleChangeData?.reason || ''
-                                                })}
-                                              >
-                                                <SelectTrigger className="bg-slate-700 border-emerald-500/30">
-                                                  <SelectValue placeholder="Select new role" />
-                                                </SelectTrigger>
-                                                <SelectContent className="bg-slate-700 border-emerald-500/30">
-                                                  {availableRoles.filter(role => role !== userData.active_role).map((role) => (
-                                                    <SelectItem key={role} value={role} className="text-white hover:bg-emerald-500/20">
-                                                      {role}
-                                                    </SelectItem>
-                                                  ))}
-                                                </SelectContent>
-                                              </Select>
-                                            </div>
-                                            <div>
-                                              <Label htmlFor="reason" className="text-emerald-300">Reason (Optional)</Label>
-                                              <Input
-                                                id="reason"
-                                                placeholder="Reason for role change"
-                                                className="bg-slate-700 border-emerald-500/30 text-white"
-                                                value={roleChangeData?.reason || ''}
-                                                onChange={(e) => setRoleChangeData(prev => prev ? {...prev, reason: e.target.value} : null)}
-                                              />
-                                            </div>
-                                          </div>
-                                          <AlertDialogFooter>
-                                            <AlertDialogCancel 
-                                              className="border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/20"
-                                              onClick={() => setRoleChangeData(null)}
-                                            >
-                                              Cancel
-                                            </AlertDialogCancel>
-                                            <AlertDialogAction
-                                              onClick={changeUserRole}
-                                              disabled={!roleChangeData?.newRole}
-                                              className="bg-blue-600 hover:bg-blue-700"
-                                            >
-                                              Change Role
-                                            </AlertDialogAction>
-                                          </AlertDialogFooter>
-                                        </AlertDialogContent>
-                                      </AlertDialog>
-                                    )}
-                                  </>
-                                )}
-                                {userData.status === 'rejected' && (
-                                  <Badge className="bg-red-500/20 text-red-300 border-red-500/30">
-                                    Access Denied
-                                  </Badge>
-                                )}
-                                
-                                {/* Delete Button - Available for all users except current admin */}
-                                {userData.id !== user.id && (
-                                  <AlertDialog>
-                                    <AlertDialogTrigger asChild>
-                                      <Button
-                                        size="sm"
-                                        variant="destructive"
-                                        disabled={processingUserId === userData.id}
-                                        className="bg-red-700 hover:bg-red-800"
-                                      >
-                                        <Trash2 className="w-4 h-4 mr-1" />
-                                        Delete
-                                      </Button>
-                                    </AlertDialogTrigger>
-                                    <AlertDialogContent className="glass-card border-red-500/30 bg-slate-800/90 backdrop-blur-xl text-white">
-                                      <AlertDialogHeader>
-                                        <AlertDialogTitle className="text-red-300 flex items-center">
-                                          <AlertTriangle className="w-5 h-5 mr-2" />
-                                          Delete User Account
-                                        </AlertDialogTitle>
-                                        <AlertDialogDescription className="text-red-200">
-                                          Are you sure you want to permanently delete <strong>{userData.full_name}</strong>'s account? 
-                                          This action cannot be undone and will remove all their data from the system.
-                                        </AlertDialogDescription>
-                                      </AlertDialogHeader>
-                                      <AlertDialogFooter>
-                                        <AlertDialogCancel className="border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/20">
-                                          Cancel
-                                        </AlertDialogCancel>
-                                        <AlertDialogAction
-                                          onClick={() => deleteUser(userData.id, userData.full_name)}
-                                          className="bg-red-700 hover:bg-red-800"
-                                        >
-                                          Delete Account
-                                        </AlertDialogAction>
-                                      </AlertDialogFooter>
-                                    </AlertDialogContent>
-                                  </AlertDialog>
-                                )}
-                              </div>
+                              <UserActions
+                                user={userData}
+                                currentUserId={user.id}
+                                availableRoles={availableRoles}
+                                processingUserId={processingUserId}
+                                roleChangeData={roleChangeData}
+                                setRoleChangeData={setRoleChangeData}
+                                onStatusUpdate={updateUserStatus}
+                                onRoleChange={changeUserRole}
+                                onDelete={deleteUser}
+                              />
                             </TableCell>
                           </TableRow>
                         ))}
