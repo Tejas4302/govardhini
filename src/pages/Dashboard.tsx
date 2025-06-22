@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -31,6 +32,13 @@ interface DashboardStats {
   healthScore: number;
 }
 
+interface ActivityItem {
+  id: string;
+  type: string;
+  description: string;
+  timestamp: string;
+}
+
 const Dashboard = () => {
   const [stats, setStats] = useState({
     totalFarmers: 0,
@@ -38,7 +46,7 @@ const Dashboard = () => {
     milkProduction: 0,
     healthScore: 95
   });
-  const [recentActivities, setRecentActivities] = useState<Activity[]>([]);
+  const [recentActivities, setRecentActivities] = useState<ActivityItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showUserGuide, setShowUserGuide] = useState(false);
   const { toast } = useToast();
