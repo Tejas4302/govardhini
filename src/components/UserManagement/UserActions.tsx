@@ -130,9 +130,10 @@ const UserActions: React.FC<UserActionsProps> = ({
                     size="sm"
                     variant="ghost"
                     disabled={processingUserId === user.id}
-                    className="text-blue-400 hover:text-blue-300 border-0 bg-transparent hover:bg-transparent min-w-[32px] min-h-[32px] w-8 h-8 p-0 flex items-center justify-center shrink-0"
+                    className="text-blue-400 hover:text-blue-300 w-8 h-8 p-0 flex items-center justify-center border-0 bg-transparent hover:bg-transparent"
+                    style={{ minWidth: '32px', minHeight: '32px' }}
                   >
-                    <UserCog className="w-4 h-4 flex-shrink-0" />
+                    <UserCog className="w-4 h-4" style={{ flexShrink: 0 }} />
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent className="glass-card border-blue-500/30 bg-slate-800/90 backdrop-blur-xl text-white max-w-md">
@@ -205,9 +206,10 @@ const UserActions: React.FC<UserActionsProps> = ({
                     size="sm"
                     variant="ghost"
                     disabled={processingUserId === user.id}
-                    className="text-red-400 hover:text-red-300 border-0 bg-transparent hover:bg-transparent min-w-[32px] min-h-[32px] w-8 h-8 p-0 flex items-center justify-center shrink-0"
+                    className="text-red-400 hover:text-red-300 w-8 h-8 p-0 flex items-center justify-center border-0 bg-transparent hover:bg-transparent"
+                    style={{ minWidth: '32px', minHeight: '32px' }}
                   >
-                    <Trash2 className="w-4 h-4 flex-shrink-0" />
+                    <Trash2 className="w-4 h-4" style={{ flexShrink: 0 }} />
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent className="glass-card border-red-500/30 bg-slate-800/90 backdrop-blur-xl text-white">
