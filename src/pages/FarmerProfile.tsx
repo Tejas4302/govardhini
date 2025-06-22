@@ -1,13 +1,15 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import Navigation from '@/components/Navigation';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Trash2 } from 'lucide-react';
+import { Trash2, ArrowLeft } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -48,9 +50,18 @@ const FarmerProfile = () => {
   const [cattle, setCattle] = useState<Cattle[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [updatingCattleId, setUpdatingCattleId] = useState<string | null>(null);
   const { toast } = useToast();
   
   const user = JSON.parse(localStorage.getItem('govardhini_user') || '{}');
+  
+  // Debug logging for user designation
+  console.log('User object:', user);
+  console.log('User designation:', user.designation);
+  console.log('User designation type:', typeof user.designation);
+  
+  const isAdmin = user.designation?.toLowerCase() === 'admin' || user.designation?.toLowerCase() === 'office_staff';
+  console.log('Is Admin:', isAdmin);
 
   useEffect(() => {
     if (farmerId) {
@@ -131,6 +142,42 @@ const FarmerProfile = () => {
     }
   };
 
+  const handleLactationToggle = async (cattleId: string, currentStatus: boolean) => {
+    setUpdatingCattleId(cattleId);
+    try {
+      const { error } = await supabase
+        .from('cattle_profiles')
+        .update({ lactation: !currentStatus })
+        .eq('cattle_id', cattleId);
+
+      if (error) throw error;
+
+      // Update local state
+      setCattle(prevCattle => 
+        prevCattle.map(animal => 
+          animal.cattle_id === cattleId 
+            ? { ...animal, lactation: !currentStatus }
+            : animal
+        )
+      );
+
+      toast({
+        title: "Success",
+        description: `Cattle lactation status updated to ${!currentStatus ? 'Lactating' : 'Dry'}`,
+      });
+
+    } catch (error) {
+      console.error('Error updating lactation status:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update lactation status",
+        variant: "destructive"
+      });
+    } finally {
+      setUpdatingCattleId(null);
+    }
+  };
+
   const handleQuickAction = (action: string, cattleId?: string) => {
     const params = new URLSearchParams({
       farmerId: farmerId!,
@@ -157,8 +204,6 @@ const FarmerProfile = () => {
         break;
     }
   };
-
-  const isAdmin = user.designation?.toLowerCase() === 'admin' || user.designation?.toLowerCase() === 'office_staff';
 
   if (isLoading) {
     return (
@@ -188,6 +233,16 @@ const FarmerProfile = () => {
       
       <div className="relative z-10 container mx-auto px-4 py-8">
         <div className="max-w-6xl mx-auto">
+          {/* Back Button */}
+          <Button
+            onClick={() => navigate(-1)}
+            variant="outline"
+            className="mb-4 glass-input text-white border-white/20 hover:bg-white/20"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back
+          </Button>
+
           {/* Farmer Info Header */}
           <Card className="glass-card border-0 mb-6">
             <CardHeader>
@@ -263,9 +318,11 @@ const FarmerProfile = () => {
                     <CardHeader className="pb-3">
                       <div className="flex justify-between items-start">
                         <CardTitle className="text-lg text-white">{animal.cattle_id}</CardTitle>
-                        <Badge className={animal.lactation ? "bg-blue-500" : "bg-gray-500"}>
-                          {animal.lactation ? "Lactating" : "Dry"}
-                        </Badge>
+                        <div className="flex items-center gap-2">
+                          <Badge className={animal.lactation ? "bg-blue-500" : "bg-gray-500"}>
+                            {animal.lactation ? "Lactating" : "Dry"}
+                          </Badge>
+                        </div>
                       </div>
                       <CardDescription className="text-gray-300">
                         {animal.type} • {animal.breed}
@@ -276,6 +333,17 @@ const FarmerProfile = () => {
                         <p>Weight: {animal.weight_kg} kg</p>
                         <p>DOB: {new Date(animal.dob).toLocaleDateString()}</p>
                       </div>
+                      
+                      {/* Lactation Status Toggle */}
+                      <div className="flex items-center justify-between py-2">
+                        <span className="text-sm text-gray-300">Lactation Status:</span>
+                        <Switch
+                          checked={animal.lactation}
+                          onCheckedChange={() => handleLactationToggle(animal.cattle_id, animal.lactation)}
+                          disabled={updatingCattleId === animal.cattle_id}
+                        />
+                      </div>
+                      
                       <div className="flex gap-2">
                         <Button
                           size="sm"
