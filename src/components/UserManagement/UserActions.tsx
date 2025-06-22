@@ -1,21 +1,18 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet';
 import { CheckCircle, XCircle, AlertTriangle, Trash2, UserCog } from 'lucide-react';
 import { User, RoleChangeData } from '@/types/userManagement';
-import RoleChangeDialog from './RoleChangeDialog';
 
 interface UserActionsProps {
   user: User;
@@ -40,12 +37,37 @@ const UserActions: React.FC<UserActionsProps> = ({
   onRoleChange,
   onDelete
 }) => {
+  const [approveSheetOpen, setApproveSheetOpen] = useState(false);
+  const [rejectSheetOpen, setRejectSheetOpen] = useState(false);
+  const [roleSheetOpen, setRoleSheetOpen] = useState(false);
+  const [deleteSheetOpen, setDeleteSheetOpen] = useState(false);
+
+  const handleApprove = () => {
+    onStatusUpdate(user.id, 'approved', user.full_name);
+    setApproveSheetOpen(false);
+  };
+
+  const handleReject = () => {
+    onStatusUpdate(user.id, 'rejected', user.full_name);
+    setRejectSheetOpen(false);
+  };
+
+  const handleRoleChange = () => {
+    onRoleChange();
+    setRoleSheetOpen(false);
+  };
+
+  const handleDelete = () => {
+    onDelete(user.id, user.full_name);
+    setDeleteSheetOpen(false);
+  };
+
   return (
     <div className="flex gap-2 items-center" style={{ minHeight: '36px', minWidth: '200px' }}>
       {user.status === 'pending' && (
         <>
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
+          <Sheet open={approveSheetOpen} onOpenChange={setApproveSheetOpen}>
+            <SheetTrigger asChild>
               <Button
                 size="sm"
                 disabled={processingUserId === user.id}
@@ -55,31 +77,35 @@ const UserActions: React.FC<UserActionsProps> = ({
                 <CheckCircle className="w-4 h-4 mr-1" />
                 Approve
               </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent className="glass-card border-emerald-500/30 bg-slate-800/90 backdrop-blur-xl text-white">
-              <AlertDialogHeader>
-                <AlertDialogTitle className="text-emerald-300">Approve User</AlertDialogTitle>
-                <AlertDialogDescription className="text-emerald-200">
+            </SheetTrigger>
+            <SheetContent className="glass-card border-emerald-500/30 bg-slate-800/90 backdrop-blur-xl text-white">
+              <SheetHeader>
+                <SheetTitle className="text-emerald-300">Approve User</SheetTitle>
+                <SheetDescription className="text-emerald-200">
                   Are you sure you want to approve <strong>{user.full_name}</strong> ({user.designation})? 
                   They will be able to access the system immediately.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel className="border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/20">
+                </SheetDescription>
+              </SheetHeader>
+              <SheetFooter className="mt-6">
+                <Button
+                  variant="outline"
+                  onClick={() => setApproveSheetOpen(false)}
+                  className="border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/20"
+                >
                   Cancel
-                </AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={() => onStatusUpdate(user.id, 'approved', user.full_name)}
+                </Button>
+                <Button
+                  onClick={handleApprove}
                   className="bg-emerald-600 hover:bg-emerald-700"
                 >
                   Approve User
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+                </Button>
+              </SheetFooter>
+            </SheetContent>
+          </Sheet>
 
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
+          <Sheet open={rejectSheetOpen} onOpenChange={setRejectSheetOpen}>
+            <SheetTrigger asChild>
               <Button
                 size="sm"
                 variant="destructive"
@@ -90,31 +116,35 @@ const UserActions: React.FC<UserActionsProps> = ({
                 <XCircle className="w-4 h-4 mr-1" />
                 Reject
               </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent className="glass-card border-red-500/30 bg-slate-800/90 backdrop-blur-xl text-white">
-              <AlertDialogHeader>
-                <AlertDialogTitle className="text-red-300 flex items-center">
+            </SheetTrigger>
+            <SheetContent className="glass-card border-red-500/30 bg-slate-800/90 backdrop-blur-xl text-white">
+              <SheetHeader>
+                <SheetTitle className="text-red-300 flex items-center">
                   <AlertTriangle className="w-5 h-5 mr-2" />
                   Reject User
-                </AlertDialogTitle>
-                <AlertDialogDescription className="text-red-200">
+                </SheetTitle>
+                <SheetDescription className="text-red-200">
                   Are you sure you want to reject <strong>{user.full_name}</strong>? 
                   They will not be able to access the system and will need to contact admin.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel className="border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/20">
+                </SheetDescription>
+              </SheetHeader>
+              <SheetFooter className="mt-6">
+                <Button
+                  variant="outline"
+                  onClick={() => setRejectSheetOpen(false)}
+                  className="border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/20"
+                >
                   Cancel
-                </AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={() => onStatusUpdate(user.id, 'rejected', user.full_name)}
+                </Button>
+                <Button
+                  onClick={handleReject}
                   className="bg-red-600 hover:bg-red-700"
                 >
                   Reject User
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+                </Button>
+              </SheetFooter>
+            </SheetContent>
+          </Sheet>
         </>
       )}
       
@@ -126,8 +156,8 @@ const UserActions: React.FC<UserActionsProps> = ({
           
           {user.id !== currentUserId && (
             <div className="flex gap-1" style={{ minWidth: '72px' }}>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
+              <Sheet open={roleSheetOpen} onOpenChange={setRoleSheetOpen}>
+                <SheetTrigger asChild>
                   <Button
                     size="sm"
                     variant="ghost"
@@ -146,14 +176,14 @@ const UserActions: React.FC<UserActionsProps> = ({
                   >
                     <UserCog className="w-4 h-4" style={{ flexShrink: 0 }} />
                   </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent className="glass-card border-blue-500/30 bg-slate-800/90 backdrop-blur-xl text-white max-w-md">
-                  <AlertDialogHeader>
-                    <AlertDialogTitle className="text-blue-300">Change User Role</AlertDialogTitle>
-                    <AlertDialogDescription className="text-blue-200">
+                </SheetTrigger>
+                <SheetContent className="glass-card border-blue-500/30 bg-slate-800/90 backdrop-blur-xl text-white">
+                  <SheetHeader>
+                    <SheetTitle className="text-blue-300">Change User Role</SheetTitle>
+                    <SheetDescription className="text-blue-200">
                       Change the role for <strong>{user.full_name}</strong>. This will not affect their past contributions.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
+                    </SheetDescription>
+                  </SheetHeader>
                   <div className="space-y-4 py-4">
                     <div>
                       <label className="text-emerald-300">Current Role: {user.active_role}</label>
@@ -193,26 +223,30 @@ const UserActions: React.FC<UserActionsProps> = ({
                       />
                     </div>
                   </div>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel 
+                  <SheetFooter className="mt-6">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setRoleChangeData(null);
+                        setRoleSheetOpen(false);
+                      }}
                       className="border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/20"
-                      onClick={() => setRoleChangeData(null)}
                     >
                       Cancel
-                    </AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={onRoleChange}
+                    </Button>
+                    <Button
+                      onClick={handleRoleChange}
                       disabled={!roleChangeData?.newRole}
                       className="bg-blue-600 hover:bg-blue-700"
                     >
                       Change Role
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
+                    </Button>
+                  </SheetFooter>
+                </SheetContent>
+              </Sheet>
 
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
+              <Sheet open={deleteSheetOpen} onOpenChange={setDeleteSheetOpen}>
+                <SheetTrigger asChild>
                   <Button
                     size="sm"
                     variant="ghost"
@@ -231,31 +265,35 @@ const UserActions: React.FC<UserActionsProps> = ({
                   >
                     <Trash2 className="w-4 h-4" style={{ flexShrink: 0 }} />
                   </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent className="glass-card border-red-500/30 bg-slate-800/90 backdrop-blur-xl text-white">
-                  <AlertDialogHeader>
-                    <AlertDialogTitle className="text-red-300 flex items-center">
+                </SheetTrigger>
+                <SheetContent className="glass-card border-red-500/30 bg-slate-800/90 backdrop-blur-xl text-white">
+                  <SheetHeader>
+                    <SheetTitle className="text-red-300 flex items-center">
                       <AlertTriangle className="w-5 h-5 mr-2" />
                       Delete User Account
-                    </AlertDialogTitle>
-                    <AlertDialogDescription className="text-red-200">
+                    </SheetTitle>
+                    <SheetDescription className="text-red-200">
                       Are you sure you want to permanently delete <strong>{user.full_name}</strong>'s account? 
                       This action cannot be undone and will remove all their data from the system.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel className="border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/20">
+                    </SheetDescription>
+                  </SheetHeader>
+                  <SheetFooter className="mt-6">
+                    <Button
+                      variant="outline"
+                      onClick={() => setDeleteSheetOpen(false)}
+                      className="border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/20"
+                    >
                       Cancel
-                    </AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={() => onDelete(user.id, user.full_name)}
+                    </Button>
+                    <Button
+                      onClick={handleDelete}
                       className="bg-red-700 hover:bg-red-800"
                     >
                       Delete Account
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
+                    </Button>
+                  </SheetFooter>
+                </SheetContent>
+              </Sheet>
             </div>
           )}
         </>
