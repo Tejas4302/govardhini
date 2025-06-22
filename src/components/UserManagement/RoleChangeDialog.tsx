@@ -98,7 +98,10 @@ const RoleChangeDialog: React.FC<RoleChangeDialogProps> = ({
               placeholder="Reason for role change"
               className="bg-slate-700 border-emerald-500/30 text-white"
               value={roleChangeData?.reason || ''}
-              onChange={(e) => setRoleChangeData(prev => prev ? {...prev, reason: e.target.value} : null)}
+              onChange={(e) => setRoleChangeData(roleChangeData ? {
+                ...roleChangeData, 
+                reason: e.target.value
+              } : null)}
             />
           </div>
         </div>
