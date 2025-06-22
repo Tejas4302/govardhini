@@ -75,15 +75,6 @@ const Dashboard = () => {
 
   if (!user) return null;
 
-  const getRoleBadgeColor = (role: string) => {
-    switch (role) {
-      case 'admin': return 'bg-red-100 text-red-800';
-      case 'office_staff': return 'bg-blue-100 text-blue-800';
-      case 'field_officer': return 'bg-green-100 text-green-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
-
   const getQuickActions = () => {
     const baseActions = [
       { title: 'Farmer Registration', desc: 'Register new farmers', icon: '👨‍🌾', path: '/farmer-onboarding' },
@@ -103,102 +94,102 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-amber-50 to-orange-50">
+    <div className="min-h-screen bg-gray-900">
       <Navigation user={user} />
       
-      <div className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-800 mb-2">
-                Welcome back, {user.name}!
-              </h1>
-              <div className="flex items-center gap-3">
-                <Badge className={getRoleBadgeColor(user.role)}>
-                  {user.role.replace('_', ' ').toUpperCase()}
-                </Badge>
-                <span className="text-gray-600">• Today's Dashboard</span>
-              </div>
-            </div>
+      {/* Header */}
+      <div className="bg-gray-900 px-4 py-6 border-b border-gray-700">
+        <div className="container mx-auto">
+          <h1 className="text-2xl font-bold text-white mb-2">Dashboard</h1>
+          <div className="flex items-center gap-3">
+            <Badge className="bg-green-600 text-white">
+              {user.role.replace('_', ' ').toUpperCase()}
+            </Badge>
           </div>
         </div>
+      </div>
 
-        {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card className="bg-gradient-to-br from-green-500 to-green-600 text-white border-0">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-green-100">Total Farmers</p>
-                  <p className="text-3xl font-bold">{isLoading ? '...' : stats.totalFarmers}</p>
+      <div className="container mx-auto px-4 py-6">
+        {/* Key Metrics */}
+        <div className="mb-8">
+          <h2 className="text-xl font-semibold text-white mb-4">Key Metrics</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <Card className="bg-gray-800 border-gray-700 text-white">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-gray-400 text-sm">Total Farmers</p>
+                    <p className="text-3xl font-bold">{isLoading ? '...' : stats.totalFarmers}</p>
+                  </div>
+                  <div className="text-4xl">👨‍🌾</div>
                 </div>
-                <div className="text-4xl">👨‍🌾</div>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card className="bg-gradient-to-br from-amber-500 to-amber-600 text-white border-0">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-amber-100">Total Cattle</p>
-                  <p className="text-3xl font-bold">{isLoading ? '...' : stats.totalCattle}</p>
+              </CardContent>
+            </Card>
+            
+            <Card className="bg-gray-800 border-gray-700 text-white">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-gray-400 text-sm">Total Cattle</p>
+                    <p className="text-3xl font-bold">{isLoading ? '...' : stats.totalCattle}</p>
+                  </div>
+                  <div className="text-4xl">🐄</div>
                 </div>
-                <div className="text-4xl">🐄</div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </div>
           
-          <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white border-0">
+          <Card className="bg-gray-800 border-gray-700 text-white">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-blue-100">Today's Milk (L)</p>
-                  <p className="text-3xl font-bold">{isLoading ? '...' : stats.todayMilk}</p>
+                  <p className="text-gray-400 text-sm">Today's Milk Production</p>
+                  <p className="text-3xl font-bold">{isLoading ? '...' : stats.todayMilk}L</p>
                 </div>
                 <div className="text-4xl">🥛</div>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card className="bg-gradient-to-br from-red-500 to-red-600 text-white border-0">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-red-100">Health Alerts</p>
-                  <p className="text-3xl font-bold">{isLoading ? '...' : stats.healthAlerts}</p>
-                </div>
-                <div className="text-4xl">🚨</div>
               </div>
             </CardContent>
           </Card>
         </div>
 
         {/* Quick Actions */}
-        <Card className="bg-white/80 backdrop-blur shadow-lg border-0">
-          <CardHeader>
-            <CardTitle className="text-xl font-semibold text-gray-800">Quick Actions</CardTitle>
-            <CardDescription>Common tasks for your role</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {getQuickActions().map((action, index) => (
-                <Button
-                  key={index}
-                  variant="outline"
-                  className="h-auto p-6 flex flex-col items-center space-y-3 hover:bg-green-50 hover:border-green-300 transition-all duration-200"
-                  onClick={() => navigate(action.path)}
-                >
-                  <div className="text-3xl">{action.icon}</div>
-                  <div className="text-center">
-                    <p className="font-semibold text-gray-800">{action.title}</p>
-                    <p className="text-sm text-gray-600">{action.desc}</p>
-                  </div>
-                </Button>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+        <div className="mb-8">
+          <h2 className="text-xl font-semibold text-white mb-4">Quick Actions</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {getQuickActions().map((action, index) => (
+              <Button
+                key={index}
+                variant="outline"
+                className="h-auto p-6 flex items-center justify-start space-x-4 bg-gray-800 border-gray-700 text-white hover:bg-gray-700 hover:border-green-500 transition-all duration-200"
+                onClick={() => navigate(action.path)}
+              >
+                <div className="w-12 h-12 bg-green-600 rounded-lg flex items-center justify-center text-2xl">
+                  {action.icon}
+                </div>
+                <div className="text-left">
+                  <p className="font-semibold text-white">{action.title}</p>
+                  <p className="text-sm text-gray-400">{action.desc}</p>
+                </div>
+              </Button>
+            ))}
+          </div>
+        </div>
+
+        {/* Health Status */}
+        {stats.healthAlerts > 0 && (
+          <Card className="bg-red-900 border-red-700 text-white">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-red-200 text-sm">Health Alerts</p>
+                  <p className="text-3xl font-bold">{stats.healthAlerts}</p>
+                  <p className="text-red-200 text-sm">Require attention</p>
+                </div>
+                <div className="text-4xl">🚨</div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );

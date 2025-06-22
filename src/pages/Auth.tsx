@@ -12,6 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState('login');
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -193,6 +194,9 @@ const Auth = () => {
         designation: ''
       });
 
+      // Switch to login tab
+      setActiveTab('login');
+
     } catch (error) {
       console.error('Signup error:', error);
       toast({
@@ -206,48 +210,48 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-amber-50 to-orange-50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md shadow-xl border-0 bg-white/90 backdrop-blur">
+    <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
+      <Card className="w-full max-w-md shadow-xl border-0 bg-gray-800 text-white">
         <CardHeader className="text-center pb-6">
-          <div className="mx-auto w-16 h-16 bg-gradient-to-br from-green-600 to-amber-600 rounded-full flex items-center justify-center mb-4">
+          <div className="mx-auto w-16 h-16 bg-gradient-to-br from-green-500 to-green-700 rounded-full flex items-center justify-center mb-4">
             <span className="text-white text-2xl font-bold">🐄</span>
           </div>
-          <CardTitle className="text-2xl font-bold text-gray-800">Govardhini</CardTitle>
-          <CardDescription className="text-gray-600">
+          <CardTitle className="text-2xl font-bold text-white">Govardhini</CardTitle>
+          <CardDescription className="text-gray-300">
             Digital Cattle Management System
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="login" className="space-y-4">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="login">Login</TabsTrigger>
-              <TabsTrigger value="signup">Sign Up</TabsTrigger>
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+            <TabsList className="grid w-full grid-cols-2 bg-gray-700">
+              <TabsTrigger value="login" className="data-[state=active]:bg-green-600 data-[state=active]:text-white">Login</TabsTrigger>
+              <TabsTrigger value="signup" className="data-[state=active]:bg-green-600 data-[state=active]:text-white">Sign Up</TabsTrigger>
             </TabsList>
             
             <TabsContent value="login">
               <form onSubmit={handleLogin} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="phone">Phone Number</Label>
+                  <Label htmlFor="phone" className="text-gray-200">Phone Number</Label>
                   <Input
                     id="phone"
                     type="tel"
                     placeholder="Enter your phone number"
                     value={loginData.phone}
                     onChange={(e) => setLoginData(prev => ({ ...prev, phone: e.target.value }))}
-                    className="border-gray-300"
+                    className="bg-gray-700 border-gray-600 text-white placeholder:text-gray-400 focus:border-green-500"
                     disabled={isLoading}
                   />
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
+                  <Label htmlFor="password" className="text-gray-200">Password</Label>
                   <Input
                     id="password"
                     type="password"
                     placeholder="Enter your password"
                     value={loginData.password}
                     onChange={(e) => setLoginData(prev => ({ ...prev, password: e.target.value }))}
-                    className="border-gray-300"
+                    className="bg-gray-700 border-gray-600 text-white placeholder:text-gray-400 focus:border-green-500"
                     disabled={isLoading}
                   />
                 </div>
@@ -255,7 +259,7 @@ const Auth = () => {
                 <Button 
                   type="submit" 
                   disabled={isLoading}
-                  className="w-full bg-gradient-to-r from-green-600 to-amber-600 hover:from-green-700 hover:to-amber-700 text-white font-semibold py-3 transition-all duration-200"
+                  className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 transition-all duration-200"
                 >
                   {isLoading ? 'Logging in...' : 'Login to Govardhini'}
                 </Button>
@@ -265,42 +269,42 @@ const Auth = () => {
             <TabsContent value="signup">
               <form onSubmit={handleSignup} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="fullName">Full Name</Label>
+                  <Label htmlFor="fullName" className="text-gray-200">Full Name</Label>
                   <Input
                     id="fullName"
                     type="text"
                     placeholder="Enter your full name"
                     value={signupData.fullName}
                     onChange={(e) => setSignupData(prev => ({ ...prev, fullName: e.target.value }))}
-                    className="border-gray-300"
+                    className="bg-gray-700 border-gray-600 text-white placeholder:text-gray-400 focus:border-green-500"
                     disabled={isLoading}
                   />
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="phoneNumber">Phone Number</Label>
+                  <Label htmlFor="phoneNumber" className="text-gray-200">Phone Number</Label>
                   <Input
                     id="phoneNumber"
                     type="tel"
                     placeholder="Enter your phone number"
                     value={signupData.phoneNumber}
                     onChange={(e) => setSignupData(prev => ({ ...prev, phoneNumber: e.target.value }))}
-                    className="border-gray-300"
+                    className="bg-gray-700 border-gray-600 text-white placeholder:text-gray-400 focus:border-green-500"
                     disabled={isLoading}
                   />
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="designation">Designation</Label>
+                  <Label htmlFor="designation" className="text-gray-200">Designation</Label>
                   <Select 
                     value={signupData.designation} 
                     onValueChange={(value) => setSignupData(prev => ({ ...prev, designation: value }))}
                     disabled={isLoading}
                   >
-                    <SelectTrigger className="border-gray-300">
+                    <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
                       <SelectValue placeholder="Choose your designation" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-gray-700 border-gray-600">
                       <SelectItem value="Field Officer">Field Officer</SelectItem>
                       <SelectItem value="Office Staff">Office Staff</SelectItem>
                       <SelectItem value="Admin">Admin</SelectItem>
@@ -309,27 +313,27 @@ const Auth = () => {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="signupPassword">Password</Label>
+                  <Label htmlFor="signupPassword" className="text-gray-200">Password</Label>
                   <Input
                     id="signupPassword"
                     type="password"
                     placeholder="Create a password (min 6 characters)"
                     value={signupData.password}
                     onChange={(e) => setSignupData(prev => ({ ...prev, password: e.target.value }))}
-                    className="border-gray-300"
+                    className="bg-gray-700 border-gray-600 text-white placeholder:text-gray-400 focus:border-green-500"
                     disabled={isLoading}
                   />
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="confirmPassword">Confirm Password</Label>
+                  <Label htmlFor="confirmPassword" className="text-gray-200">Confirm Password</Label>
                   <Input
                     id="confirmPassword"
                     type="password"
                     placeholder="Confirm your password"
                     value={signupData.confirmPassword}
                     onChange={(e) => setSignupData(prev => ({ ...prev, confirmPassword: e.target.value }))}
-                    className="border-gray-300"
+                    className="bg-gray-700 border-gray-600 text-white placeholder:text-gray-400 focus:border-green-500"
                     disabled={isLoading}
                   />
                 </div>
@@ -337,7 +341,7 @@ const Auth = () => {
                 <Button 
                   type="submit" 
                   disabled={isLoading}
-                  className="w-full bg-gradient-to-r from-green-600 to-amber-600 hover:from-green-700 hover:to-amber-700 text-white font-semibold py-3 transition-all duration-200"
+                  className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 transition-all duration-200"
                 >
                   {isLoading ? 'Creating Account...' : 'Create Account'}
                 </Button>
