@@ -1,8 +1,10 @@
+
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { RefreshCw } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import Navigation from '@/components/Navigation';
 
@@ -32,7 +34,9 @@ const Dashboard = () => {
     pendingApprovals: 0
   });
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const userData = localStorage.getItem('govardhini_user');
@@ -44,7 +48,37 @@ const Dashboard = () => {
     fetchDashboardStats();
   }, [navigate]);
 
-  const fetchDashboardStats = async () => {
+  // Auto-refresh when navigating to dashboard
+  useEffect(() => {
+    if (location.pathname === '/dashboard' && user) {
+      fetchDashboardStats();
+    }
+  }, [location.pathname, user]);
+
+  // Auto-refresh when window regains focus
+  useEffect(() => {
+    const handleFocus = () => {
+      if (document.visibilityState === 'visible' && user) {
+        fetchDashboardStats();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleFocus);
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleFocus);
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [user]);
+
+  const fetchDashboardStats = async (isManualRefresh = false) => {
+    if (isManualRefresh) {
+      setIsRefreshing(true);
+    } else {
+      setIsLoading(true);
+    }
+
     try {
       const today = new Date().toISOString().split('T')[0];
 
@@ -70,7 +104,12 @@ const Dashboard = () => {
       console.error('Error fetching dashboard stats:', error);
     } finally {
       setIsLoading(false);
+      setIsRefreshing(false);
     }
+  };
+
+  const handleManualRefresh = () => {
+    fetchDashboardStats(true);
   };
 
   const handleMetricClick = (metric: string) => {
@@ -131,7 +170,17 @@ const Dashboard = () => {
       <div className="relative z-10 px-4 py-6">
         <div className="container mx-auto">
           <div className="animate-fade-in">
-            <h1 className="text-3xl font-bold text-white mb-2">Dashboard</h1>
+            <div className="flex items-center justify-between mb-2">
+              <h1 className="text-3xl font-bold text-white">Dashboard</h1>
+              <Button
+                onClick={handleManualRefresh}
+                disabled={isRefreshing}
+                className="glass-button flex items-center gap-2"
+              >
+                <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+                {isRefreshing ? 'Refreshing...' : 'Refresh'}
+              </Button>
+            </div>
             <div className="flex items-center gap-3">
               <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 text-white border-0 px-4 py-2 rounded-full">
                 {user.role.replace('_', ' ').toUpperCase()}
