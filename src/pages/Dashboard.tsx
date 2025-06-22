@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,7 +8,9 @@ import { supabase } from '@/integrations/supabase/client';
 import Navigation from '@/components/Navigation';
 
 interface UserData {
-  email: string;
+  id: string;
+  email?: string;
+  phone?: string;
   role: string;
   name: string;
 }
@@ -33,7 +36,7 @@ const Dashboard = () => {
   useEffect(() => {
     const userData = localStorage.getItem('govardhini_user');
     if (!userData) {
-      navigate('/login');
+      navigate('/auth');
       return;
     }
     setUser(JSON.parse(userData));

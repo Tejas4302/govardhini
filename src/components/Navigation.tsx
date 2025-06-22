@@ -6,7 +6,9 @@ import { useToast } from '@/hooks/use-toast';
 
 interface NavigationProps {
   user: {
-    email: string;
+    id?: string;
+    email?: string;
+    phone?: string;
     role: string;
     name: string;
   };
@@ -22,7 +24,7 @@ const Navigation = ({ user }: NavigationProps) => {
       title: "Logged out successfully",
       description: "Thank you for using Govardhini",
     });
-    navigate('/login');
+    navigate('/auth');
   };
 
   return (
