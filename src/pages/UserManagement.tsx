@@ -98,7 +98,7 @@ const UserManagement = () => {
   const getStatusBadge = (status: string) => {
     const variants = {
       pending: 'default',
-      approved: 'success',
+      approved: 'secondary',
       rejected: 'destructive'
     } as const;
     
