@@ -6,7 +6,8 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import Navigation from '@/components/Navigation';
-import { Users, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { Users, CheckCircle, XCircle, Clock, ArrowLeft } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import {
   Table,
   TableBody,
@@ -29,6 +30,7 @@ const UserManagement = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
+  const navigate = useNavigate();
   
   const user = JSON.parse(localStorage.getItem('govardhini_user') || '{}');
 
@@ -115,7 +117,7 @@ const UserManagement = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-green-900 to-teal-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-green-900 to-emerald-900">
       <Navigation user={user} />
       
       {/* Enhanced animated background */}
@@ -129,7 +131,18 @@ const UserManagement = () => {
       
       <div className="relative z-10 container mx-auto px-4 py-8">
         <div className="max-w-6xl mx-auto">
-          <h1 className="text-4xl font-bold text-white mb-8 animate-fade-in">User Management</h1>
+          {/* Back Button and Header */}
+          <div className="flex items-center mb-8">
+            <Button
+              variant="ghost"
+              onClick={() => navigate('/dashboard')}
+              className="mr-4 text-emerald-300 hover:text-emerald-100 hover:bg-emerald-500/20"
+            >
+              <ArrowLeft className="w-5 h-5 mr-2" />
+              Back to Dashboard
+            </Button>
+            <h1 className="text-4xl font-bold text-white animate-fade-in">User Management</h1>
+          </div>
           
           <Card className="glass-card border-emerald-500/20 bg-gradient-to-br from-emerald-500/5 to-green-500/5 animate-fade-in">
             <CardHeader>
@@ -170,7 +183,7 @@ const UserManagement = () => {
                                 <Button
                                   size="sm"
                                   onClick={() => updateUserStatus(user.id, 'approved')}
-                                  className="grass-green hover:bg-emerald-700 text-white"
+                                  className="bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white"
                                 >
                                   <CheckCircle className="w-4 h-4 mr-1" />
                                   Approve

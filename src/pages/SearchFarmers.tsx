@@ -7,7 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import Navigation from '@/components/Navigation';
 import { useNavigate } from 'react-router-dom';
-import { Search, MapPin, Phone } from 'lucide-react';
+import { Search, MapPin, Phone, ArrowLeft } from 'lucide-react';
 
 interface Farmer {
   id: string;
@@ -66,7 +66,7 @@ const SearchFarmers = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-green-900 to-teal-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-green-900 to-emerald-900">
       <Navigation user={user} />
       
       {/* Enhanced animated background */}
@@ -80,7 +80,18 @@ const SearchFarmers = () => {
       
       <div className="relative z-10 container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-4xl font-bold text-white mb-8 animate-fade-in">Search Farmers</h1>
+          {/* Back Button and Header */}
+          <div className="flex items-center mb-8">
+            <Button
+              variant="ghost"
+              onClick={() => navigate('/dashboard')}
+              className="mr-4 text-emerald-300 hover:text-emerald-100 hover:bg-emerald-500/20"
+            >
+              <ArrowLeft className="w-5 h-5 mr-2" />
+              Back to Dashboard
+            </Button>
+            <h1 className="text-4xl font-bold text-white animate-fade-in">Search Farmers</h1>
+          </div>
           
           <Card className="glass-card border-emerald-500/20 bg-gradient-to-br from-emerald-500/5 to-green-500/5 animate-fade-in">
             <CardHeader>
@@ -103,7 +114,7 @@ const SearchFarmers = () => {
                 <Button 
                   onClick={searchFarmers}
                   disabled={isLoading}
-                  className="grass-green hover:bg-emerald-700 text-white font-semibold px-8"
+                  className="bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-semibold px-8"
                 >
                   {isLoading ? 'Searching...' : 'Search'}
                 </Button>
