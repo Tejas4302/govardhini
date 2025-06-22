@@ -9,6 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import Navigation from '@/components/Navigation';
 import { User as UserIcon, Phone as PhoneIcon, Image as ImageIcon, Edit as EditIcon, Lock as LockIcon, Trash2 as TrashIcon } from 'lucide-react';
+import { getProfilePhoto, saveProfilePhoto, clearProfilePhoto } from '@/utils/profilePhotoStorage';
 
 interface UserData {
   id: string;
@@ -55,8 +56,10 @@ const Profile = () => {
       fullName: parsedUser.name,
       phoneNumber: parsedUser.phone || ''
     });
-    // Load existing profile image if available
-    setProfileImage(parsedUser.profileImage || '');
+    
+    // Load persistent profile photo using the storage utility
+    const persistentPhoto = getProfilePhoto(parsedUser.id);
+    setProfileImage(persistentPhoto || '');
   }, [navigate]);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -67,14 +70,14 @@ const Profile = () => {
         const imageDataUrl = reader.result as string;
         setProfileImage(imageDataUrl);
         
-        // Immediately save to localStorage to persist across sessions
+        // Save to persistent storage using the utility
         if (user) {
-          const updatedUser = {
-            ...user,
-            profileImage: imageDataUrl
-          };
-          localStorage.setItem('govardhini_user', JSON.stringify(updatedUser));
-          setUser(updatedUser);
+          saveProfilePhoto(imageDataUrl, user.id);
+          
+          toast({
+            title: "Success",
+            description: "Profile photo updated successfully"
+          });
         }
       };
       reader.readAsDataURL(file);
@@ -121,12 +124,11 @@ const Profile = () => {
         return;
       }
 
-      // Update localStorage with the new data including profile image
+      // Update localStorage with the new data (but don't store profileImage here)
       const updatedUser = {
         ...user,
         name: formData.fullName,
-        phone: formData.phoneNumber,
-        profileImage: profileImage
+        phone: formData.phoneNumber
       };
       localStorage.setItem('govardhini_user', JSON.stringify(updatedUser));
       setUser(updatedUser);
@@ -247,8 +249,9 @@ const Profile = () => {
         return;
       }
 
-      // Clear local storage
+      // Clear local storage including profile photo
       localStorage.removeItem('govardhini_user');
+      clearProfilePhoto();
       
       toast({
         title: "Account Deleted",
@@ -387,8 +390,9 @@ const Profile = () => {
                           fullName: user.name,
                           phoneNumber: user.phone || ''
                         });
-                        // Reset profile image to original
-                        setProfileImage(user.profileImage || '');
+                        // Reset profile image to persistent storage value
+                        const persistentPhoto = getProfilePhoto(user.id);
+                        setProfileImage(persistentPhoto || '');
                       }}
                       disabled={isLoading}
                       className="glass-card border-white/20 text-white hover:bg-white/10"

@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
@@ -30,7 +31,6 @@ const Navigation = ({ user }: NavigationProps) => {
   const handleLogout = () => {
     // Clear user session data
     localStorage.removeItem('govardhini_user');
-    // Don't clear the profile photo on logout - keep it for next login
     
     toast({
       title: "Logged out successfully",
