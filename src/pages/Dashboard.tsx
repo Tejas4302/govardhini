@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,7 +14,6 @@ import {
   Search,
   FileText,
   UserCheck,
-  Clock,
   Plus,
   Activity,
   BarChart3
@@ -44,6 +42,9 @@ const Dashboard = () => {
   const { toast } = useToast();
   
   const user = JSON.parse(localStorage.getItem('govardhini_user') || '{}');
+
+  // Check if user is admin
+  const isAdmin = user.designation === 'Admin' && user.status === 'approved';
 
   useEffect(() => {
     fetchDashboardStats();
@@ -93,7 +94,7 @@ const Dashboard = () => {
     {
       title: 'Add Cattle',
       description: 'Register new cattle',
-      icon: () => <span className="text-2xl">🐄</span>, // Cow icon instead of Beef
+      icon: () => <span className="text-2xl">🐄</span>,
       action: () => navigate('/cattle-onboarding'),
       gradient: 'from-amber-500 to-orange-600'
     },
@@ -113,7 +114,8 @@ const Dashboard = () => {
     }
   ];
 
-  const navigationCards = [
+  // Filter navigation cards based on user role
+  const allNavigationCards = [
     {
       title: 'Farmers Directory',
       description: 'View and manage all farmers',
@@ -143,13 +145,16 @@ const Dashboard = () => {
       action: () => navigate('/system-reports'),
       gradient: 'from-orange-500 to-red-600'
     },
-    {
-      title: 'User Management',
-      description: 'Manage user access',
-      icon: UserCheck,
-      action: () => navigate('/user-management'),
-      gradient: 'from-pink-500 to-rose-600'
-    },
+    // Admin-only cards
+    ...(isAdmin ? [
+      {
+        title: 'User Management',
+        description: 'Manage user access',
+        icon: UserCheck,
+        action: () => navigate('/user-management'),
+        gradient: 'from-pink-500 to-rose-600'
+      }
+    ] : []),
     {
       title: 'Recent Activities',
       description: 'View system activities',
@@ -287,7 +292,7 @@ const Dashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {navigationCards.map((card, index) => {
+                {allNavigationCards.map((card, index) => {
                   const IconComponent = card.icon;
                   return (
                     <Card

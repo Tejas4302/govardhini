@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,7 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import Navigation from '@/components/Navigation';
-import { User as UserIcon, Phone as PhoneIcon, Image as ImageIcon, Edit as EditIcon, Lock as LockIcon } from 'lucide-react';
+import { User as UserIcon, Phone as PhoneIcon, Image as ImageIcon, Edit as EditIcon, Lock as LockIcon, Trash2 as TrashIcon } from 'lucide-react';
 
 interface UserData {
   id: string;
@@ -39,6 +38,10 @@ const Profile = () => {
     newPassword: '',
     confirmPassword: ''
   });
+
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteConfirmation, setDeleteConfirmation] = useState('');
+  const [showDeleteSection, setShowDeleteSection] = useState(false);
 
   useEffect(() => {
     const userData = localStorage.getItem('govardhini_user');
@@ -211,6 +214,58 @@ const Profile = () => {
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!user) return;
+    
+    if (deleteConfirmation !== 'DELETE') {
+      toast({
+        title: "Error",
+        description: "Please type 'DELETE' to confirm account deletion",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsDeleting(true);
+    try {
+      // Delete user from the users table
+      const { error } = await supabase
+        .from('users')
+        .delete()
+        .eq('id', user.id);
+
+      if (error) {
+        console.error('Delete error:', error);
+        toast({
+          title: "Error",
+          description: error.message || "Failed to delete account",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Clear local storage
+      localStorage.removeItem('govardhini_user');
+      
+      toast({
+        title: "Account Deleted",
+        description: "Your account has been permanently deleted",
+      });
+      
+      navigate('/auth');
+
+    } catch (error) {
+      console.error('Unexpected error:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete account. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -430,6 +485,80 @@ const Profile = () => {
                   >
                     <LockIcon className="w-4 h-4" />
                     Change Password
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Account Deletion Card */}
+          <Card className="glass-card border-0 text-white animate-slide-up border-red-500/20">
+            <CardHeader>
+              <CardTitle className="text-xl font-bold text-red-400 flex items-center gap-2">
+                <TrashIcon className="w-5 h-5" />
+                Delete Account
+              </CardTitle>
+            </CardHeader>
+            
+            <CardContent className="space-y-6">
+              {showDeleteSection ? (
+                <div className="space-y-4">
+                  <div className="bg-red-900/20 border border-red-500/30 rounded-lg p-4">
+                    <h3 className="text-red-400 font-semibold mb-2">⚠️ Warning</h3>
+                    <p className="text-red-300 text-sm">
+                      This action cannot be undone. This will permanently delete your account and remove all your data from our servers.
+                    </p>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="deleteConfirmation" className="text-gray-200">
+                      Type <span className="font-bold text-red-400">DELETE</span> to confirm
+                    </Label>
+                    <Input
+                      id="deleteConfirmation"
+                      type="text"
+                      value={deleteConfirmation}
+                      onChange={(e) => setDeleteConfirmation(e.target.value)}
+                      className="glass-input text-white placeholder:text-gray-400 border-red-500/30"
+                      placeholder="Type DELETE to confirm"
+                      disabled={isDeleting}
+                    />
+                  </div>
+
+                  <div className="flex gap-4 pt-4">
+                    <Button
+                      onClick={handleDeleteAccount}
+                      disabled={isDeleting || deleteConfirmation !== 'DELETE'}
+                      className="bg-red-600 hover:bg-red-700 text-white border-0 flex-1"
+                    >
+                      {isDeleting ? 'Deleting Account...' : 'Delete My Account'}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setShowDeleteSection(false);
+                        setDeleteConfirmation('');
+                      }}
+                      disabled={isDeleting}
+                      className="glass-card border-white/20 text-white hover:bg-white/10"
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex justify-between items-center">
+                  <div>
+                    <p className="text-gray-300">Permanently delete your account</p>
+                    <p className="text-sm text-red-400">This action cannot be undone</p>
+                  </div>
+                  <Button
+                    onClick={() => setShowDeleteSection(true)}
+                    variant="outline"
+                    className="border-red-500/50 text-red-400 hover:bg-red-700/20 hover:border-red-500 flex items-center gap-2"
+                  >
+                    <TrashIcon className="w-4 h-4" />
+                    Delete Account
                   </Button>
                 </div>
               )}

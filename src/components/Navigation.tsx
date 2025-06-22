@@ -1,11 +1,10 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { User, Users } from 'lucide-react';
-import { getProfilePhoto, clearProfilePhoto } from '@/utils/profilePhotoStorage';
+import { Users } from 'lucide-react';
+import { getProfilePhoto } from '@/utils/profilePhotoStorage';
 
 interface NavigationProps {
   user: {
@@ -80,6 +79,7 @@ const Navigation = ({ user }: NavigationProps) => {
               </div>
             </Button>
             
+            {/* Only show admin features if user is actually an admin */}
             {isAdmin && (
               <Button
                 variant="ghost"
