@@ -83,6 +83,36 @@ const FarmerOnboarding = () => {
     localStorage.setItem('offline_farmers', JSON.stringify(offlineData));
   };
 
+  const checkPhoneNumberConflict = async (phoneNumber: string) => {
+    try {
+      // Check if phone number exists in users table
+      const { data: existingUser, error } = await supabase
+        .from('users')
+        .select('id, full_name')
+        .eq('phone', phoneNumber)
+        .single();
+
+      if (error && error.code !== 'PGRST116') { // PGRST116 is "not found" error
+        console.error('Error checking phone number:', error);
+        return false;
+      }
+
+      if (existingUser) {
+        toast({
+          title: "Invalid Phone Number",
+          description: `This phone number is already registered to user: ${existingUser.full_name}. Please use a different phone number.`,
+          variant: "destructive"
+        });
+        return true; // Conflict found
+      }
+
+      return false; // No conflict
+    } catch (error) {
+      console.error('Error checking phone number conflict:', error);
+      return false;
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -93,6 +123,12 @@ const FarmerOnboarding = () => {
         variant: "destructive"
       });
       return;
+    }
+
+    // Check for phone number conflict with existing users
+    const hasConflict = await checkPhoneNumberConflict(formData.phoneNumber);
+    if (hasConflict) {
+      return; // Stop submission if conflict found
     }
 
     setIsLoading(true);
@@ -229,11 +265,14 @@ const FarmerOnboarding = () => {
                       <Label htmlFor="phoneNumber" className="text-white">Phone Number *</Label>
                       <Input
                         id="phoneNumber"
-                        placeholder="Enter 10-digit phone number"
+                        placeholder="Enter 10-digit phone number (must be unique)"
                         value={formData.phoneNumber}
                         onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
                         className="glass-input text-white placeholder:text-emerald-400 border-emerald-500/30"
                       />
+                      <p className="text-xs text-emerald-300">
+                        Note: Phone number cannot be the same as any registered user's phone number
+                      </p>
                     </div>
                   </div>
                   

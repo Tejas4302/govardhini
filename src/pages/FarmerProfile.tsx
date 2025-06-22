@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -21,6 +20,15 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet';
 
 interface Farmer {
   id: string;
@@ -52,6 +60,7 @@ const FarmerProfile = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [updatingCattleId, setUpdatingCattleId] = useState<string | null>(null);
   const [activities, setActivities] = useState<any[]>([]);
+  const [deleteSheetOpen, setDeleteSheetOpen] = useState(false);
   const { toast } = useToast();
   
   const user = JSON.parse(localStorage.getItem('govardhini_user') || '{}');
@@ -227,6 +236,7 @@ const FarmerProfile = () => {
         description: `${farmer.full_name} and all ${cattleIds.length} associated cattle records have been deleted successfully`,
       });
 
+      setDeleteSheetOpen(false);
       navigate('/farmers');
     } catch (error) {
       console.error('Error during farmer deletion:', error);
@@ -359,8 +369,8 @@ const FarmerProfile = () => {
                     Add Cattle 🐄
                   </Button>
                   {isAdmin && (
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
+                    <Sheet open={deleteSheetOpen} onOpenChange={setDeleteSheetOpen}>
+                      <SheetTrigger asChild>
                         <Button
                           variant="destructive"
                           className="bg-red-600 hover:bg-red-700"
@@ -368,11 +378,14 @@ const FarmerProfile = () => {
                           <Trash2 className="w-4 h-4 mr-2" />
                           Delete Farmer
                         </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent className="glass-card border-red-500/20">
-                        <AlertDialogHeader>
-                          <AlertDialogTitle className="text-white">Delete Farmer</AlertDialogTitle>
-                          <AlertDialogDescription className="text-gray-300">
+                      </SheetTrigger>
+                      <SheetContent className="glass-card border-red-500/30 bg-slate-800/90 backdrop-blur-xl text-white">
+                        <SheetHeader>
+                          <SheetTitle className="text-red-300 flex items-center">
+                            <AlertTriangle className="w-5 h-5 mr-2" />
+                            Delete Farmer
+                          </SheetTitle>
+                          <SheetDescription className="text-red-200">
                             This will permanently delete {farmer.full_name} and all associated records including:
                             <br />• {cattle.length} cattle profiles
                             <br />• All milk production records
@@ -380,20 +393,26 @@ const FarmerProfile = () => {
                             <br />• All feed requests
                             <br /><br />
                             This action cannot be undone. Are you sure you want to proceed?
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel className="glass-button">Cancel</AlertDialogCancel>
-                          <AlertDialogAction
+                          </SheetDescription>
+                        </SheetHeader>
+                        <SheetFooter className="mt-6">
+                          <Button
+                            variant="outline"
+                            onClick={() => setDeleteSheetOpen(false)}
+                            className="border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/20"
+                          >
+                            Cancel
+                          </Button>
+                          <Button
                             onClick={handleDeleteFarmer}
                             disabled={isDeleting}
                             className="bg-red-600 hover:bg-red-700"
                           >
                             {isDeleting ? 'Deleting...' : 'Delete Permanently'}
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
+                          </Button>
+                        </SheetFooter>
+                      </SheetContent>
+                    </Sheet>
                   )}
                 </div>
               </div>
