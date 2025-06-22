@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -41,6 +42,7 @@ const Dashboard = () => {
   const [showDebug, setShowDebug] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isCleaningUp, setIsCleaningUp] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -123,6 +125,71 @@ const Dashboard = () => {
     }
   };
 
+  const handleCleanupOrphanedCattle = async () => {
+    setIsCleaningUp(true);
+    try {
+      console.log('Cleaning up orphaned cattle records...');
+      
+      // Delete cattle records that have farmer_id as NULL or don't have a corresponding farmer
+      const { data: orphanedCattle, error: fetchError } = await supabase
+        .from('cattle_profiles')
+        .select('cattle_id, farmer_id, owner_phone')
+        .is('farmer_id', null);
+
+      if (fetchError) {
+        console.error('Error fetching orphaned cattle:', fetchError);
+        throw fetchError;
+      }
+
+      if (orphanedCattle && orphanedCattle.length > 0) {
+        console.log('Found orphaned cattle:', orphanedCattle);
+        
+        const cattleIds = orphanedCattle.map(c => c.cattle_id);
+        
+        // Delete related records first
+        const { error: milkError } = await supabase
+          .from('milk_production')
+          .delete()
+          .in('cattle_id', cattleIds);
+        if (milkError) console.error('Error deleting milk records:', milkError);
+
+        const { error: healthError } = await supabase
+          .from('health_checkups')
+          .delete()
+          .in('cattle_id', cattleIds);
+        if (healthError) console.error('Error deleting health records:', healthError);
+
+        const { error: feedError } = await supabase
+          .from('feed_requests')
+          .delete()
+          .in('cattle_id', cattleIds);
+        if (feedError) console.error('Error deleting feed records:', feedError);
+
+        // Delete the orphaned cattle
+        const { error: cattleError } = await supabase
+          .from('cattle_profiles')
+          .delete()
+          .is('farmer_id', null);
+
+        if (cattleError) {
+          console.error('Error deleting orphaned cattle:', cattleError);
+          throw cattleError;
+        }
+
+        console.log(`Successfully cleaned up ${orphanedCattle.length} orphaned cattle records`);
+        
+        // Refresh the dashboard
+        await fetchDashboardStats();
+      } else {
+        console.log('No orphaned cattle found');
+      }
+    } catch (error) {
+      console.error('Error cleaning up orphaned cattle:', error);
+    } finally {
+      setIsCleaningUp(false);
+    }
+  };
+
   const handleManualRefresh = () => {
     fetchDashboardStats(true);
   };
@@ -196,6 +263,13 @@ const Dashboard = () => {
                   {showDebug ? 'Hide Debug' : 'Show Debug'}
                 </Button>
                 <Button
+                  onClick={handleCleanupOrphanedCattle}
+                  disabled={isCleaningUp}
+                  className="glass-button bg-red-500 hover:bg-red-600"
+                >
+                  {isCleaningUp ? 'Cleaning...' : 'Clean Orphaned Data'}
+                </Button>
+                <Button
                   onClick={handleManualRefresh}
                   disabled={isRefreshing}
                   className="glass-button flex items-center gap-2"
@@ -252,6 +326,7 @@ const Dashboard = () => {
                     {debugData.cattle.map((cattle, index) => (
                       <div key={cattle.id} className="text-sm bg-black/20 p-2 rounded">
                         {index + 1}. {cattle.cattle_id} - Owner: {cattle.farmer_name} ({cattle.owner_phone}) - Farmer ID: {cattle.farmer_id || 'NULL'}
+                        {!cattle.farmer_id && <span className="text-red-400 ml-2">⚠️ ORPHANED</span>}
                       </div>
                     ))}
                   </div>
