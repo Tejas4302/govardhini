@@ -41,7 +41,7 @@ const UserActions: React.FC<UserActionsProps> = ({
   onDelete
 }) => {
   return (
-    <div className="flex gap-2 flex-wrap">
+    <div className="flex gap-2 items-center" style={{ minHeight: '36px', minWidth: '200px' }}>
       {user.status === 'pending' && (
         <>
           <AlertDialog>
@@ -50,6 +50,7 @@ const UserActions: React.FC<UserActionsProps> = ({
                 size="sm"
                 disabled={processingUserId === user.id}
                 className="bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white"
+                style={{ minWidth: '80px', minHeight: '32px' }}
               >
                 <CheckCircle className="w-4 h-4 mr-1" />
                 Approve
@@ -84,6 +85,7 @@ const UserActions: React.FC<UserActionsProps> = ({
                 variant="destructive"
                 disabled={processingUserId === user.id}
                 className="bg-red-600 hover:bg-red-700"
+                style={{ minWidth: '70px', minHeight: '32px' }}
               >
                 <XCircle className="w-4 h-4 mr-1" />
                 Reject
@@ -118,20 +120,29 @@ const UserActions: React.FC<UserActionsProps> = ({
       
       {user.status === 'approved' && (
         <>
-          <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/30">
+          <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/30" style={{ minWidth: '90px', minHeight: '24px' }}>
             Active User
           </Badge>
           
           {user.id !== currentUserId && (
-            <>
+            <div className="flex gap-1" style={{ minWidth: '72px' }}>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button
                     size="sm"
                     variant="ghost"
                     disabled={processingUserId === user.id}
-                    className="text-blue-400 hover:text-blue-300 w-8 h-8 p-0 flex items-center justify-center border-0 bg-transparent hover:bg-transparent"
-                    style={{ minWidth: '32px', minHeight: '32px' }}
+                    className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 border-0 bg-transparent"
+                    style={{ 
+                      width: '32px', 
+                      height: '32px', 
+                      minWidth: '32px', 
+                      minHeight: '32px',
+                      padding: '0',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}
                   >
                     <UserCog className="w-4 h-4" style={{ flexShrink: 0 }} />
                   </Button>
@@ -206,8 +217,17 @@ const UserActions: React.FC<UserActionsProps> = ({
                     size="sm"
                     variant="ghost"
                     disabled={processingUserId === user.id}
-                    className="text-red-400 hover:text-red-300 w-8 h-8 p-0 flex items-center justify-center border-0 bg-transparent hover:bg-transparent"
-                    style={{ minWidth: '32px', minHeight: '32px' }}
+                    className="text-red-400 hover:text-red-300 hover:bg-red-500/10 border-0 bg-transparent"
+                    style={{ 
+                      width: '32px', 
+                      height: '32px', 
+                      minWidth: '32px', 
+                      minHeight: '32px',
+                      padding: '0',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}
                   >
                     <Trash2 className="w-4 h-4" style={{ flexShrink: 0 }} />
                   </Button>
@@ -236,13 +256,13 @@ const UserActions: React.FC<UserActionsProps> = ({
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
-            </>
+            </div>
           )}
         </>
       )}
       
       {user.status === 'rejected' && (
-        <Badge className="bg-red-500/20 text-red-300 border-red-500/30">
+        <Badge className="bg-red-500/20 text-red-300 border-red-500/30" style={{ minWidth: '110px', minHeight: '24px' }}>
           Access Denied
         </Badge>
       )}
