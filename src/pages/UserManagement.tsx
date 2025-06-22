@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,7 +6,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import Navigation from '@/components/Navigation';
 import AdminGuard from '@/components/AdminGuard';
-import { Users, CheckCircle, XCircle, Clock, ArrowLeft, AlertTriangle } from 'lucide-react';
+import { Users, CheckCircle, XCircle, Clock, ArrowLeft, AlertTriangle, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import {
   Table,
@@ -144,6 +143,43 @@ const UserManagement = () => {
     }
   };
 
+  const deleteUser = async (userId: string, userName: string) => {
+    try {
+      setProcessingUserId(userId);
+      
+      const { error } = await supabase
+        .from('users')
+        .delete()
+        .eq('id', userId);
+
+      if (error) {
+        console.error('Error deleting user:', error);
+        toast({
+          title: "Error",
+          description: `Failed to delete user ${userName}. Please check your admin permissions.`,
+          variant: "destructive"
+        });
+        return;
+      }
+
+      toast({
+        title: "Success",
+        description: `User ${userName} has been deleted successfully`,
+      });
+
+      await fetchUsers();
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete user",
+        variant: "destructive"
+      });
+    } finally {
+      setProcessingUserId(null);
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     const variants = {
       pending: { className: 'bg-amber-500/20 text-amber-300 border-amber-500/30', icon: Clock },
@@ -208,7 +244,7 @@ const UserManagement = () => {
                   Manage Users
                 </CardTitle>
                 <CardDescription className="text-emerald-300">
-                  Approve or reject user registrations. Only approved users can access the system.
+                  Approve, reject, or delete user registrations. Only approved users can access the system.
                 </CardDescription>
               </CardHeader>
               
@@ -248,62 +284,114 @@ const UserManagement = () => {
                             <TableCell>{getStatusBadge(userData.status)}</TableCell>
                             <TableCell className="text-emerald-300 text-sm">{formatDate(userData.created_at)}</TableCell>
                             <TableCell>
-                              {userData.status === 'pending' && (
-                                <div className="flex gap-2">
-                                  <AlertDialog>
-                                    <AlertDialogTrigger asChild>
-                                      <Button
-                                        size="sm"
-                                        disabled={processingUserId === userData.id}
-                                        className="bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white"
-                                      >
-                                        <CheckCircle className="w-4 h-4 mr-1" />
-                                        Approve
-                                      </Button>
-                                    </AlertDialogTrigger>
-                                    <AlertDialogContent className="glass-card border-emerald-500/30 bg-slate-800/90 backdrop-blur-xl text-white">
-                                      <AlertDialogHeader>
-                                        <AlertDialogTitle className="text-emerald-300">Approve User</AlertDialogTitle>
-                                        <AlertDialogDescription className="text-emerald-200">
-                                          Are you sure you want to approve <strong>{userData.full_name}</strong> ({userData.designation})? 
-                                          They will be able to access the system immediately.
-                                        </AlertDialogDescription>
-                                      </AlertDialogHeader>
-                                      <AlertDialogFooter>
-                                        <AlertDialogCancel className="border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/20">
-                                          Cancel
-                                        </AlertDialogCancel>
-                                        <AlertDialogAction
-                                          onClick={() => updateUserStatus(userData.id, 'approved', userData.full_name)}
-                                          className="bg-emerald-600 hover:bg-emerald-700"
+                              <div className="flex gap-2 flex-wrap">
+                                {userData.status === 'pending' && (
+                                  <>
+                                    <AlertDialog>
+                                      <AlertDialogTrigger asChild>
+                                        <Button
+                                          size="sm"
+                                          disabled={processingUserId === userData.id}
+                                          className="bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white"
                                         >
-                                          Approve User
-                                        </AlertDialogAction>
-                                      </AlertDialogFooter>
-                                    </AlertDialogContent>
-                                  </AlertDialog>
+                                          <CheckCircle className="w-4 h-4 mr-1" />
+                                          Approve
+                                        </Button>
+                                      </AlertDialogTrigger>
+                                      <AlertDialogContent className="glass-card border-emerald-500/30 bg-slate-800/90 backdrop-blur-xl text-white">
+                                        <AlertDialogHeader>
+                                          <AlertDialogTitle className="text-emerald-300">Approve User</AlertDialogTitle>
+                                          <AlertDialogDescription className="text-emerald-200">
+                                            Are you sure you want to approve <strong>{userData.full_name}</strong> ({userData.designation})? 
+                                            They will be able to access the system immediately.
+                                          </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                          <AlertDialogCancel className="border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/20">
+                                            Cancel
+                                          </AlertDialogCancel>
+                                          <AlertDialogAction
+                                            onClick={() => updateUserStatus(userData.id, 'approved', userData.full_name)}
+                                            className="bg-emerald-600 hover:bg-emerald-700"
+                                          >
+                                            Approve User
+                                          </AlertDialogAction>
+                                        </AlertDialogFooter>
+                                      </AlertDialogContent>
+                                    </AlertDialog>
 
+                                    <AlertDialog>
+                                      <AlertDialogTrigger asChild>
+                                        <Button
+                                          size="sm"
+                                          variant="destructive"
+                                          disabled={processingUserId === userData.id}
+                                          className="bg-red-600 hover:bg-red-700"
+                                        >
+                                          <XCircle className="w-4 h-4 mr-1" />
+                                          Reject
+                                        </Button>
+                                      </AlertDialogTrigger>
+                                      <AlertDialogContent className="glass-card border-red-500/30 bg-slate-800/90 backdrop-blur-xl text-white">
+                                        <AlertDialogHeader>
+                                          <AlertDialogTitle className="text-red-300 flex items-center">
+                                            <AlertTriangle className="w-5 h-5 mr-2" />
+                                            Reject User
+                                          </AlertDialogTitle>
+                                          <AlertDialogDescription className="text-red-200">
+                                            Are you sure you want to reject <strong>{userData.full_name}</strong>? 
+                                            They will not be able to access the system and will need to contact admin.
+                                          </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                          <AlertDialogCancel className="border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/20">
+                                            Cancel
+                                          </AlertDialogCancel>
+                                          <AlertDialogAction
+                                            onClick={() => updateUserStatus(userData.id, 'rejected', userData.full_name)}
+                                            className="bg-red-600 hover:bg-red-700"
+                                          >
+                                            Reject User
+                                          </AlertDialogAction>
+                                        </AlertDialogFooter>
+                                      </AlertDialogContent>
+                                    </AlertDialog>
+                                  </>
+                                )}
+                                {userData.status === 'approved' && (
+                                  <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/30">
+                                    Active User
+                                  </Badge>
+                                )}
+                                {userData.status === 'rejected' && (
+                                  <Badge className="bg-red-500/20 text-red-300 border-red-500/30">
+                                    Access Denied
+                                  </Badge>
+                                )}
+                                
+                                {/* Delete Button - Available for all users except current admin */}
+                                {userData.id !== user.id && (
                                   <AlertDialog>
                                     <AlertDialogTrigger asChild>
                                       <Button
                                         size="sm"
                                         variant="destructive"
                                         disabled={processingUserId === userData.id}
-                                        className="bg-red-600 hover:bg-red-700"
+                                        className="bg-red-700 hover:bg-red-800"
                                       >
-                                        <XCircle className="w-4 h-4 mr-1" />
-                                        Reject
+                                        <Trash2 className="w-4 h-4 mr-1" />
+                                        Delete
                                       </Button>
                                     </AlertDialogTrigger>
                                     <AlertDialogContent className="glass-card border-red-500/30 bg-slate-800/90 backdrop-blur-xl text-white">
                                       <AlertDialogHeader>
                                         <AlertDialogTitle className="text-red-300 flex items-center">
                                           <AlertTriangle className="w-5 h-5 mr-2" />
-                                          Reject User
+                                          Delete User Account
                                         </AlertDialogTitle>
                                         <AlertDialogDescription className="text-red-200">
-                                          Are you sure you want to reject <strong>{userData.full_name}</strong>? 
-                                          They will not be able to access the system and will need to contact admin.
+                                          Are you sure you want to permanently delete <strong>{userData.full_name}</strong>'s account? 
+                                          This action cannot be undone and will remove all their data from the system.
                                         </AlertDialogDescription>
                                       </AlertDialogHeader>
                                       <AlertDialogFooter>
@@ -311,26 +399,16 @@ const UserManagement = () => {
                                           Cancel
                                         </AlertDialogCancel>
                                         <AlertDialogAction
-                                          onClick={() => updateUserStatus(userData.id, 'rejected', userData.full_name)}
-                                          className="bg-red-600 hover:bg-red-700"
+                                          onClick={() => deleteUser(userData.id, userData.full_name)}
+                                          className="bg-red-700 hover:bg-red-800"
                                         >
-                                          Reject User
+                                          Delete Account
                                         </AlertDialogAction>
                                       </AlertDialogFooter>
                                     </AlertDialogContent>
                                   </AlertDialog>
-                                </div>
-                              )}
-                              {userData.status === 'approved' && (
-                                <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/30">
-                                  Active User
-                                </Badge>
-                              )}
-                              {userData.status === 'rejected' && (
-                                <Badge className="bg-red-500/20 text-red-300 border-red-500/30">
-                                  Access Denied
-                                </Badge>
-                              )}
+                                )}
+                              </div>
                             </TableCell>
                           </TableRow>
                         ))}
