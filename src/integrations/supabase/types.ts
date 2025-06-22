@@ -16,6 +16,7 @@ export type Database = {
           cattle_id: string
           created_at: string
           dob: string
+          farmer_id: string | null
           farmer_name: string
           id: string
           lactation: boolean
@@ -29,6 +30,7 @@ export type Database = {
           cattle_id: string
           created_at?: string
           dob: string
+          farmer_id?: string | null
           farmer_name: string
           id?: string
           lactation?: boolean
@@ -42,6 +44,7 @@ export type Database = {
           cattle_id?: string
           created_at?: string
           dob?: string
+          farmer_id?: string | null
           farmer_name?: string
           id?: string
           lactation?: boolean
@@ -55,6 +58,13 @@ export type Database = {
             columns: ["added_by"]
             isOneToOne: false
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cattle_profiles_farmer_id_fkey"
+            columns: ["farmer_id"]
+            isOneToOne: false
+            referencedRelation: "farmers"
             referencedColumns: ["id"]
           },
         ]
@@ -256,6 +266,89 @@ export type Database = {
           },
         ]
       }
+      sms_notifications: {
+        Row: {
+          created_at: string
+          farmer_id: string | null
+          id: string
+          message_content: string
+          message_type: string
+          phone_number: string
+          sent_at: string | null
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          farmer_id?: string | null
+          id?: string
+          message_content: string
+          message_type: string
+          phone_number: string
+          sent_at?: string | null
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          farmer_id?: string | null
+          id?: string
+          message_content?: string
+          message_type?: string
+          phone_number?: string
+          sent_at?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sms_notifications_farmer_id_fkey"
+            columns: ["farmer_id"]
+            isOneToOne: false
+            referencedRelation: "farmers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_role_assignments: {
+        Row: {
+          assigned_at: string
+          assigned_by: string | null
+          id: string
+          role_assigned: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          assigned_at?: string
+          assigned_by?: string | null
+          id?: string
+          role_assigned: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          assigned_at?: string
+          assigned_by?: string | null
+          id?: string
+          role_assigned?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_role_assignments_assigned_by_fkey"
+            columns: ["assigned_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_role_assignments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       users: {
         Row: {
           created_at: string
@@ -264,6 +357,7 @@ export type Database = {
           id: string
           password_hash: string
           phone_number: string
+          status: string
         }
         Insert: {
           created_at?: string
@@ -272,6 +366,7 @@ export type Database = {
           id?: string
           password_hash: string
           phone_number: string
+          status?: string
         }
         Update: {
           created_at?: string
@@ -280,6 +375,7 @@ export type Database = {
           id?: string
           password_hash?: string
           phone_number?: string
+          status?: string
         }
         Relationships: []
       }

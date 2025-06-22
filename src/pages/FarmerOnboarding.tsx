@@ -77,7 +77,7 @@ const FarmerOnboarding = () => {
     setIsLoading(true);
 
     try {
-      const { error } = await supabase.from('farmers').insert({
+      const { data, error } = await supabase.from('farmers').insert({
         full_name: formData.fullName,
         phone_number: formData.phoneNumber,
         aadhaar_number: formData.aadhaarNumber || null,
@@ -87,10 +87,9 @@ const FarmerOnboarding = () => {
         town_or_village: formData.townOrVillage,
         pincode: formData.pincode,
         added_by: user.id || 'offline-user'
-      });
+      }).select().single();
 
       if (error) {
-        // Save offline if network error
         saveOffline(formData);
         toast({
           title: "Saved Offline",
@@ -100,24 +99,28 @@ const FarmerOnboarding = () => {
       } else {
         toast({
           title: "Success! ✅",
-          description: `Farmer ${formData.fullName} has been registered successfully`,
+          description: `Farmer ${formData.fullName} has been registered successfully. SMS notification sent!`,
         });
         
-        // Try to sync any offline data
         await syncOfflineData();
+        
+        // Navigate to farmer profile after successful registration
+        if (data?.id) {
+          navigate(`/farmer/${data.id}`);
+        } else {
+          // Reset form if no farmer ID returned
+          setFormData({
+            fullName: '',
+            phoneNumber: '',
+            aadhaarNumber: '',
+            state: '',
+            district: '',
+            taluk: '',
+            townOrVillage: '',
+            pincode: '',
+          });
+        }
       }
-      
-      // Reset form
-      setFormData({
-        fullName: '',
-        phoneNumber: '',
-        aadhaarNumber: '',
-        state: '',
-        district: '',
-        taluk: '',
-        townOrVillage: '',
-        pincode: '',
-      });
 
     } catch (error) {
       console.error('Error:', error);

@@ -20,6 +20,7 @@ interface DashboardStats {
   totalCattle: number;
   todayMilk: number;
   healthAlerts: number;
+  pendingApprovals: number;
 }
 
 const Dashboard = () => {
@@ -28,7 +29,8 @@ const Dashboard = () => {
     totalFarmers: 0,
     totalCattle: 0,
     todayMilk: 0,
-    healthAlerts: 0
+    healthAlerts: 0,
+    pendingApprovals: 0
   });
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
@@ -45,25 +47,24 @@ const Dashboard = () => {
 
   const fetchDashboardStats = async () => {
     try {
-      // Get today's date
       const today = new Date().toISOString().split('T')[0];
 
-      // Fetch all stats in parallel
-      const [farmersResult, cattleResult, milkResult, healthResult] = await Promise.all([
+      const [farmersResult, cattleResult, milkResult, healthResult, pendingUsersResult] = await Promise.all([
         supabase.from('farmers').select('id', { count: 'exact' }),
         supabase.from('cattle_profiles').select('id', { count: 'exact' }),
         supabase.from('milk_production').select('quantity_litres').eq('date', today),
-        supabase.from('health_checkups').select('id', { count: 'exact' }).not('issue', 'is', null)
+        supabase.from('health_checkups').select('id', { count: 'exact' }).not('issue', 'is', null),
+        supabase.from('users').select('id', { count: 'exact' }).eq('status', 'pending')
       ]);
 
-      // Calculate today's total milk production
       const todayMilk = milkResult.data?.reduce((sum, record) => sum + (record.quantity_litres || 0), 0) || 0;
 
       setStats({
         totalFarmers: farmersResult.count || 0,
         totalCattle: cattleResult.count || 0,
         todayMilk: Math.round(todayMilk * 100) / 100,
-        healthAlerts: healthResult.count || 0
+        healthAlerts: healthResult.count || 0,
+        pendingApprovals: pendingUsersResult.count || 0
       });
 
     } catch (error) {
@@ -73,11 +74,32 @@ const Dashboard = () => {
     }
   };
 
+  const handleMetricClick = (metric: string) => {
+    switch (metric) {
+      case 'farmers':
+        navigate('/farmers');
+        break;
+      case 'cattle':
+        navigate('/farmers'); // Will show all farmers with their cattle
+        break;
+      case 'milk':
+        navigate('/milk-logging');
+        break;
+      case 'health':
+        navigate('/health-check');
+        break;
+      case 'approvals':
+        navigate('/user-management');
+        break;
+    }
+  };
+
   if (!user) return null;
 
   const getQuickActions = () => {
     const baseActions = [
-      { title: 'Farmer Registration', desc: 'Register new farmers', icon: '👨‍🌾', path: '/farmer-onboarding', gradient: 'from-emerald-500 to-green-600' },
+      { title: 'Farmers Directory', desc: 'View all farmers & profiles', icon: '👨‍🌾', path: '/farmers', gradient: 'from-emerald-500 to-green-600' },
+      { title: 'Farmer Registration', desc: 'Register new farmers', icon: '➕', path: '/farmer-onboarding', gradient: 'from-green-500 to-emerald-600' },
       { title: 'Cattle Onboarding', desc: 'Add new cattle', icon: '🐄', path: '/cattle-onboarding', gradient: 'from-amber-500 to-orange-600' },
       { title: 'Health Check', desc: 'Record cattle health', icon: '❤️', path: '/health-check', gradient: 'from-red-500 to-pink-600' },
       { title: 'Milk Production', desc: 'Log milk production', icon: '🥛', path: '/milk-logging', gradient: 'from-blue-500 to-cyan-600' },
@@ -85,8 +107,9 @@ const Dashboard = () => {
 
     if (user.role === 'admin' || user.role === 'office_staff') {
       baseActions.push(
+        { title: 'User Management', desc: 'Approve pending users', icon: '👤', path: '/user-management', gradient: 'from-purple-500 to-indigo-600' },
         { title: 'Feed Requests', desc: 'Manage feed requests', icon: '🌾', path: '/feed-requests', gradient: 'from-yellow-500 to-amber-600' },
-        { title: 'Analytics', desc: 'View reports & charts', icon: '📊', path: '/analytics', gradient: 'from-purple-500 to-indigo-600' }
+        { title: 'Analytics', desc: 'View reports & charts', icon: '📊', path: '/analytics', gradient: 'from-indigo-500 to-purple-600' }
       );
     }
 
@@ -106,7 +129,6 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Header */}
       <div className="relative z-10 px-4 py-6">
         <div className="container mx-auto">
           <div className="animate-fade-in">
@@ -121,11 +143,14 @@ const Dashboard = () => {
       </div>
 
       <div className="relative z-10 container mx-auto px-4 py-6">
-        {/* Key Metrics */}
         <div className="mb-8">
           <h2 className="text-xl font-semibold text-white mb-6 animate-slide-up">Key Metrics</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Card className="metric-card text-white border-0 animate-fade-in" style={{animationDelay: '0.1s'}}>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+            <Card 
+              className="metric-card text-white border-0 animate-fade-in cursor-pointer hover:scale-105 transition-transform" 
+              style={{animationDelay: '0.1s'}}
+              onClick={() => handleMetricClick('farmers')}
+            >
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -137,7 +162,11 @@ const Dashboard = () => {
               </CardContent>
             </Card>
             
-            <Card className="metric-card text-white border-0 animate-fade-in" style={{animationDelay: '0.2s'}}>
+            <Card 
+              className="metric-card text-white border-0 animate-fade-in cursor-pointer hover:scale-105 transition-transform" 
+              style={{animationDelay: '0.2s'}}
+              onClick={() => handleMetricClick('cattle')}
+            >
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -149,7 +178,11 @@ const Dashboard = () => {
               </CardContent>
             </Card>
 
-            <Card className="metric-card text-white border-0 animate-fade-in" style={{animationDelay: '0.3s'}}>
+            <Card 
+              className="metric-card text-white border-0 animate-fade-in cursor-pointer hover:scale-105 transition-transform" 
+              style={{animationDelay: '0.3s'}}
+              onClick={() => handleMetricClick('milk')}
+            >
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -161,7 +194,11 @@ const Dashboard = () => {
               </CardContent>
             </Card>
 
-            <Card className="metric-card text-white border-0 animate-fade-in" style={{animationDelay: '0.4s'}}>
+            <Card 
+              className="metric-card text-white border-0 animate-fade-in cursor-pointer hover:scale-105 transition-transform" 
+              style={{animationDelay: '0.4s'}}
+              onClick={() => handleMetricClick('health')}
+            >
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -172,10 +209,27 @@ const Dashboard = () => {
                 </div>
               </CardContent>
             </Card>
+
+            {(user.role === 'admin' || user.role === 'office_staff') && (
+              <Card 
+                className="metric-card text-white border-0 animate-fade-in cursor-pointer hover:scale-105 transition-transform" 
+                style={{animationDelay: '0.5s'}}
+                onClick={() => handleMetricClick('approvals')}
+              >
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-gray-300 text-sm font-medium">Pending Approvals</p>
+                      <p className="text-3xl font-bold mt-2">{isLoading ? '...' : stats.pendingApprovals}</p>
+                    </div>
+                    <div className="text-4xl opacity-80">⏳</div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </div>
         </div>
 
-        {/* Quick Actions */}
         <div className="mb-8">
           <h2 className="text-xl font-semibold text-white mb-6 animate-slide-up" style={{animationDelay: '0.5s'}}>Quick Actions</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -210,6 +264,22 @@ const Dashboard = () => {
                   <p className="text-red-200 text-sm">Require immediate attention</p>
                 </div>
                 <div className="text-4xl animate-pulse">🚨</div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Pending Approvals Alert */}
+        {stats.pendingApprovals > 0 && (user.role === 'admin' || user.role === 'office_staff') && (
+          <Card className="glass-card border-yellow-500/50 text-white animate-fade-in mt-4" style={{animationDelay: '1.1s'}}>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-yellow-200 text-sm font-medium">Pending User Approvals</p>
+                  <p className="text-3xl font-bold text-yellow-300">{stats.pendingApprovals}</p>
+                  <p className="text-yellow-200 text-sm">Users waiting for approval</p>
+                </div>
+                <div className="text-4xl animate-pulse">⏳</div>
               </div>
             </CardContent>
           </Card>

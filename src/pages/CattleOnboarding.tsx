@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,17 +18,20 @@ import { supabase } from '@/integrations/supabase/client';
 import Navigation from '@/components/Navigation';
 
 const CattleOnboarding = () => {
+  const [searchParams] = useSearchParams();
   const [formData, setFormData] = useState({
     cattleId: `CTL${Date.now().toString().slice(-6)}`,
-    farmerName: '',
+    farmerId: searchParams.get('farmerId') || '',
+    farmerName: searchParams.get('farmerName') || '',
     breed: '',
     type: '',
     dob: new Date(),
     lactation: false,
     weightKg: '',
-    ownerPhone: '',
+    ownerPhone: searchParams.get('farmerPhone') || '',
   });
   
+  const [farmers, setFarmers] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -39,6 +43,36 @@ const CattleOnboarding = () => {
     { value: 'Buffalo', label: 'Buffalo' },
   ];
 
+  useEffect(() => {
+    fetchFarmers();
+  }, []);
+
+  const fetchFarmers = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('farmers')
+        .select('id, full_name, phone_number')
+        .order('full_name');
+
+      if (error) throw error;
+      setFarmers(data || []);
+    } catch (error) {
+      console.error('Error fetching farmers:', error);
+    }
+  };
+
+  const handleFarmerSelect = (farmerId: string) => {
+    const selectedFarmer = farmers.find(f => f.id === farmerId);
+    if (selectedFarmer) {
+      setFormData({
+        ...formData,
+        farmerId: farmerId,
+        farmerName: selectedFarmer.full_name,
+        ownerPhone: selectedFarmer.phone_number
+      });
+    }
+  };
+
   const saveOffline = (data: any) => {
     const offlineData = JSON.parse(localStorage.getItem('offline_cattle') || '[]');
     offlineData.push({ ...data, id: Date.now().toString(), synced: false });
@@ -48,6 +82,7 @@ const CattleOnboarding = () => {
   const validateForm = () => {
     const errors = [];
     
+    if (!formData.farmerId) errors.push("Please select a farmer");
     if (!formData.farmerName.trim()) errors.push("Farmer name is required");
     if (!formData.breed.trim()) errors.push("Breed is required");
     if (!formData.type) errors.push("Cattle type is required");
@@ -60,7 +95,6 @@ const CattleOnboarding = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Client-side validation
     const validationErrors = validateForm();
     if (validationErrors.length > 0) {
       toast({
@@ -74,9 +108,9 @@ const CattleOnboarding = () => {
     setIsLoading(true);
 
     try {
-      // Trim whitespace from text inputs
       const cleanedData = {
         cattle_id: formData.cattleId.trim(),
+        farmer_id: formData.farmerId,
         farmer_name: formData.farmerName.trim(),
         breed: formData.breed.trim(),
         type: formData.type,
@@ -92,7 +126,6 @@ const CattleOnboarding = () => {
       if (error) {
         console.error('Database error:', error);
         
-        // Check for specific database constraint errors
         if (error.message.includes('cattle_profiles_type_check')) {
           toast({
             title: "Invalid Cattle Type",
@@ -106,7 +139,6 @@ const CattleOnboarding = () => {
             variant: "destructive"
           });
         } else if (error.message.includes('Failed to fetch') || error.message.includes('network') || error.code === 'PGRST301') {
-          // Only save offline for actual network errors
           saveOffline(formData);
           toast({
             title: "Saved Offline 📱",
@@ -123,20 +155,26 @@ const CattleOnboarding = () => {
       } else {
         toast({
           title: "Success! ✅",
-          description: `Cattle ${formData.cattleId} has been registered successfully`,
+          description: `Cattle ${formData.cattleId} has been registered successfully under ${formData.farmerName}`,
         });
         
-        // Reset form
-        setFormData({
-          cattleId: `CTL${Date.now().toString().slice(-6)}`,
-          farmerName: '',
-          breed: '',
-          type: '',
-          dob: new Date(),
-          lactation: false,
-          weightKg: '',
-          ownerPhone: '',
-        });
+        // Navigate back to farmer profile if we came from there
+        if (formData.farmerId) {
+          navigate(`/farmer/${formData.farmerId}`);
+        } else {
+          // Reset form
+          setFormData({
+            cattleId: `CTL${Date.now().toString().slice(-6)}`,
+            farmerId: '',
+            farmerName: '',
+            breed: '',
+            type: '',
+            dob: new Date(),
+            lactation: false,
+            weightKg: '',
+            ownerPhone: '',
+          });
+        }
       }
 
     } catch (error) {
@@ -188,14 +226,22 @@ const CattleOnboarding = () => {
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="farmerName" className="text-white">Farmer Name *</Label>
-                    <Input
-                      id="farmerName"
-                      placeholder="Enter farmer's name"
-                      value={formData.farmerName}
-                      onChange={(e) => setFormData({ ...formData, farmerName: e.target.value })}
-                      className="glass-input text-white placeholder:text-gray-400 border-white/20"
-                    />
+                    <Label htmlFor="farmerId" className="text-white">Select Farmer *</Label>
+                    <Select 
+                      value={formData.farmerId} 
+                      onValueChange={handleFarmerSelect}
+                    >
+                      <SelectTrigger className="glass-input text-white border-white/20 bg-white/10 backdrop-blur-lg">
+                        <SelectValue placeholder="Select farmer" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white/90 backdrop-blur-lg border-white/20">
+                        {farmers.map((farmer) => (
+                          <SelectItem key={farmer.id} value={farmer.id}>
+                            {farmer.full_name} - {farmer.phone_number}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
                 
@@ -274,13 +320,12 @@ const CattleOnboarding = () => {
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="ownerPhone" className="text-white">Owner Phone *</Label>
+                    <Label htmlFor="ownerPhone" className="text-white">Owner Phone</Label>
                     <Input
                       id="ownerPhone"
-                      placeholder="Enter owner's phone number"
                       value={formData.ownerPhone}
-                      onChange={(e) => setFormData({ ...formData, ownerPhone: e.target.value })}
-                      className="glass-input text-white placeholder:text-gray-400 border-white/20"
+                      readOnly
+                      className="glass-input text-white placeholder:text-gray-400 border-white/20 opacity-70"
                     />
                   </div>
                   
@@ -309,7 +354,7 @@ const CattleOnboarding = () => {
                     type="button"
                     variant="outline"
                     className="flex-1 glass-input text-white border-white/20 hover:bg-white/20"
-                    onClick={() => navigate('/dashboard')}
+                    onClick={() => formData.farmerId ? navigate(`/farmer/${formData.farmerId}`) : navigate('/dashboard')}
                     disabled={isLoading}
                   >
                     Cancel

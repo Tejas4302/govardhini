@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -15,6 +14,11 @@ import FeedRequests from "./pages/FeedRequests";
 import Analytics from "./pages/Analytics";
 import NotFound from "./pages/NotFound";
 import OfflineSync from "./components/OfflineSync";
+import Index from "./pages/Index";
+import Login from "./pages/Login";
+import FarmersList from "./pages/FarmersList";
+import FarmerProfile from "./pages/FarmerProfile";
+import UserManagement from "./pages/UserManagement";
 
 const queryClient = new QueryClient();
 
@@ -25,17 +29,20 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Navigate to="/auth" replace />} />
+          <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
-          <Route path="/login" element={<Navigate to="/auth" replace />} />
+          <Route path="/login" element={<Login />} />
           <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/profile" element={<Profile />} />
           <Route path="/farmer-onboarding" element={<FarmerOnboarding />} />
           <Route path="/cattle-onboarding" element={<CattleOnboarding />} />
           <Route path="/health-check" element={<HealthCheck />} />
           <Route path="/milk-logging" element={<MilkLogging />} />
           <Route path="/feed-requests" element={<FeedRequests />} />
           <Route path="/analytics" element={<Analytics />} />
+          <Route path="/farmers" element={<FarmersList />} />
+          <Route path="/farmer/:farmerId" element={<FarmerProfile />} />
+          <Route path="/user-management" element={<UserManagement />} />
+          <Route path="/profile" element={<Profile />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
         <OfflineSync />
