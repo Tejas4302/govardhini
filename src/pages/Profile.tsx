@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,7 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import Navigation from '@/components/Navigation';
-import { user as UserIcon, phone as PhoneIcon, image as ImageIcon, edit as EditIcon } from 'lucide-react';
+import { User as UserIcon, Phone as PhoneIcon, Image as ImageIcon, Edit as EditIcon } from 'lucide-react';
 
 interface UserData {
   id: string;
