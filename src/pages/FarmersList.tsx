@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -5,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Search, Plus, Phone, MapPin, Users, Eye, Trash2, Edit, AlertTriangle } from 'lucide-react';
+import { Search, Plus, Phone, MapPin, Users, Eye, Trash2, Edit, AlertTriangle, Heart } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import Navigation from '@/components/Navigation';
@@ -15,13 +16,13 @@ interface Farmer {
   created_at: string;
   full_name: string;
   phone_number: string;
-  address: string;
-  aadhar_number: string;
-  bank_account_number: string;
-  ifsc_code: string;
-  profile_picture_url: string | null;
-  status: string;
-  user_id: string;
+  state: string;
+  district: string;
+  taluk: string;
+  town_or_village: string;
+  pincode: string;
+  aadhaar_number: string | null;
+  added_by: string;
 }
 
 interface Stats {
@@ -92,7 +93,7 @@ const FarmersList = () => {
       const [farmersResult, cattleResult, milkResult] = await Promise.all([
         supabase.from('farmers').select('id'),
         supabase.from('cattle_profiles').select('farmer_id'),
-        supabase.from('milk_production').select('farmer_id', { count: 'exact' })
+        supabase.from('milk_production').select('cattle_id', { count: 'exact' })
       ]);
 
       setStats({
@@ -184,7 +185,7 @@ const FarmersList = () => {
                   <CardTitle className="text-lg font-semibold">{stats.totalCattle}</CardTitle>
                   <CardDescription className="text-sm text-gray-300">Total Cattle</CardDescription>
                 </div>
-                <Cow className="w-6 h-6 text-gray-400" />
+                <Heart className="w-6 h-6 text-gray-400" />
               </div>
             </CardContent>
           </Card>
@@ -243,11 +244,11 @@ const FarmersList = () => {
                     </div>
                     <div className="flex items-center space-x-2">
                       <MapPin className="w-4 h-4" />
-                      <span>{farmer.address}</span>
+                      <span>{farmer.town_or_village}, {farmer.district}</span>
                     </div>
                   </div>
-                  <Badge className={`mt-2 w-fit ${farmer.status === 'active' ? 'bg-green-500 hover:bg-green-600' : 'bg-yellow-500 hover:bg-yellow-600'} text-white`}>
-                    {farmer.status}
+                  <Badge className="mt-2 w-fit bg-green-500 hover:bg-green-600 text-white">
+                    Active
                   </Badge>
                 </CardContent>
               </Card>

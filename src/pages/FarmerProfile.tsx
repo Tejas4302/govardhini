@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,7 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import Navigation from '@/components/Navigation';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Trash2, ArrowLeft, Plus, Phone, MapPin, Calendar, Users, Cow, Milk, Heart, Wheat, AlertTriangle, Edit } from 'lucide-react';
+import { Trash2, ArrowLeft, Plus, Phone, MapPin, Calendar, Users, Heart, Wheat, AlertTriangle, Edit } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -115,9 +116,9 @@ const FarmerProfile = () => {
   const fetchActivities = async (farmerId: string) => {
     try {
       const [milkResult, healthResult, feedResult] = await Promise.all([
-        supabase.from('milk_production').select('*').eq('farmer_id', farmerId).order('date', { ascending: false }).limit(10),
-        supabase.from('health_checkups').select('*').eq('farmer_id', farmerId).order('checkup_date', { ascending: false }).limit(10),
-        supabase.from('feed_requests').select('*').eq('farmer_id', farmerId).order('created_at', { ascending: false }).limit(10)
+        supabase.from('milk_production').select('*').eq('cattle_id', farmerId).order('date', { ascending: false }).limit(10),
+        supabase.from('health_checkups').select('*').eq('cattle_id', farmerId).order('date', { ascending: false }).limit(10),
+        supabase.from('feed_requests').select('*').eq('cattle_id', farmerId).order('created_at', { ascending: false }).limit(10)
       ]);
 
       const allActivities = [
@@ -130,8 +131,8 @@ const FarmerProfile = () => {
         ...(healthResult.data || []).map(item => ({
           ...item,
           type: 'health',
-          date: item.checkup_date,
-          description: `Health checkup: ${item.status}`
+          date: item.date,
+          description: `Health checkup: ${item.issue || 'Routine checkup'}`
         })),
         ...(feedResult.data || []).map(item => ({
           ...item,
@@ -207,14 +208,6 @@ const FarmerProfile = () => {
           throw cattleDeleteError;
         }
       }
-
-      // Delete SMS notifications
-      console.log('Deleting SMS notifications...');
-      const { error: smsError } = await supabase
-        .from('sms_notifications')
-        .delete()
-        .eq('farmer_id', farmerId);
-      if (smsError) console.error('SMS deletion error:', smsError);
 
       // Finally delete the farmer
       console.log('Deleting farmer record...');
@@ -385,7 +378,6 @@ const FarmerProfile = () => {
                             <br />• All milk production records
                             <br />• All health checkup records
                             <br />• All feed requests
-                            <br />• All SMS notifications
                             <br /><br />
                             This action cannot be undone. Are you sure you want to proceed?
                           </AlertDialogDescription>
