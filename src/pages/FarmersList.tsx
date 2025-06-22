@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -93,34 +94,98 @@ const FarmersList = () => {
   const handleDeleteFarmer = async (farmerId: string, farmerName: string) => {
     setDeletingId(farmerId);
     try {
-      // Get cattle IDs first
-      const { data: cattleData } = await supabase
+      console.log('Starting farmer deletion process...');
+      console.log('Farmer ID:', farmerId);
+
+      // Get farmer details first to get phone number
+      const { data: farmerData, error: farmerFetchError } = await supabase
+        .from('farmers')
+        .select('phone_number')
+        .eq('id', farmerId)
+        .single();
+
+      if (farmerFetchError) {
+        console.error('Error fetching farmer details:', farmerFetchError);
+        throw farmerFetchError;
+      }
+
+      const farmerPhone = farmerData.phone_number;
+      console.log('Farmer Phone:', farmerPhone);
+
+      // Get all cattle IDs using both farmer_id and owner_phone for complete coverage
+      const { data: allCattleData, error: cattleError } = await supabase
         .from('cattle_profiles')
-        .select('cattle_id')
+        .select('cattle_id, id')
+        .or(`farmer_id.eq.${farmerId},owner_phone.eq.${farmerPhone}`);
+
+      if (cattleError) {
+        console.error('Error fetching cattle for deletion:', cattleError);
+        throw cattleError;
+      }
+
+      const cattleIds = allCattleData?.map(c => c.cattle_id) || [];
+      console.log('All cattle IDs to delete:', cattleIds);
+
+      if (cattleIds.length > 0) {
+        // Delete related records first (cascade deletion)
+        console.log('Deleting milk production records...');
+        const { error: milkError } = await supabase
+          .from('milk_production')
+          .delete()
+          .in('cattle_id', cattleIds);
+        if (milkError) console.error('Milk deletion error:', milkError);
+
+        console.log('Deleting health checkup records...');
+        const { error: healthError } = await supabase
+          .from('health_checkups')
+          .delete()
+          .in('cattle_id', cattleIds);
+        if (healthError) console.error('Health deletion error:', healthError);
+
+        console.log('Deleting feed request records...');
+        const { error: feedError } = await supabase
+          .from('feed_requests')
+          .delete()
+          .in('cattle_id', cattleIds);
+        if (feedError) console.error('Feed deletion error:', feedError);
+
+        // Delete cattle profiles using both conditions to ensure complete cleanup
+        console.log('Deleting cattle profiles...');
+        const { error: cattleDeleteError } = await supabase
+          .from('cattle_profiles')
+          .delete()
+          .or(`farmer_id.eq.${farmerId},owner_phone.eq.${farmerPhone}`);
+        
+        if (cattleDeleteError) {
+          console.error('Cattle deletion error:', cattleDeleteError);
+          throw cattleDeleteError;
+        }
+      }
+
+      // Delete SMS notifications
+      console.log('Deleting SMS notifications...');
+      const { error: smsError } = await supabase
+        .from('sms_notifications')
+        .delete()
         .eq('farmer_id', farmerId);
-
-      const cattleIds = cattleData?.map(c => c.cattle_id) || [];
-
-      // Delete related records first (cascade deletion)
-      await Promise.all([
-        supabase.from('milk_production').delete().in('cattle_id', cattleIds),
-        supabase.from('health_checkups').delete().in('cattle_id', cattleIds),
-        supabase.from('feed_requests').delete().in('cattle_id', cattleIds),
-        supabase.from('sms_notifications').delete().eq('farmer_id', farmerId),
-        supabase.from('cattle_profiles').delete().eq('farmer_id', farmerId)
-      ]);
+      if (smsError) console.error('SMS deletion error:', smsError);
 
       // Finally delete the farmer
-      const { error } = await supabase
+      console.log('Deleting farmer record...');
+      const { error: farmerDeleteError } = await supabase
         .from('farmers')
         .delete()
         .eq('id', farmerId);
 
-      if (error) throw error;
+      if (farmerDeleteError) {
+        console.error('Farmer deletion error:', farmerDeleteError);
+        throw farmerDeleteError;
+      }
 
+      console.log('Farmer deletion completed successfully');
       toast({
         title: "Success",
-        description: `${farmerName} and all related records have been deleted successfully`,
+        description: `${farmerName} and all ${cattleIds.length} associated cattle records have been deleted successfully`,
       });
 
       // Refresh the farmers list
@@ -129,7 +194,7 @@ const FarmersList = () => {
       console.error('Error deleting farmer:', error);
       toast({
         title: "Error",
-        description: "Failed to delete farmer",
+        description: "Failed to delete farmer and associated records",
         variant: "destructive"
       });
     } finally {
