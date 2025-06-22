@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,7 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import Navigation from '@/components/Navigation';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Trash2, ArrowLeft } from 'lucide-react';
+import { Trash2, ArrowLeft, Plus, Phone, MapPin, Calendar, Users, Cow, Milk, Heart, Wheat, AlertTriangle, Edit } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -51,6 +50,7 @@ const FarmerProfile = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
   const [updatingCattleId, setUpdatingCattleId] = useState<string | null>(null);
+  const [activities, setActivities] = useState<any[]>([]);
   const { toast } = useToast();
   
   const user = JSON.parse(localStorage.getItem('govardhini_user') || '{}');
@@ -98,6 +98,8 @@ const FarmerProfile = () => {
       if (cattleError) throw cattleError;
       setCattle(cattleData || []);
 
+      // Fetch activities
+      fetchActivities(farmerId);
     } catch (error) {
       console.error('Error fetching farmer data:', error);
       toast({
@@ -107,6 +109,42 @@ const FarmerProfile = () => {
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const fetchActivities = async (farmerId: string) => {
+    try {
+      const [milkResult, healthResult, feedResult] = await Promise.all([
+        supabase.from('milk_production').select('*').eq('farmer_id', farmerId).order('date', { ascending: false }).limit(10),
+        supabase.from('health_checkups').select('*').eq('farmer_id', farmerId).order('checkup_date', { ascending: false }).limit(10),
+        supabase.from('feed_requests').select('*').eq('farmer_id', farmerId).order('created_at', { ascending: false }).limit(10)
+      ]);
+
+      const allActivities = [
+        ...(milkResult.data || []).map(item => ({
+          ...item,
+          type: 'milk',
+          date: item.date,
+          description: `Milk production: ${item.quantity_litres}L`
+        })),
+        ...(healthResult.data || []).map(item => ({
+          ...item,
+          type: 'health',
+          date: item.checkup_date,
+          description: `Health checkup: ${item.status}`
+        })),
+        ...(feedResult.data || []).map(item => ({
+          ...item,
+          type: 'feed',
+          date: item.created_at,
+          description: `Feed request: ${item.quantity_kg}kg`
+        }))
+      ];
+
+      allActivities.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      setActivities(allActivities.slice(0, 10));
+    } catch (error) {
+      console.error('Error fetching activities:', error);
     }
   };
 

@@ -1,314 +1,259 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Search, Plus, Phone, MapPin, Users, Eye, Trash2, Edit, AlertTriangle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import Navigation from '@/components/Navigation';
-import { Trash2 } from 'lucide-react';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
 
 interface Farmer {
   id: string;
+  created_at: string;
   full_name: string;
   phone_number: string;
-  district: string;
-  taluk: string;
-  town_or_village: string;
-  cattle_count?: number;
+  address: string;
+  aadhar_number: string;
+  bank_account_number: string;
+  ifsc_code: string;
+  profile_picture_url: string | null;
+  status: string;
+  user_id: string;
+}
+
+interface Stats {
+  totalFarmers: number;
+  activeFarmers: number;
+  totalCattle: number;
 }
 
 const FarmersList = () => {
   const [farmers, setFarmers] = useState<Farmer[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
   const [filteredFarmers, setFilteredFarmers] = useState<Farmer[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(true);
-  const [deletingId, setDeletingId] = useState<string | null>(null);
-  const { toast } = useToast();
+  const [stats, setStats] = useState<Stats>({
+    totalFarmers: 0,
+    activeFarmers: 0,
+    totalCattle: 0
+  });
   const navigate = useNavigate();
-  
-  const user = JSON.parse(localStorage.getItem('govardhini_user') || '{}');
-  
-  // Fixed admin check to handle object structure and also check user.role
-  const isAdmin = user.designation?.value?.toLowerCase() === 'admin' || 
-                  user.designation?.value?.toLowerCase() === 'office_staff' ||
-                  user.role?.toLowerCase() === 'admin' ||
-                  user.designation?.toLowerCase() === 'admin' ||
-                  user.designation?.toLowerCase() === 'office_staff';
+  const { toast } = useToast();
 
   useEffect(() => {
     fetchFarmers();
+    fetchFarmersStats();
   }, []);
 
   useEffect(() => {
-    const filtered = farmers.filter(farmer =>
-      farmer.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      farmer.phone_number.includes(searchTerm) ||
-      farmer.district.toLowerCase().includes(searchTerm.toLowerCase())
+    const results = farmers.filter(farmer =>
+      farmer.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      farmer.phone_number.includes(searchQuery)
     );
-    setFilteredFarmers(filtered);
-  }, [searchTerm, farmers]);
+    setFilteredFarmers(results);
+  }, [searchQuery, farmers]);
 
   const fetchFarmers = async () => {
+    setIsLoading(true);
     try {
       const { data, error } = await supabase
         .from('farmers')
-        .select(`
-          *,
-          cattle_profiles(count)
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-
-      const farmersWithCattleCount = data?.map(farmer => ({
-        ...farmer,
-        cattle_count: farmer.cattle_profiles?.[0]?.count || 0
-      })) || [];
-
-      setFarmers(farmersWithCattleCount);
+      if (error) {
+        console.error('Error fetching farmers:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load farmers.",
+          variant: "destructive",
+        });
+      } else {
+        setFarmers(data || []);
+        setFilteredFarmers(data || []);
+      }
     } catch (error) {
-      console.error('Error fetching farmers:', error);
+      console.error('Unexpected error:', error);
       toast({
         title: "Error",
-        description: "Failed to fetch farmers",
-        variant: "destructive"
+        description: "Failed to load farmers.",
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleDeleteFarmer = async (farmerId: string, farmerName: string) => {
-    setDeletingId(farmerId);
+  const fetchFarmersStats = async () => {
     try {
-      console.log('Starting farmer deletion process...');
-      console.log('Farmer ID:', farmerId);
+      const [farmersResult, cattleResult, milkResult] = await Promise.all([
+        supabase.from('farmers').select('id'),
+        supabase.from('cattle_profiles').select('farmer_id'),
+        supabase.from('milk_production').select('farmer_id', { count: 'exact' })
+      ]);
 
-      // Get farmer details first to get phone number
-      const { data: farmerData, error: farmerFetchError } = await supabase
-        .from('farmers')
-        .select('phone_number')
-        .eq('id', farmerId)
-        .single();
+      setStats({
+        totalFarmers: farmersResult.data?.length || 0,
+        totalCattle: cattleResult.data?.length || 0,
+        activeFarmers: new Set(cattleResult.data?.map(c => c.farmer_id).filter(Boolean)).size || 0
+      });
+    } catch (error) {
+      console.error('Error fetching farmers stats:', error);
+    }
+  };
 
-      if (farmerFetchError) {
-        console.error('Error fetching farmer details:', farmerFetchError);
-        throw farmerFetchError;
-      }
+  const handleDeleteFarmer = async (farmerId: string) => {
+    const confirmDelete = window.confirm("Are you sure you want to delete this farmer?");
+    if (!confirmDelete) return;
 
-      const farmerPhone = farmerData.phone_number;
-      console.log('Farmer Phone:', farmerPhone);
-
-      // Get all cattle IDs using both farmer_id and owner_phone for complete coverage
-      const { data: allCattleData, error: cattleError } = await supabase
-        .from('cattle_profiles')
-        .select('cattle_id, id')
-        .or(`farmer_id.eq.${farmerId},owner_phone.eq.${farmerPhone}`);
-
-      if (cattleError) {
-        console.error('Error fetching cattle for deletion:', cattleError);
-        throw cattleError;
-      }
-
-      const cattleIds = allCattleData?.map(c => c.cattle_id) || [];
-      console.log('All cattle IDs to delete:', cattleIds);
-
-      if (cattleIds.length > 0) {
-        // Delete related records first (cascade deletion)
-        console.log('Deleting milk production records...');
-        const { error: milkError } = await supabase
-          .from('milk_production')
-          .delete()
-          .in('cattle_id', cattleIds);
-        if (milkError) console.error('Milk deletion error:', milkError);
-
-        console.log('Deleting health checkup records...');
-        const { error: healthError } = await supabase
-          .from('health_checkups')
-          .delete()
-          .in('cattle_id', cattleIds);
-        if (healthError) console.error('Health deletion error:', healthError);
-
-        console.log('Deleting feed request records...');
-        const { error: feedError } = await supabase
-          .from('feed_requests')
-          .delete()
-          .in('cattle_id', cattleIds);
-        if (feedError) console.error('Feed deletion error:', feedError);
-
-        // Delete cattle profiles using both conditions to ensure complete cleanup
-        console.log('Deleting cattle profiles...');
-        const { error: cattleDeleteError } = await supabase
-          .from('cattle_profiles')
-          .delete()
-          .or(`farmer_id.eq.${farmerId},owner_phone.eq.${farmerPhone}`);
-        
-        if (cattleDeleteError) {
-          console.error('Cattle deletion error:', cattleDeleteError);
-          throw cattleDeleteError;
-        }
-      }
-
-      // Delete SMS notifications
-      console.log('Deleting SMS notifications...');
-      const { error: smsError } = await supabase
-        .from('sms_notifications')
-        .delete()
-        .eq('farmer_id', farmerId);
-      if (smsError) console.error('SMS deletion error:', smsError);
-
-      // Finally delete the farmer
-      console.log('Deleting farmer record...');
-      const { error: farmerDeleteError } = await supabase
+    try {
+      const { error } = await supabase
         .from('farmers')
         .delete()
         .eq('id', farmerId);
 
-      if (farmerDeleteError) {
-        console.error('Farmer deletion error:', farmerDeleteError);
-        throw farmerDeleteError;
+      if (error) {
+        console.error("Error deleting farmer:", error);
+        toast({
+          title: "Error",
+          description: "Failed to delete farmer.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Success",
+          description: "Farmer deleted successfully.",
+        });
+        fetchFarmers(); // Refresh the list
+        fetchFarmersStats(); // Refresh stats
       }
-
-      console.log('Farmer deletion completed successfully');
-      toast({
-        title: "Success",
-        description: `${farmerName} and all ${cattleIds.length} associated cattle records have been deleted successfully`,
-      });
-
-      // Refresh the farmers list
-      fetchFarmers();
     } catch (error) {
-      console.error('Error deleting farmer:', error);
+      console.error("Unexpected error:", error);
       toast({
         title: "Error",
-        description: "Failed to delete farmer and associated records",
-        variant: "destructive"
+        description: "Failed to delete farmer.",
+        variant: "destructive",
       });
-    } finally {
-      setDeletingId(null);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-      <Navigation user={user} />
-      
-      <div className="relative z-10 container mx-auto px-4 py-8">
-        <div className="max-w-6xl mx-auto">
-          <div className="mb-6">
-            <h1 className="text-3xl font-bold text-white mb-4">Farmers Directory</h1>
-            <div className="flex gap-4 items-center">
-              <Input
-                placeholder="Search farmers by name, phone, or district..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="max-w-md glass-input text-white placeholder:text-gray-400 border-white/20"
-              />
-              <Button
-                onClick={() => navigate('/farmer-onboarding')}
-                className="bg-gradient-to-r from-green-500 to-emerald-600"
-              >
-                Add New Farmer 👨‍🌾
-              </Button>
-            </div>
-          </div>
-
-          {isLoading ? (
-            <div className="text-center text-white">Loading farmers...</div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredFarmers.map((farmer) => (
-                <Card key={farmer.id} className="glass-card border-0 hover:border-white/40 transition-all">
-                  <CardHeader>
-                    <CardTitle className="text-white text-lg">{farmer.full_name}</CardTitle>
-                    <CardDescription className="text-gray-300">
-                      📱 {farmer.phone_number}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2 text-sm text-gray-300">
-                      <p>📍 {farmer.town_or_village}, {farmer.taluk}</p>
-                      <p>🏛️ {farmer.district}</p>
-                      <p>🐄 {farmer.cattle_count || 0} cattle</p>
-                    </div>
-                    <div className="flex gap-2 mt-4">
-                      <Button
-                        onClick={() => navigate(`/farmer/${farmer.id}`)}
-                        className="flex-1 glass-button"
-                      >
-                        View Profile
-                      </Button>
-                      {isAdmin && (
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              className="bg-red-600 hover:bg-red-700"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent className="glass-card border-red-500/20">
-                            <AlertDialogHeader>
-                              <AlertDialogTitle className="text-white">Delete Farmer</AlertDialogTitle>
-                              <AlertDialogDescription className="text-gray-300">
-                                This will permanently delete {farmer.full_name} and all associated records including {farmer.cattle_count || 0} cattle profiles, milk production records, health checkups, and SMS notifications.
-                                <br /><br />
-                                This action cannot be undone. Are you sure?
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel className="glass-button">Cancel</AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={() => handleDeleteFarmer(farmer.id, farmer.full_name)}
-                                disabled={deletingId === farmer.id}
-                                className="bg-red-600 hover:bg-red-700"
-                              >
-                                {deletingId === farmer.id ? 'Deleting...' : 'Delete'}
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-              
-              {filteredFarmers.length === 0 && !isLoading && (
-                <Card className="glass-card border-0 col-span-full">
-                  <CardContent className="text-center py-8">
-                    <p className="text-gray-300 mb-4">
-                      {searchTerm ? 'No farmers found matching your search' : 'No farmers registered yet'}
-                    </p>
-                    {!searchTerm && (
-                      <Button
-                        onClick={() => navigate('/farmer-onboarding')}
-                        className="bg-gradient-to-r from-green-500 to-emerald-600"
-                      >
-                        Register First Farmer 👨‍🌾
-                      </Button>
-                    )}
-                  </CardContent>
-                </Card>
-              )}
-            </div>
-          )}
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white">
+      <Navigation user={JSON.parse(localStorage.getItem('govardhini_user') || '{}')} />
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-3xl font-bold">Farmers Directory</h1>
+          <Button onClick={() => navigate('/farmer-onboarding')} className="glass-button flex items-center gap-2">
+            <Plus className="w-4 h-4" />
+            Add Farmer
+          </Button>
         </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <Card className="glass-card text-white">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-lg font-semibold">{stats.totalFarmers}</CardTitle>
+                  <CardDescription className="text-sm text-gray-300">Total Farmers</CardDescription>
+                </div>
+                <Users className="w-6 h-6 text-gray-400" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="glass-card text-white">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-lg font-semibold">{stats.activeFarmers}</CardTitle>
+                  <CardDescription className="text-sm text-gray-300">Active Farmers</CardDescription>
+                </div>
+                <Users className="w-6 h-6 text-green-400" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="glass-card text-white">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-lg font-semibold">{stats.totalCattle}</CardTitle>
+                  <CardDescription className="text-sm text-gray-300">Total Cattle</CardDescription>
+                </div>
+                <Cow className="w-6 h-6 text-gray-400" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="mb-4">
+          <Input
+            type="text"
+            placeholder="Search farmers..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="glass-input"
+          />
+        </div>
+
+        {isLoading ? (
+          <div className="text-center">Loading farmers...</div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredFarmers.map(farmer => (
+              <Card key={farmer.id} className="glass-card text-white">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">{farmer.full_name}</CardTitle>
+                  <div className="flex space-x-2">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="hover:bg-white/10 text-white"
+                      onClick={() => navigate(`/farmer/${farmer.id}`)}
+                    >
+                      <Eye className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="hover:bg-white/10 text-white"
+                      onClick={() => navigate(`/farmer-onboarding?farmerId=${farmer.id}`)}
+                    >
+                      <Edit className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="hover:bg-red-500/20 text-red-500"
+                      onClick={() => handleDeleteFarmer(farmer.id)}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-sm text-gray-300">
+                    <div className="flex items-center space-x-2">
+                      <Phone className="w-4 h-4" />
+                      <span>{farmer.phone_number}</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <MapPin className="w-4 h-4" />
+                      <span>{farmer.address}</span>
+                    </div>
+                  </div>
+                  <Badge className={`mt-2 w-fit ${farmer.status === 'active' ? 'bg-green-500 hover:bg-green-600' : 'bg-yellow-500 hover:bg-yellow-600'} text-white`}>
+                    {farmer.status}
+                  </Badge>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
