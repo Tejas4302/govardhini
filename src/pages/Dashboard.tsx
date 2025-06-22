@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -100,16 +99,16 @@ const Dashboard = () => {
     const baseActions = [
       { title: 'Farmers Directory', desc: 'View all farmers & profiles', icon: '👨‍🌾', path: '/farmers', gradient: 'from-emerald-500 to-green-600' },
       { title: 'Farmer Registration', desc: 'Register new farmers', icon: '➕', path: '/farmer-onboarding', gradient: 'from-green-500 to-emerald-600' },
-      { title: 'Cattle Onboarding', desc: 'Add new cattle', icon: '🐄', path: '/cattle-onboarding', gradient: 'from-amber-500 to-orange-600' },
-      { title: 'Health Check', desc: 'Record cattle health', icon: '❤️', path: '/health-check', gradient: 'from-red-500 to-pink-600' },
-      { title: 'Milk Production', desc: 'Log milk production', icon: '🥛', path: '/milk-logging', gradient: 'from-blue-500 to-cyan-600' },
+      { title: 'SMS Notifications', desc: 'View & manage SMS communications', icon: '📱', path: '/sms-notifications', gradient: 'from-blue-500 to-cyan-600' },
+      { title: 'Recent Activities', desc: 'View latest system activities', icon: '📊', path: '/recent-activities', gradient: 'from-purple-500 to-indigo-600' },
+      { title: 'Search Farmers', desc: 'Advanced farmer search & filtering', icon: '🔍', path: '/search-farmers', gradient: 'from-amber-500 to-orange-600' },
     ];
 
     if (user.role === 'admin' || user.role === 'office_staff') {
       baseActions.push(
         { title: 'User Management', desc: 'Approve pending users', icon: '👤', path: '/user-management', gradient: 'from-purple-500 to-indigo-600' },
-        { title: 'Feed Requests', desc: 'Manage feed requests', icon: '🌾', path: '/feed-requests', gradient: 'from-yellow-500 to-amber-600' },
-        { title: 'Analytics', desc: 'View reports & charts', icon: '📊', path: '/analytics', gradient: 'from-indigo-500 to-purple-600' }
+        { title: 'System Reports', desc: 'Generate & download reports', icon: '📋', path: '/system-reports', gradient: 'from-red-500 to-pink-600' },
+        { title: 'Analytics', desc: 'View reports & charts', icon: '📈', path: '/analytics', gradient: 'from-indigo-500 to-purple-600' }
       );
     }
 
