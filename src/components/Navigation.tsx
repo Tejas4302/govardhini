@@ -31,19 +31,17 @@ const Navigation = ({ user }: NavigationProps) => {
   };
 
   return (
-    <nav className="glass-navigation sticky top-0 z-50 shadow-lg">
+    <nav className="glass-card border-b border-white/20 sticky top-0 z-50 backdrop-blur-xl">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center space-x-4">
             <Button
               variant="ghost"
               onClick={() => navigate('/dashboard')}
-              className="flex items-center space-x-2 hover:bg-leafy-green/10 text-wheat-beige transition-all duration-300"
+              className="flex items-center space-x-2 hover:bg-white/10 text-white"
             >
-              <span className="text-2xl animate-pulse">🐄</span>
-              <span className="font-bold text-xl bg-gradient-to-r from-leafy-green to-mustard-yellow bg-clip-text text-transparent">
-                Govardhini
-              </span>
+              <span className="text-2xl">🐄</span>
+              <span className="font-bold text-xl">Govardhini</span>
             </Button>
           </div>
           
@@ -51,15 +49,15 @@ const Navigation = ({ user }: NavigationProps) => {
             <Button
               variant="ghost"
               onClick={() => navigate('/profile')}
-              className="flex items-center space-x-2 hover:bg-leafy-green/10 text-wheat-beige transition-all duration-300 glass-float"
+              className="flex items-center space-x-2 hover:bg-white/10 text-white"
             >
-              <Avatar className="w-8 h-8 border-2 border-leafy-green/30 shadow-lg">
+              <Avatar className="w-8 h-8">
                 <AvatarImage src={user.profileImage} alt="Profile" />
-                <AvatarFallback className="bg-gradient-to-br from-leafy-green to-deep-green text-wheat-beige text-sm font-semibold">
+                <AvatarFallback className="bg-gradient-to-br from-green-500 to-emerald-600 text-white text-sm">
                   {user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
                 </AvatarFallback>
               </Avatar>
-              <span className="text-sm text-wheat-beige/90 hidden md:block">
+              <span className="text-sm text-gray-300 hidden md:block">
                 {user.name}
               </span>
             </Button>
@@ -67,7 +65,7 @@ const Navigation = ({ user }: NavigationProps) => {
               variant="outline"
               size="sm"
               onClick={handleLogout}
-              className="glass-button border-none text-wheat-beige font-medium"
+              className="border-white/20 text-gray-300 hover:bg-white/10 hover:border-red-500/50 hover:text-red-400 transition-all duration-200"
             >
               Logout
             </Button>

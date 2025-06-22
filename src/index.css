@@ -3,99 +3,86 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Agricultural-focused design system. All colors, gradients, fonts, etc should be defined here. */
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. */
 
 @layer base {
   :root {
-    --background: 248 244 236; /* Light wheat beige #F8F4EC */
-    --foreground: 33 33 33; /* Charcoal black #212121 */
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
 
-    --card: 250 250 245; /* Clay white #FAFAF5 */
-    --card-foreground: 33 33 33; /* Charcoal black #212121 */
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
 
-    --popover: 250 250 245; /* Clay white #FAFAF5 */
-    --popover-foreground: 33 33 33; /* Charcoal black #212121 */
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 47 79 79; /* Dark forest green #2F4F4F */
-    --primary-foreground: 250 250 245; /* Clay white #FAFAF5 */
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
 
-    --secondary: 244 197 66; /* Mustard yellow #F4C542 */
-    --secondary-foreground: 33 33 33; /* Charcoal black #212121 */
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
 
-    --muted: 94 90 90; /* Muted brown-gray #5E5A5A */
-    --muted-foreground: 248 244 236; /* Light wheat beige #F8F4EC */
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
 
-    --accent: 109 190 69; /* Leafy green #6DBE45 */
-    --accent-foreground: 250 250 245; /* Clay white #FAFAF5 */
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
 
-    --destructive: 192 57 43; /* Earthy red #C0392B */
-    --destructive-foreground: 250 250 245; /* Clay white #FAFAF5 */
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
 
-    --success: 46 125 50; /* Deep green #2E7D32 */
-    --success-foreground: 250 250 245; /* Clay white #FAFAF5 */
-
-    --warning: 244 197 66; /* Mustard yellow #F4C542 */
-    --warning-foreground: 33 33 33; /* Charcoal black #212121 */
-
-    --border: 94 90 90; /* Muted brown-gray #5E5A5A */
-    --input: 250 250 245; /* Clay white #FAFAF5 */
-    --ring: 109 190 69; /* Leafy green #6DBE45 */
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
 
     --radius: 0.5rem;
 
-    --sidebar-background: 250 250 245; /* Clay white #FAFAF5 */
-    --sidebar-foreground: 33 33 33; /* Charcoal black #212121 */
-    --sidebar-primary: 47 79 79; /* Dark forest green #2F4F4F */
-    --sidebar-primary-foreground: 250 250 245; /* Clay white #FAFAF5 */
-    --sidebar-accent: 248 244 236; /* Light wheat beige #F8F4EC */
-    --sidebar-accent-foreground: 33 33 33; /* Charcoal black #212121 */
-    --sidebar-border: 94 90 90; /* Muted brown-gray #5E5A5A */
-    --sidebar-ring: 109 190 69; /* Leafy green #6DBE45 */
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
   .dark {
-    --background: 47 79 79; /* Dark forest green #2F4F4F */
-    --foreground: 248 244 236; /* Light wheat beige #F8F4EC */
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
 
-    --card: 55 85 85; /* Slightly lighter dark forest green */
-    --card-foreground: 248 244 236; /* Light wheat beige #F8F4EC */
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
 
-    --popover: 55 85 85; /* Slightly lighter dark forest green */
-    --popover-foreground: 248 244 236; /* Light wheat beige #F8F4EC */
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
 
-    --primary: 109 190 69; /* Leafy green #6DBE45 */
-    --primary-foreground: 47 79 79; /* Dark forest green #2F4F4F */
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
 
-    --secondary: 244 197 66; /* Mustard yellow #F4C542 */
-    --secondary-foreground: 47 79 79; /* Dark forest green #2F4F4F */
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
 
-    --muted: 94 90 90; /* Muted brown-gray #5E5A5A */
-    --muted-foreground: 248 244 236; /* Light wheat beige #F8F4EC */
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
 
-    --accent: 109 190 69; /* Leafy green #6DBE45 */
-    --accent-foreground: 47 79 79; /* Dark forest green #2F4F4F */
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
 
-    --destructive: 192 57 43; /* Earthy red #C0392B */
-    --destructive-foreground: 248 244 236; /* Light wheat beige #F8F4EC */
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
 
-    --success: 46 125 50; /* Deep green #2E7D32 */
-    --success-foreground: 248 244 236; /* Light wheat beige #F8F4EC */
-
-    --warning: 244 197 66; /* Mustard yellow #F4C542 */
-    --warning-foreground: 47 79 79; /* Dark forest green #2F4F4F */
-
-    --border: 94 90 90; /* Muted brown-gray #5E5A5A */
-    --input: 55 85 85; /* Slightly lighter dark forest green */
-    --ring: 109 190 69; /* Leafy green #6DBE45 */
-
-    --sidebar-background: 47 79 79; /* Dark forest green #2F4F4F */
-    --sidebar-foreground: 248 244 236; /* Light wheat beige #F8F4EC */
-    --sidebar-primary: 109 190 69; /* Leafy green #6DBE45 */
-    --sidebar-primary-foreground: 47 79 79; /* Dark forest green #2F4F4F */
-    --sidebar-accent: 55 85 85; /* Slightly lighter dark forest green */
-    --sidebar-accent-foreground: 248 244 236; /* Light wheat beige #F8F4EC */
-    --sidebar-border: 94 90 90; /* Muted brown-gray #5E5A5A */
-    --sidebar-ring: 109 190 69; /* Leafy green #6DBE45 */
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
   }
 }
 
@@ -109,262 +96,59 @@
   }
 }
 
-/* Enhanced Glassmorphism Effects */
+/* Glassmorphism styles */
 .glass-card {
-  background: linear-gradient(135deg, 
-    rgba(250, 250, 245, 0.9), 
-    rgba(248, 244, 236, 0.8)
-  );
-  backdrop-filter: blur(25px);
-  -webkit-backdrop-filter: blur(25px);
-  border: 1px solid rgba(109, 190, 69, 0.15);
-  box-shadow: 
-    0 8px 32px 0 rgba(47, 79, 79, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2),
-    0 0 0 1px rgba(109, 190, 69, 0.05);
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  transition: all 0.3s ease-in-out;
 }
 
 .glass-card:hover {
-  background: linear-gradient(135deg, 
-    rgba(250, 250, 245, 0.95), 
-    rgba(248, 244, 236, 0.9)
-  );
-  transform: translateY(-8px) scale(1.02);
-  box-shadow: 
-    0 20px 45px 0 rgba(47, 79, 79, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.3),
-    0 0 0 1px rgba(109, 190, 69, 0.2);
-  border-color: rgba(109, 190, 69, 0.3);
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px 0 rgba(31, 38, 135, 0.5);
 }
 
 .glass-input {
-  background: rgba(250, 250, 245, 0.85);
-  backdrop-filter: blur(15px);
-  -webkit-backdrop-filter: blur(15px);
-  border: 1px solid rgba(109, 190, 69, 0.2);
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   transition: all 0.3s ease;
-  box-shadow: 
-    0 4px 16px 0 rgba(47, 79, 79, 0.05),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .glass-input:focus {
-  background: rgba(250, 250, 245, 0.95);
-  border-color: rgba(109, 190, 69, 0.6);
-  box-shadow: 
-    0 8px 24px rgba(109, 190, 69, 0.15),
-    0 0 0 4px rgba(109, 190, 69, 0.1);
-  outline: none;
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(34, 197, 94, 0.5);
+  box-shadow: 0 0 20px rgba(34, 197, 94, 0.3);
 }
 
 .glass-button {
-  background: linear-gradient(135deg, 
-    rgba(109, 190, 69, 0.9), 
-    rgba(46, 125, 50, 0.8)
-  );
-  backdrop-filter: blur(15px);
-  -webkit-backdrop-filter: blur(15px);
-  border: 1px solid rgba(109, 190, 69, 0.3);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 
-    0 6px 20px rgba(109, 190, 69, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.8), rgba(16, 185, 129, 0.8));
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
 }
 
 .glass-button:hover {
-  background: linear-gradient(135deg, 
-    rgba(109, 190, 69, 1), 
-    rgba(46, 125, 50, 1)
-  );
-  transform: translateY(-3px) scale(1.05);
-  box-shadow: 
-    0 12px 30px rgba(109, 190, 69, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.9), rgba(16, 185, 129, 0.9));
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(34, 197, 94, 0.4);
 }
 
-.glass-navigation {
-  background: linear-gradient(135deg, 
-    rgba(47, 79, 79, 0.95), 
-    rgba(33, 33, 33, 0.9)
-  );
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(109, 190, 69, 0.2);
-  box-shadow: 
-    0 8px 32px 0 rgba(0, 0, 0, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
-}
-
-.glass-metric-card {
-  background: linear-gradient(135deg, 
-    rgba(250, 250, 245, 0.9), 
-    rgba(248, 244, 236, 0.85)
-  );
-  backdrop-filter: blur(25px);
-  -webkit-backdrop-filter: blur(25px);
-  border: 1px solid rgba(109, 190, 69, 0.15);
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 
-    0 10px 35px rgba(47, 79, 79, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.15);
-}
-
-.glass-metric-card:hover {
-  transform: translateY(-10px) scale(1.03);
-  background: linear-gradient(135deg, 
-    rgba(250, 250, 245, 0.95), 
-    rgba(248, 244, 236, 0.9)
-  );
-  box-shadow: 
-    0 25px 50px rgba(47, 79, 79, 0.12),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
-  border-color: rgba(109, 190, 69, 0.25);
-}
-
-.glass-action-card {
-  background: rgba(250, 250, 245, 0.8);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(109, 190, 69, 0.15);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 
-    0 8px 25px rgba(47, 79, 79, 0.06),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
-}
-
-.glass-action-card:hover {
-  background: rgba(250, 250, 245, 0.95);
-  transform: translateY(-5px) scale(1.02);
-  border-color: rgba(109, 190, 69, 0.3);
-  box-shadow: 
-    0 15px 35px rgba(47, 79, 79, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.15);
-}
-
-/* Dark mode glass effects */
-.dark .glass-card {
-  background: linear-gradient(135deg, 
-    rgba(55, 85, 85, 0.9), 
-    rgba(47, 79, 79, 0.8)
-  );
-  border: 1px solid rgba(109, 190, 69, 0.2);
-  box-shadow: 
-    0 8px 32px 0 rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
-}
-
-.dark .glass-card:hover {
-  background: linear-gradient(135deg, 
-    rgba(55, 85, 85, 0.95), 
-    rgba(47, 79, 79, 0.9)
-  );
-  box-shadow: 
-    0 20px 45px 0 rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
-}
-
-.dark .glass-input {
-  background: rgba(55, 85, 85, 0.8);
-  border: 1px solid rgba(109, 190, 69, 0.3);
-  box-shadow: 
-    0 4px 16px 0 rgba(0, 0, 0, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
-}
-
-.dark .glass-input:focus {
-  background: rgba(55, 85, 85, 0.95);
-  border-color: rgba(109, 190, 69, 0.7);
-  box-shadow: 
-    0 8px 24px rgba(109, 190, 69, 0.2),
-    0 0 0 4px rgba(109, 190, 69, 0.1);
-}
-
-.dark .glass-metric-card {
-  background: linear-gradient(135deg, 
-    rgba(55, 85, 85, 0.9), 
-    rgba(47, 79, 79, 0.85)
-  );
-  border: 1px solid rgba(109, 190, 69, 0.2);
-  box-shadow: 
-    0 10px 35px rgba(0, 0, 0, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
-}
-
-.dark .glass-metric-card:hover {
-  background: linear-gradient(135deg, 
-    rgba(55, 85, 85, 0.95), 
-    rgba(47, 79, 79, 0.9)
-  );
-  box-shadow: 
-    0 25px 50px rgba(0, 0, 0, 0.25),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
-}
-
-.dark .glass-action-card {
-  background: rgba(55, 85, 85, 0.8);
-  border: 1px solid rgba(109, 190, 69, 0.2);
-  box-shadow: 
-    0 8px 25px rgba(0, 0, 0, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
-}
-
-.dark .glass-action-card:hover {
-  background: rgba(55, 85, 85, 0.95);
-  box-shadow: 
-    0 15px 35px rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
-}
-
-/* Floating animations */
-.glass-float {
-  animation: float 6s ease-in-out infinite;
-}
-
-.glass-float-delayed {
-  animation: float 6s ease-in-out infinite;
-  animation-delay: 2s;
-}
-
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
-}
-
-/* Enhanced animations */
 .animate-fade-in {
-  animation: fadeIn 0.8s ease-out forwards;
+  animation: fadeIn 0.6s ease-out;
 }
 
 .animate-slide-up {
-  animation: slideUp 0.8s ease-out forwards;
-}
-
-.animate-scale-in {
-  animation: scaleIn 0.6s ease-out forwards;
-}
-
-.animate-bounce-in {
-  animation: bounceIn 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
-}
-
-.animate-gradient {
-  background-size: 200% 200%;
-  animation: gradientShift 4s ease infinite;
-}
-
-.animate-pulse-glow {
-  animation: pulseGlow 3s ease-in-out infinite;
+  animation: slideUp 0.6s ease-out;
 }
 
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(30px);
+    transform: translateY(20px);
   }
   to {
     opacity: 1;
@@ -375,7 +159,7 @@
 @keyframes slideUp {
   from {
     opacity: 0;
-    transform: translateY(40px);
+    transform: translateY(30px);
   }
   to {
     opacity: 1;
@@ -383,148 +167,14 @@
   }
 }
 
-@keyframes scaleIn {
-  from {
-    opacity: 0;
-    transform: scale(0.9);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
+.metric-card {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-@keyframes bounceIn {
-  0% {
-    opacity: 0;
-    transform: scale(0.3) translateY(50px);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1.05) translateY(-10px);
-  }
-  70% {
-    transform: scale(0.98) translateY(5px);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-}
-
-@keyframes gradientShift {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
-}
-
-@keyframes pulseGlow {
-  0%, 100% {
-    box-shadow: 0 0 20px rgba(109, 190, 69, 0.3);
-  }
-  50% {
-    box-shadow: 0 0 30px rgba(109, 190, 69, 0.6);
-  }
-}
-
-/* Agricultural color utilities */
-.bg-forest-green {
-  background-color: #2F4F4F;
-}
-
-.bg-leafy-green {
-  background-color: #6DBE45;
-}
-
-.bg-wheat-beige {
-  background-color: #F8F4EC;
-}
-
-.bg-clay-white {
-  background-color: #FAFAF5;
-}
-
-.bg-deep-green {
-  background-color: #2E7D32;
-}
-
-.bg-mustard-yellow {
-  background-color: #F4C542;
-}
-
-.text-charcoal {
-  color: #212121;
-}
-
-.text-muted-brown {
-  color: #5E5A5A;
-}
-
-.text-earthy-red {
-  color: #C0392B;
-}
-
-.text-deep-green {
-  color: #2E7D32;
-}
-
-.text-mustard-yellow {
-  color: #F4C542;
-}
-
-.text-wheat-beige {
-  color: #F8F4EC;
-}
-
-.border-forest-green {
-  border-color: #2F4F4F;
-}
-
-.border-leafy-green {
-  border-color: #6DBE45;
-}
-
-.border-muted-brown {
-  border-color: #5E5A5A;
-}
-
-/* Gradient utilities */
-.gradient-nature {
-  background: linear-gradient(135deg, #6DBE45, #2E7D32);
-}
-
-.gradient-earth {
-  background: linear-gradient(135deg, #F4C542, #C0392B);
-}
-
-.gradient-forest {
-  background: linear-gradient(135deg, #2F4F4F, #2E7D32);
-}
-
-.gradient-field {
-  background: linear-gradient(135deg, #F8F4EC, #FAFAF5);
-}
-
-/* Hover effects */
-.hover-lift {
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.hover-lift:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 25px rgba(47, 79, 79, 0.15);
-}
-
-.hover-glow {
-  transition: all 0.3s ease;
-}
-
-.hover-glow:hover {
-  box-shadow: 0 0 20px rgba(109, 190, 69, 0.4);
+.metric-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
 }
