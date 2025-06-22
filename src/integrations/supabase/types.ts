@@ -9,179 +9,204 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      cattle: {
+      cattle_profiles: {
         Row: {
           added_by: string
-          age: number
           breed: string
           cattle_id: string
-          cattle_type: string
           created_at: string
-          date_of_onboarding: string
-          farmer_id: string
+          dob: string
+          farmer_name: string
           id: string
-          updated_at: string
+          lactation: boolean
+          owner_phone: string
+          type: string
+          weight_kg: number
         }
         Insert: {
           added_by: string
-          age: number
           breed: string
           cattle_id: string
-          cattle_type: string
           created_at?: string
-          date_of_onboarding?: string
-          farmer_id: string
+          dob: string
+          farmer_name: string
           id?: string
-          updated_at?: string
+          lactation?: boolean
+          owner_phone: string
+          type: string
+          weight_kg: number
         }
         Update: {
           added_by?: string
-          age?: number
           breed?: string
           cattle_id?: string
-          cattle_type?: string
           created_at?: string
-          date_of_onboarding?: string
-          farmer_id?: string
+          dob?: string
+          farmer_name?: string
           id?: string
-          updated_at?: string
+          lactation?: boolean
+          owner_phone?: string
+          type?: string
+          weight_kg?: number
         }
         Relationships: [
           {
-            foreignKeyName: "cattle_farmer_id_fkey"
-            columns: ["farmer_id"]
+            foreignKeyName: "cattle_profiles_added_by_fkey"
+            columns: ["added_by"]
             isOneToOne: false
-            referencedRelation: "farmers"
-            referencedColumns: ["farmer_id"]
+            referencedRelation: "users"
+            referencedColumns: ["id"]
           },
         ]
       }
       farmers: {
         Row: {
+          aadhaar_number: string | null
           added_by: string
           created_at: string
-          date_of_onboarding: string
-          farmer_id: string
-          farmer_name: string
+          district: string
+          full_name: string
           id: string
           phone_number: string
-          updated_at: string
-          village: string
+          pincode: string
+          state: string
+          taluk: string
+          town_or_village: string
         }
         Insert: {
+          aadhaar_number?: string | null
           added_by: string
           created_at?: string
-          date_of_onboarding?: string
-          farmer_id: string
-          farmer_name: string
+          district: string
+          full_name: string
           id?: string
           phone_number: string
-          updated_at?: string
-          village: string
+          pincode: string
+          state: string
+          taluk: string
+          town_or_village: string
         }
         Update: {
+          aadhaar_number?: string | null
           added_by?: string
           created_at?: string
-          date_of_onboarding?: string
-          farmer_id?: string
-          farmer_name?: string
+          district?: string
+          full_name?: string
           id?: string
           phone_number?: string
-          updated_at?: string
-          village?: string
-        }
-        Relationships: []
-      }
-      feed_requests: {
-        Row: {
-          created_at: string
-          farmer_id: string
-          feed_type: string
-          id: string
-          quantity: number
-          request_date: string
-          request_id: string
-          requested_by: string
-          status: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          farmer_id: string
-          feed_type: string
-          id?: string
-          quantity: number
-          request_date?: string
-          request_id: string
-          requested_by: string
-          status?: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          farmer_id?: string
-          feed_type?: string
-          id?: string
-          quantity?: number
-          request_date?: string
-          request_id?: string
-          requested_by?: string
-          status?: string
-          updated_at?: string
+          pincode?: string
+          state?: string
+          taluk?: string
+          town_or_village?: string
         }
         Relationships: [
           {
-            foreignKeyName: "feed_requests_farmer_id_fkey"
-            columns: ["farmer_id"]
+            foreignKeyName: "farmers_added_by_fkey"
+            columns: ["added_by"]
             isOneToOne: false
-            referencedRelation: "farmers"
-            referencedColumns: ["farmer_id"]
+            referencedRelation: "users"
+            referencedColumns: ["id"]
           },
         ]
       }
-      health_checks: {
+      feed_requests: {
         Row: {
-          alert_sent: boolean | null
-          body_temperature: number
           cattle_id: string
-          check_date: string
           created_at: string
-          entry_id: string
-          health_issue: string | null
+          date: string
+          farmer_phone: string
+          feed_type: string
           id: string
-          issue_type: string | null
-          reported_by: string
+          quantity_kg: number
+          requested_by: string
+          status: string
         }
         Insert: {
-          alert_sent?: boolean | null
-          body_temperature: number
           cattle_id: string
-          check_date?: string
           created_at?: string
-          entry_id: string
-          health_issue?: string | null
+          date?: string
+          farmer_phone: string
+          feed_type: string
           id?: string
-          issue_type?: string | null
-          reported_by: string
+          quantity_kg: number
+          requested_by: string
+          status?: string
         }
         Update: {
-          alert_sent?: boolean | null
-          body_temperature?: number
           cattle_id?: string
-          check_date?: string
           created_at?: string
-          entry_id?: string
-          health_issue?: string | null
+          date?: string
+          farmer_phone?: string
+          feed_type?: string
           id?: string
-          issue_type?: string | null
-          reported_by?: string
+          quantity_kg?: number
+          requested_by?: string
+          status?: string
         }
         Relationships: [
           {
-            foreignKeyName: "health_checks_cattle_id_fkey"
+            foreignKeyName: "feed_requests_cattle_id_fkey"
             columns: ["cattle_id"]
             isOneToOne: false
-            referencedRelation: "cattle"
+            referencedRelation: "cattle_profiles"
+            referencedColumns: ["cattle_id"]
+          },
+          {
+            foreignKeyName: "feed_requests_requested_by_fkey"
+            columns: ["requested_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      health_checkups: {
+        Row: {
+          added_by: string
+          cattle_id: string
+          created_at: string
+          date: string
+          id: string
+          issue: string | null
+          issue_type: string | null
+          recovery_status: string | null
+          temperature: number
+        }
+        Insert: {
+          added_by: string
+          cattle_id: string
+          created_at?: string
+          date?: string
+          id?: string
+          issue?: string | null
+          issue_type?: string | null
+          recovery_status?: string | null
+          temperature: number
+        }
+        Update: {
+          added_by?: string
+          cattle_id?: string
+          created_at?: string
+          date?: string
+          id?: string
+          issue?: string | null
+          issue_type?: string | null
+          recovery_status?: string | null
+          temperature?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "health_checkups_added_by_fkey"
+            columns: ["added_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "health_checkups_cattle_id_fkey"
+            columns: ["cattle_id"]
+            isOneToOne: false
+            referencedRelation: "cattle_profiles"
             referencedColumns: ["cattle_id"]
           },
         ]
@@ -190,39 +215,73 @@ export type Database = {
         Row: {
           cattle_id: string
           created_at: string
-          entry_id: string
+          date: string
           id: string
-          milk_produced: number
-          production_date: string
+          quantity_litres: number
           recorded_by: string
+          shift: string | null
         }
         Insert: {
           cattle_id: string
           created_at?: string
-          entry_id: string
+          date?: string
           id?: string
-          milk_produced: number
-          production_date?: string
+          quantity_litres: number
           recorded_by: string
+          shift?: string | null
         }
         Update: {
           cattle_id?: string
           created_at?: string
-          entry_id?: string
+          date?: string
           id?: string
-          milk_produced?: number
-          production_date?: string
+          quantity_litres?: number
           recorded_by?: string
+          shift?: string | null
         }
         Relationships: [
           {
             foreignKeyName: "milk_production_cattle_id_fkey"
             columns: ["cattle_id"]
             isOneToOne: false
-            referencedRelation: "cattle"
+            referencedRelation: "cattle_profiles"
             referencedColumns: ["cattle_id"]
           },
+          {
+            foreignKeyName: "milk_production_recorded_by_fkey"
+            columns: ["recorded_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
         ]
+      }
+      users: {
+        Row: {
+          created_at: string
+          designation: string
+          full_name: string
+          id: string
+          password_hash: string
+          phone_number: string
+        }
+        Insert: {
+          created_at?: string
+          designation: string
+          full_name: string
+          id?: string
+          password_hash: string
+          phone_number: string
+        }
+        Update: {
+          created_at?: string
+          designation?: string
+          full_name?: string
+          id?: string
+          password_hash?: string
+          phone_number?: string
+        }
+        Relationships: []
       }
     }
     Views: {

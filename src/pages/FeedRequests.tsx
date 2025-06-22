@@ -4,7 +4,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Badge } from '@/components/ui/badge';
@@ -16,36 +15,29 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import Navigation from '@/components/Navigation';
 
-interface Farmer {
-  farmer_id: string;
-  farmer_name: string;
-}
-
 interface FeedRequest {
   id: string;
-  request_id: string;
-  farmer_id: string;
-  request_date: string;
+  cattle_id: string;
+  farmer_phone: string;
+  date: string;
   feed_type: string;
-  quantity: number;
+  quantity_kg: number;
   status: string;
   requested_by: string;
-  farmers: {
-    farmer_name: string;
-  };
+  created_at: string;
 }
 
 const FeedRequests = () => {
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({
     requestId: `FR${Date.now().toString().slice(-6)}`,
-    farmerId: '',
+    cattleId: '',
+    farmerPhone: '',
     requestDate: new Date(),
     feedType: '',
-    quantity: '',
+    quantityKg: '',
   });
   
-  const [farmers, setFarmers] = useState<Farmer[]>([]);
   const [requests, setRequests] = useState<FeedRequest[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingData, setLoadingData] = useState(true);
@@ -55,37 +47,14 @@ const FeedRequests = () => {
   const user = JSON.parse(localStorage.getItem('govardhini_user') || '{}');
 
   useEffect(() => {
-    fetchData();
+    fetchRequests();
   }, []);
 
-  const fetchData = async () => {
+  const fetchRequests = async () => {
     try {
-      // Fetch farmers
-      const { data: farmersData, error: farmersError } = await supabase
-        .from('farmers')
-        .select('farmer_id, farmer_name')
-        .order('farmer_name');
-
-      if (farmersError) {
-        console.error('Error fetching farmers:', farmersError);
-        toast({
-          title: "Error",
-          description: "Failed to load farmers list",
-          variant: "destructive"
-        });
-      } else {
-        setFarmers(farmersData || []);
-      }
-
-      // Fetch feed requests
       const { data: requestsData, error: requestsError } = await supabase
         .from('feed_requests')
-        .select(`
-          *,
-          farmers (
-            farmer_name
-          )
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
       if (requestsError) {
@@ -106,10 +75,16 @@ const FeedRequests = () => {
     }
   };
 
+  const saveOffline = (data: any) => {
+    const offlineData = JSON.parse(localStorage.getItem('offline_feed') || '[]');
+    offlineData.push({ ...data, id: Date.now().toString(), synced: false });
+    localStorage.setItem('offline_feed', JSON.stringify(offlineData));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.farmerId || !formData.feedType || !formData.quantity) {
+    if (!formData.cattleId || !formData.farmerPhone || !formData.feedType || !formData.quantityKg) {
       toast({
         title: "Error",
         description: "Please fill in all required fields",
@@ -121,49 +96,48 @@ const FeedRequests = () => {
     setIsLoading(true);
 
     try {
-      const { error } = await supabase
-        .from('feed_requests')
-        .insert({
-          request_id: formData.requestId,
-          farmer_id: formData.farmerId,
-          request_date: format(formData.requestDate, 'yyyy-MM-dd'),
-          feed_type: formData.feedType,
-          quantity: parseFloat(formData.quantity),
-          requested_by: user.name || 'Current User'
-        });
+      const { error } = await supabase.from('feed_requests').insert({
+        cattle_id: formData.cattleId,
+        farmer_phone: formData.farmerPhone,
+        date: format(formData.requestDate, 'yyyy-MM-dd'),
+        feed_type: formData.feedType,
+        quantity_kg: parseFloat(formData.quantityKg),
+        requested_by: user.id || 'offline-user'
+      });
 
       if (error) {
-        console.error('Error saving feed request:', error);
+        saveOffline(formData);
         toast({
-          title: "Error",
-          description: "Failed to create feed request. Please try again.",
-          variant: "destructive"
+          title: "Saved Offline 📱",
+          description: "No internet connection. Data saved locally and will sync when online.",
+          variant: "default"
         });
-        return;
+      } else {
+        toast({
+          title: "Success! ✅",
+          description: "Feed request created successfully",
+        });
+        
+        fetchRequests();
       }
-
-      toast({
-        title: "Success!",
-        description: "Feed request created successfully",
-      });
       
-      // Reset form and refresh data
+      // Reset form
       setFormData({
         requestId: `FR${Date.now().toString().slice(-6)}`,
-        farmerId: '',
+        cattleId: '',
+        farmerPhone: '',
         requestDate: new Date(),
         feedType: '',
-        quantity: '',
+        quantityKg: '',
       });
       setShowForm(false);
-      fetchData();
 
     } catch (error) {
-      console.error('Unexpected error:', error);
+      console.error('Error:', error);
+      saveOffline(formData);
       toast({
-        title: "Error",
-        description: "An unexpected error occurred. Please try again.",
-        variant: "destructive"
+        title: "Saved Offline 📱",
+        description: "Data saved locally. Will sync when connection is restored.",
       });
     } finally {
       setIsLoading(false);
@@ -192,7 +166,7 @@ const FeedRequests = () => {
         description: `Request status updated to ${newStatus}`,
       });
       
-      fetchData();
+      fetchRequests();
 
     } catch (error) {
       console.error('Unexpected error:', error);
@@ -200,20 +174,11 @@ const FeedRequests = () => {
   };
 
   const getStatusColor = (status: string) => {
-    switch (status) {
+    switch (status.toLowerCase()) {
       case 'pending': return 'bg-yellow-100 text-yellow-800';
       case 'approved': return 'bg-green-100 text-green-800';
       case 'delivered': return 'bg-blue-100 text-blue-800';
       default: return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  const getFeedTypeLabel = (feedType: string) => {
-    switch (feedType) {
-      case 'green_fodder': return 'Green Fodder';
-      case 'dry_fodder': return 'Dry Fodder';
-      case 'mineral_mix': return 'Mineral Mix';
-      default: return feedType;
     }
   };
 
@@ -235,7 +200,7 @@ const FeedRequests = () => {
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-6xl mx-auto">
           <div className="flex justify-between items-center mb-6">
-            <h1 className="text-3xl font-bold text-gray-800">Feed Requests</h1>
+            <h1 className="text-3xl font-bold text-gray-800">Feed Requests 🌾</h1>
             <Button
               onClick={() => setShowForm(!showForm)}
               className="bg-gradient-to-r from-green-600 to-amber-600 hover:from-green-700 hover:to-amber-700"
@@ -249,38 +214,29 @@ const FeedRequests = () => {
             <Card className="bg-white/90 backdrop-blur shadow-xl border-0 mb-6">
               <CardHeader>
                 <CardTitle>Create Feed Request</CardTitle>
-                <CardDescription>Submit a new feed request for a farmer</CardDescription>
+                <CardDescription>Submit a new feed request for cattle</CardDescription>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="requestId">Request ID</Label>
+                      <Label htmlFor="cattleId">Cattle ID *</Label>
                       <Input
-                        id="requestId"
-                        value={formData.requestId}
-                        className="bg-gray-50"
-                        readOnly
+                        id="cattleId"
+                        placeholder="Enter cattle ID"
+                        value={formData.cattleId}
+                        onChange={(e) => setFormData({ ...formData, cattleId: e.target.value })}
                       />
                     </div>
                     
                     <div className="space-y-2">
-                      <Label>Farmer *</Label>
-                      <Select 
-                        value={formData.farmerId} 
-                        onValueChange={(value) => setFormData({ ...formData, farmerId: value })}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select farmer" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {farmers.map((farmer) => (
-                            <SelectItem key={farmer.farmer_id} value={farmer.farmer_id}>
-                              {farmer.farmer_id} - {farmer.farmer_name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <Label htmlFor="farmerPhone">Farmer Phone *</Label>
+                      <Input
+                        id="farmerPhone"
+                        placeholder="Enter farmer's phone"
+                        value={formData.farmerPhone}
+                        onChange={(e) => setFormData({ ...formData, farmerPhone: e.target.value })}
+                      />
                     </div>
                     
                     <div className="space-y-2">
@@ -313,31 +269,24 @@ const FeedRequests = () => {
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label>Feed Type *</Label>
-                      <Select 
-                        value={formData.feedType} 
-                        onValueChange={(value) => setFormData({ ...formData, feedType: value })}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select feed type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="green_fodder">Green Fodder</SelectItem>
-                          <SelectItem value="dry_fodder">Dry Fodder</SelectItem>
-                          <SelectItem value="mineral_mix">Mineral Mix</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <Label htmlFor="feedType">Feed Type *</Label>
+                      <Input
+                        id="feedType"
+                        placeholder="e.g., Green Fodder, Dry Fodder, Mineral Mix"
+                        value={formData.feedType}
+                        onChange={(e) => setFormData({ ...formData, feedType: e.target.value })}
+                      />
                     </div>
                     
                     <div className="space-y-2">
-                      <Label htmlFor="quantity">Quantity (kg) *</Label>
+                      <Label htmlFor="quantityKg">Quantity (kg) *</Label>
                       <Input
-                        id="quantity"
+                        id="quantityKg"
                         type="number"
                         step="0.1"
                         placeholder="Enter quantity"
-                        value={formData.quantity}
-                        onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
+                        value={formData.quantityKg}
+                        onChange={(e) => setFormData({ ...formData, quantityKg: e.target.value })}
                         min="0.1"
                       />
                     </div>
@@ -357,7 +306,7 @@ const FeedRequests = () => {
                       className="bg-gradient-to-r from-green-600 to-amber-600 hover:from-green-700 hover:to-amber-700"
                       disabled={isLoading}
                     >
-                      {isLoading ? 'Creating...' : 'Create Request'}
+                      {isLoading ? 'Creating...' : 'Create Request 🌾'}
                     </Button>
                   </div>
                 </form>
@@ -381,8 +330,8 @@ const FeedRequests = () => {
                     <div key={request.id} className="border border-gray-200 rounded-lg p-4">
                       <div className="flex justify-between items-start mb-2">
                         <div>
-                          <h3 className="font-semibold text-lg">{request.request_id}</h3>
-                          <p className="text-gray-600">{request.farmers?.farmer_name} ({request.farmer_id})</p>
+                          <h3 className="font-semibold text-lg">Cattle: {request.cattle_id}</h3>
+                          <p className="text-gray-600">Farmer: {request.farmer_phone}</p>
                         </div>
                         <Badge className={getStatusColor(request.status)}>
                           {request.status.toUpperCase()}
@@ -392,15 +341,15 @@ const FeedRequests = () => {
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                         <div>
                           <span className="font-medium">Feed Type:</span>
-                          <p>{getFeedTypeLabel(request.feed_type)}</p>
+                          <p>{request.feed_type}</p>
                         </div>
                         <div>
                           <span className="font-medium">Quantity:</span>
-                          <p>{request.quantity} kg</p>
+                          <p>{request.quantity_kg} kg</p>
                         </div>
                         <div>
                           <span className="font-medium">Request Date:</span>
-                          <p>{format(new Date(request.request_date), 'PPP')}</p>
+                          <p>{format(new Date(request.date), 'PPP')}</p>
                         </div>
                         <div>
                           <span className="font-medium">Requested By:</span>
@@ -408,21 +357,21 @@ const FeedRequests = () => {
                         </div>
                       </div>
                       
-                      {(user.role === 'admin' || user.role === 'office_staff') && request.status !== 'delivered' && (
+                      {(user.role === 'admin' || user.role === 'office_staff') && request.status !== 'Delivered' && (
                         <div className="flex gap-2 mt-4">
-                          {request.status === 'pending' && (
+                          {request.status === 'Pending' && (
                             <Button
                               size="sm"
-                              onClick={() => updateRequestStatus(request.id, 'approved')}
+                              onClick={() => updateRequestStatus(request.id, 'Approved')}
                               className="bg-green-600 hover:bg-green-700"
                             >
                               Approve
                             </Button>
                           )}
-                          {request.status === 'approved' && (
+                          {request.status === 'Approved' && (
                             <Button
                               size="sm"
-                              onClick={() => updateRequestStatus(request.id, 'delivered')}
+                              onClick={() => updateRequestStatus(request.id, 'Delivered')}
                               className="bg-blue-600 hover:bg-blue-700"
                             >
                               Mark as Delivered

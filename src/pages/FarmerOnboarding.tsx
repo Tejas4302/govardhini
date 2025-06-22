@@ -4,12 +4,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { format } from 'date-fns';
-import { CalendarIcon } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -17,11 +11,14 @@ import Navigation from '@/components/Navigation';
 
 const FarmerOnboarding = () => {
   const [formData, setFormData] = useState({
-    farmerId: `FRM${Date.now().toString().slice(-6)}`,
-    farmerName: '',
+    fullName: '',
     phoneNumber: '',
-    village: '',
-    dateOfOnboarding: new Date(),
+    aadhaarNumber: '',
+    state: '',
+    district: '',
+    taluk: '',
+    townOrVillage: '',
+    pincode: '',
   });
   
   const [isLoading, setIsLoading] = useState(false);
@@ -30,10 +27,45 @@ const FarmerOnboarding = () => {
   
   const user = JSON.parse(localStorage.getItem('govardhini_user') || '{}');
 
+  const saveOffline = (data: any) => {
+    const offlineData = JSON.parse(localStorage.getItem('offline_farmers') || '[]');
+    offlineData.push({ ...data, id: Date.now().toString(), synced: false });
+    localStorage.setItem('offline_farmers', JSON.stringify(offlineData));
+  };
+
+  const syncOfflineData = async () => {
+    const offlineData = JSON.parse(localStorage.getItem('offline_farmers') || '[]');
+    const unsynced = offlineData.filter((item: any) => !item.synced);
+    
+    for (const item of unsynced) {
+      try {
+        const { error } = await supabase.from('farmers').insert({
+          full_name: item.fullName,
+          phone_number: item.phoneNumber,
+          aadhaar_number: item.aadhaarNumber || null,
+          state: item.state,
+          district: item.district,
+          taluk: item.taluk,
+          town_or_village: item.townOrVillage,
+          pincode: item.pincode,
+          added_by: user.id || 'offline-user'
+        });
+
+        if (!error) {
+          item.synced = true;
+        }
+      } catch (error) {
+        console.error('Sync error:', error);
+      }
+    }
+    
+    localStorage.setItem('offline_farmers', JSON.stringify(offlineData));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.farmerName || !formData.phoneNumber || !formData.village) {
+    if (!formData.fullName || !formData.phoneNumber || !formData.state || !formData.district || !formData.taluk || !formData.townOrVillage || !formData.pincode) {
       toast({
         title: "Error",
         description: "Please fill in all required fields",
@@ -45,47 +77,54 @@ const FarmerOnboarding = () => {
     setIsLoading(true);
 
     try {
-      const { error } = await supabase
-        .from('farmers')
-        .insert({
-          farmer_id: formData.farmerId,
-          farmer_name: formData.farmerName,
-          phone_number: formData.phoneNumber,
-          village: formData.village,
-          date_of_onboarding: format(formData.dateOfOnboarding, 'yyyy-MM-dd'),
-          added_by: user.name || 'Current User'
-        });
+      const { error } = await supabase.from('farmers').insert({
+        full_name: formData.fullName,
+        phone_number: formData.phoneNumber,
+        aadhaar_number: formData.aadhaarNumber || null,
+        state: formData.state,
+        district: formData.district,
+        taluk: formData.taluk,
+        town_or_village: formData.townOrVillage,
+        pincode: formData.pincode,
+        added_by: user.id || 'offline-user'
+      });
 
       if (error) {
-        console.error('Error saving farmer:', error);
+        // Save offline if network error
+        saveOffline(formData);
         toast({
-          title: "Error",
-          description: "Failed to register farmer. Please try again.",
-          variant: "destructive"
+          title: "Saved Offline",
+          description: "No internet connection. Data saved locally and will sync when online.",
+          variant: "default"
         });
-        return;
+      } else {
+        toast({
+          title: "Success! ✅",
+          description: `Farmer ${formData.fullName} has been registered successfully`,
+        });
+        
+        // Try to sync any offline data
+        await syncOfflineData();
       }
-
-      toast({
-        title: "Success!",
-        description: `Farmer ${formData.farmerName} has been registered successfully`,
-      });
       
       // Reset form
       setFormData({
-        farmerId: `FRM${Date.now().toString().slice(-6)}`,
-        farmerName: '',
+        fullName: '',
         phoneNumber: '',
-        village: '',
-        dateOfOnboarding: new Date(),
+        aadhaarNumber: '',
+        state: '',
+        district: '',
+        taluk: '',
+        townOrVillage: '',
+        pincode: '',
       });
 
     } catch (error) {
-      console.error('Unexpected error:', error);
+      console.error('Error:', error);
+      saveOffline(formData);
       toast({
-        title: "Error",
-        description: "An unexpected error occurred. Please try again.",
-        variant: "destructive"
+        title: "Saved Offline 📱",
+        description: "Data saved locally. Will sync when connection is restored.",
       });
     } finally {
       setIsLoading(false);
@@ -109,87 +148,105 @@ const FarmerOnboarding = () => {
             
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="farmerId">Farmer ID</Label>
-                    <Input
-                      id="farmerId"
-                      value={formData.farmerId}
-                      onChange={(e) => setFormData({ ...formData, farmerId: e.target.value })}
-                      className="bg-gray-50"
-                      readOnly
-                    />
+                {/* Personal Information */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-gray-700 border-b pb-2">👤 Personal Information</h3>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="fullName">Full Name *</Label>
+                      <Input
+                        id="fullName"
+                        placeholder="Enter farmer's full name"
+                        value={formData.fullName}
+                        onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="phoneNumber">Phone Number *</Label>
+                      <Input
+                        id="phoneNumber"
+                        placeholder="Enter 10-digit phone number"
+                        value={formData.phoneNumber}
+                        onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
+                      />
+                    </div>
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="farmerName">Farmer Name *</Label>
+                    <Label htmlFor="aadhaarNumber">Aadhaar Number (Optional)</Label>
                     <Input
-                      id="farmerName"
-                      placeholder="Enter farmer's full name"
-                      value={formData.farmerName}
-                      onChange={(e) => setFormData({ ...formData, farmerName: e.target.value })}
+                      id="aadhaarNumber"
+                      placeholder="Enter 12-digit Aadhaar number"
+                      value={formData.aadhaarNumber}
+                      onChange={(e) => setFormData({ ...formData, aadhaarNumber: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+                {/* Address Information */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-gray-700 border-b pb-2">📍 Address Information</h3>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="state">State *</Label>
+                      <Input
+                        id="state"
+                        placeholder="Enter state"
+                        value={formData.state}
+                        onChange={(e) => setFormData({ ...formData, state: e.target.value })}
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="district">District *</Label>
+                      <Input
+                        id="district"
+                        placeholder="Enter district"
+                        value={formData.district}
+                        onChange={(e) => setFormData({ ...formData, district: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="taluk">Taluk *</Label>
+                      <Input
+                        id="taluk"
+                        placeholder="Enter taluk"
+                        value={formData.taluk}
+                        onChange={(e) => setFormData({ ...formData, taluk: e.target.value })}
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="townOrVillage">Town/Village *</Label>
+                      <Input
+                        id="townOrVillage"
+                        placeholder="Enter town or village"
+                        value={formData.townOrVillage}
+                        onChange={(e) => setFormData({ ...formData, townOrVillage: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="pincode">Pincode *</Label>
+                    <Input
+                      id="pincode"
+                      placeholder="Enter 6-digit pincode"
+                      value={formData.pincode}
+                      onChange={(e) => setFormData({ ...formData, pincode: e.target.value })}
                     />
                   </div>
                 </div>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="phoneNumber">Phone Number *</Label>
-                    <Input
-                      id="phoneNumber"
-                      placeholder="Enter 10-digit phone number"
-                      value={formData.phoneNumber}
-                      onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label>Village *</Label>
-                    <Select value={formData.village} onValueChange={(value) => setFormData({ ...formData, village: value })}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select village" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="village_a">Village A</SelectItem>
-                        <SelectItem value="village_b">Village B</SelectItem>
-                        <SelectItem value="village_c">Village C</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Date of Onboarding</Label>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className={cn(
-                            "w-full justify-start text-left font-normal",
-                            !formData.dateOfOnboarding && "text-muted-foreground"
-                          )}
-                        >
-                          <CalendarIcon className="mr-2 h-4 w-4" />
-                          {formData.dateOfOnboarding ? format(formData.dateOfOnboarding, "PPP") : "Pick a date"}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={formData.dateOfOnboarding}
-                          onSelect={(date) => date && setFormData({ ...formData, dateOfOnboarding: date })}
-                          initialFocus
-                          className="pointer-events-auto"
-                        />
-                      </PopoverContent>
-                    </Popover>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label>Added By</Label>
-                    <Input value={user.name || 'Current User'} readOnly className="bg-gray-50" />
-                  </div>
+                <div className="space-y-2">
+                  <Label>Added By</Label>
+                  <Input value={user.name || 'Current User'} readOnly className="bg-gray-50" />
                 </div>
                 
                 <div className="flex gap-4 pt-4">
@@ -207,7 +264,7 @@ const FarmerOnboarding = () => {
                     className="flex-1 bg-gradient-to-r from-green-600 to-amber-600 hover:from-green-700 hover:to-amber-700"
                     disabled={isLoading}
                   >
-                    {isLoading ? 'Registering...' : 'Register Farmer'}
+                    {isLoading ? 'Registering...' : 'Register Farmer 👨‍🌾'}
                   </Button>
                 </div>
               </form>

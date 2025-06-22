@@ -13,6 +13,7 @@ import MilkLogging from "./pages/MilkLogging";
 import FeedRequests from "./pages/FeedRequests";
 import Analytics from "./pages/Analytics";
 import NotFound from "./pages/NotFound";
+import OfflineSync from "./components/OfflineSync";
 
 const queryClient = new QueryClient();
 
@@ -34,6 +35,7 @@ const App = () => (
           <Route path="/analytics" element={<Analytics />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
+        <OfflineSync />
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

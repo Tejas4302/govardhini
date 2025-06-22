@@ -4,7 +4,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Textarea } from '@/components/ui/textarea';
@@ -16,75 +15,33 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import Navigation from '@/components/Navigation';
 
-interface Cattle {
-  cattle_id: string;
-  farmer_id: string;
-  cattle_type: string;
-  breed: string;
-  farmers: {
-    farmer_name: string;
-  };
-}
-
 const HealthCheck = () => {
   const [formData, setFormData] = useState({
     entryId: `HC${Date.now().toString().slice(-6)}`,
     cattleId: '',
     checkDate: new Date(),
-    bodyTemperature: '',
-    healthIssue: '',
+    temperature: '',
+    issue: '',
     issueType: '',
+    recoveryStatus: '',
   });
   
-  const [cattle, setCattle] = useState<Cattle[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [loadingCattle, setLoadingCattle] = useState(true);
   const { toast } = useToast();
   const navigate = useNavigate();
   
   const user = JSON.parse(localStorage.getItem('govardhini_user') || '{}');
 
-  useEffect(() => {
-    fetchCattle();
-  }, []);
-
-  const fetchCattle = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('cattle')
-        .select(`
-          cattle_id,
-          farmer_id,
-          cattle_type,
-          breed,
-          farmers (
-            farmer_name
-          )
-        `)
-        .order('cattle_id');
-
-      if (error) {
-        console.error('Error fetching cattle:', error);
-        toast({
-          title: "Error",
-          description: "Failed to load cattle list",
-          variant: "destructive"
-        });
-        return;
-      }
-
-      setCattle(data || []);
-    } catch (error) {
-      console.error('Unexpected error:', error);
-    } finally {
-      setLoadingCattle(false);
-    }
+  const saveOffline = (data: any) => {
+    const offlineData = JSON.parse(localStorage.getItem('offline_health') || '[]');
+    offlineData.push({ ...data, id: Date.now().toString(), synced: false });
+    localStorage.setItem('offline_health', JSON.stringify(offlineData));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.cattleId || !formData.bodyTemperature) {
+    if (!formData.cattleId || !formData.temperature) {
       toast({
         title: "Error",
         description: "Please fill in all required fields",
@@ -97,42 +54,40 @@ const HealthCheck = () => {
 
     try {
       const healthCheckData = {
-        entry_id: formData.entryId,
         cattle_id: formData.cattleId,
-        check_date: format(formData.checkDate, 'yyyy-MM-dd'),
-        body_temperature: parseFloat(formData.bodyTemperature),
-        health_issue: formData.healthIssue || null,
+        date: format(formData.checkDate, 'yyyy-MM-dd'),
+        temperature: parseFloat(formData.temperature),
+        issue: formData.issue || null,
         issue_type: formData.issueType || null,
-        reported_by: user.name || 'Current User',
-        alert_sent: parseFloat(formData.bodyTemperature) > 39.5 || formData.healthIssue !== ''
+        recovery_status: formData.recoveryStatus || null,
+        added_by: user.id || 'offline-user'
       };
 
       const { error } = await supabase
-        .from('health_checks')
+        .from('health_checkups')
         .insert(healthCheckData);
 
       if (error) {
-        console.error('Error saving health check:', error);
+        saveOffline(formData);
         toast({
-          title: "Error",
-          description: "Failed to save health check. Please try again.",
-          variant: "destructive"
-        });
-        return;
-      }
-
-      // Show alert if health issue detected
-      if (healthCheckData.alert_sent) {
-        toast({
-          title: "Health Alert!",
-          description: "Health issue detected - alert has been recorded",
-          variant: "destructive"
+          title: "Saved Offline 📱",
+          description: "No internet connection. Data saved locally and will sync when online.",
+          variant: "default"
         });
       } else {
-        toast({
-          title: "Success!",
-          description: "Health check recorded successfully",
-        });
+        // Show alert if health issue detected
+        if (parseFloat(formData.temperature) > 39.5 || formData.issue !== '') {
+          toast({
+            title: "Health Alert! 🚨",
+            description: "Health issue detected - alert has been recorded",
+            variant: "destructive"
+          });
+        } else {
+          toast({
+            title: "Success! ✅",
+            description: "Health check recorded successfully",
+          });
+        }
       }
       
       // Reset form
@@ -140,17 +95,18 @@ const HealthCheck = () => {
         entryId: `HC${Date.now().toString().slice(-6)}`,
         cattleId: '',
         checkDate: new Date(),
-        bodyTemperature: '',
-        healthIssue: '',
+        temperature: '',
+        issue: '',
         issueType: '',
+        recoveryStatus: '',
       });
 
     } catch (error) {
-      console.error('Unexpected error:', error);
+      console.error('Error:', error);
+      saveOffline(formData);
       toast({
-        title: "Error",
-        description: "An unexpected error occurred. Please try again.",
-        variant: "destructive"
+        title: "Saved Offline 📱",
+        description: "Data saved locally. Will sync when connection is restored.",
       });
     } finally {
       setIsLoading(false);
@@ -166,7 +122,7 @@ const HealthCheck = () => {
           <Card className="bg-white/90 backdrop-blur shadow-xl border-0">
             <CardHeader className="text-center">
               <div className="mx-auto w-16 h-16 bg-gradient-to-br from-red-600 to-pink-600 rounded-full flex items-center justify-center mb-4">
-                <span className="text-white text-3xl">❤️</span>
+                <span className="text-white text-3xl">🩺</span>
               </div>
               <CardTitle className="text-2xl font-bold text-gray-800">Health Check</CardTitle>
               <CardDescription>Record cattle health monitoring</CardDescription>
@@ -186,23 +142,13 @@ const HealthCheck = () => {
                   </div>
                   
                   <div className="space-y-2">
-                    <Label>Cattle *</Label>
-                    <Select 
-                      value={formData.cattleId} 
-                      onValueChange={(value) => setFormData({ ...formData, cattleId: value })}
-                      disabled={loadingCattle}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder={loadingCattle ? "Loading cattle..." : "Select cattle"} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {cattle.map((animal) => (
-                          <SelectItem key={animal.cattle_id} value={animal.cattle_id}>
-                            {animal.cattle_id} - {animal.farmers?.farmer_name} ({animal.cattle_type})
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <Label htmlFor="cattleId">Cattle ID *</Label>
+                    <Input
+                      id="cattleId"
+                      placeholder="Enter cattle ID"
+                      value={formData.cattleId}
+                      onChange={(e) => setFormData({ ...formData, cattleId: e.target.value })}
+                    />
                   </div>
                 </div>
                 
@@ -235,14 +181,14 @@ const HealthCheck = () => {
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="bodyTemperature">Body Temperature (°C) *</Label>
+                    <Label htmlFor="temperature">Body Temperature (°C) *</Label>
                     <Input
-                      id="bodyTemperature"
+                      id="temperature"
                       type="number"
                       step="0.1"
                       placeholder="Enter temperature"
-                      value={formData.bodyTemperature}
-                      onChange={(e) => setFormData({ ...formData, bodyTemperature: e.target.value })}
+                      value={formData.temperature}
+                      onChange={(e) => setFormData({ ...formData, temperature: e.target.value })}
                       min="35"
                       max="45"
                     />
@@ -250,32 +196,33 @@ const HealthCheck = () => {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label>Issue Type (if any)</Label>
-                  <Select 
-                    value={formData.issueType} 
-                    onValueChange={(value) => setFormData({ ...formData, issueType: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select issue type (optional)" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="">No Issues</SelectItem>
-                      <SelectItem value="respiratory">Respiratory</SelectItem>
-                      <SelectItem value="digestive">Digestive</SelectItem>
-                      <SelectItem value="injury">Injury</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Label htmlFor="issueType">Issue Type (if any)</Label>
+                  <Input
+                    id="issueType"
+                    placeholder="e.g., Respiratory, Digestive, Injury, Other"
+                    value={formData.issueType}
+                    onChange={(e) => setFormData({ ...formData, issueType: e.target.value })}
+                  />
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="healthIssue">Health Issue Description</Label>
+                  <Label htmlFor="issue">Health Issue Description</Label>
                   <Textarea
-                    id="healthIssue"
+                    id="issue"
                     placeholder="Describe any health issues observed (optional)"
-                    value={formData.healthIssue}
-                    onChange={(e) => setFormData({ ...formData, healthIssue: e.target.value })}
+                    value={formData.issue}
+                    onChange={(e) => setFormData({ ...formData, issue: e.target.value })}
                     className="min-h-20"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="recoveryStatus">Recovery Status</Label>
+                  <Input
+                    id="recoveryStatus"
+                    placeholder="e.g., Ongoing, Recovered"
+                    value={formData.recoveryStatus}
+                    onChange={(e) => setFormData({ ...formData, recoveryStatus: e.target.value })}
                   />
                 </div>
                 
@@ -299,7 +246,7 @@ const HealthCheck = () => {
                     className="flex-1 bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700"
                     disabled={isLoading}
                   >
-                    {isLoading ? 'Saving...' : 'Record Health Check'}
+                    {isLoading ? 'Saving...' : 'Record Health Check 🩺'}
                   </Button>
                 </div>
               </form>

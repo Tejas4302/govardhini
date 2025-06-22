@@ -4,9 +4,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Checkbox } from '@/components/ui/checkbox';
 import { format } from 'date-fns';
 import { CalendarIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -15,71 +15,34 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import Navigation from '@/components/Navigation';
 
-interface Farmer {
-  farmer_id: string;
-  farmer_name: string;
-}
-
 const CattleOnboarding = () => {
   const [formData, setFormData] = useState({
     cattleId: `CTL${Date.now().toString().slice(-6)}`,
-    farmerId: '',
-    cattleType: '',
+    farmerName: '',
     breed: '',
-    age: '',
-    dateOfOnboarding: new Date(),
+    type: '',
+    dob: new Date(),
+    lactation: false,
+    weightKg: '',
+    ownerPhone: '',
   });
   
-  const [farmers, setFarmers] = useState<Farmer[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [loadingFarmers, setLoadingFarmers] = useState(true);
   const { toast } = useToast();
   const navigate = useNavigate();
   
   const user = JSON.parse(localStorage.getItem('govardhini_user') || '{}');
 
-  useEffect(() => {
-    fetchFarmers();
-  }, []);
-
-  const fetchFarmers = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('farmers')
-        .select('farmer_id, farmer_name')
-        .order('farmer_name');
-
-      if (error) {
-        console.error('Error fetching farmers:', error);
-        toast({
-          title: "Error",
-          description: "Failed to load farmers list",
-          variant: "destructive"
-        });
-        return;
-      }
-
-      setFarmers(data || []);
-    } catch (error) {
-      console.error('Unexpected error:', error);
-    } finally {
-      setLoadingFarmers(false);
-    }
-  };
-
-  const getBreedOptions = () => {
-    if (formData.cattleType === 'cow') {
-      return ['Jersey', 'Holstein', 'Gir', 'Sahiwal'];
-    } else if (formData.cattleType === 'buffalo') {
-      return ['Murrah', 'Jaffarabadi', 'Mehsana', 'Nili-Ravi'];
-    }
-    return [];
+  const saveOffline = (data: any) => {
+    const offlineData = JSON.parse(localStorage.getItem('offline_cattle') || '[]');
+    offlineData.push({ ...data, id: Date.now().toString(), synced: false });
+    localStorage.setItem('offline_cattle', JSON.stringify(offlineData));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.farmerId || !formData.cattleType || !formData.breed || !formData.age) {
+    if (!formData.farmerName || !formData.breed || !formData.type || !formData.weightKg || !formData.ownerPhone) {
       toast({
         title: "Error",
         description: "Please fill in all required fields",
@@ -91,49 +54,50 @@ const CattleOnboarding = () => {
     setIsLoading(true);
 
     try {
-      const { error } = await supabase
-        .from('cattle')
-        .insert({
-          cattle_id: formData.cattleId,
-          farmer_id: formData.farmerId,
-          cattle_type: formData.cattleType,
-          breed: formData.breed,
-          age: parseInt(formData.age),
-          date_of_onboarding: format(formData.dateOfOnboarding, 'yyyy-MM-dd'),
-          added_by: user.name || 'Current User'
-        });
+      const { error } = await supabase.from('cattle_profiles').insert({
+        cattle_id: formData.cattleId,
+        farmer_name: formData.farmerName,
+        breed: formData.breed,
+        type: formData.type,
+        dob: format(formData.dob, 'yyyy-MM-dd'),
+        lactation: formData.lactation,
+        weight_kg: parseFloat(formData.weightKg),
+        owner_phone: formData.ownerPhone,
+        added_by: user.id || 'offline-user'
+      });
 
       if (error) {
-        console.error('Error saving cattle:', error);
+        saveOffline(formData);
         toast({
-          title: "Error",
-          description: "Failed to register cattle. Please try again.",
-          variant: "destructive"
+          title: "Saved Offline 📱",
+          description: "No internet connection. Data saved locally and will sync when online.",
+          variant: "default"
         });
-        return;
+      } else {
+        toast({
+          title: "Success! ✅",
+          description: `Cattle ${formData.cattleId} has been registered successfully`,
+        });
       }
-
-      toast({
-        title: "Success!",
-        description: `Cattle ${formData.cattleId} has been registered successfully`,
-      });
       
       // Reset form
       setFormData({
         cattleId: `CTL${Date.now().toString().slice(-6)}`,
-        farmerId: '',
-        cattleType: '',
+        farmerName: '',
         breed: '',
-        age: '',
-        dateOfOnboarding: new Date(),
+        type: '',
+        dob: new Date(),
+        lactation: false,
+        weightKg: '',
+        ownerPhone: '',
       });
 
     } catch (error) {
-      console.error('Unexpected error:', error);
+      console.error('Error:', error);
+      saveOffline(formData);
       toast({
-        title: "Error",
-        description: "An unexpected error occurred. Please try again.",
-        variant: "destructive"
+        title: "Saved Offline 📱",
+        description: "Data saved locally. Will sync when connection is restored.",
       });
     } finally {
       setIsLoading(false);
@@ -165,108 +129,102 @@ const CattleOnboarding = () => {
                       value={formData.cattleId}
                       onChange={(e) => setFormData({ ...formData, cattleId: e.target.value })}
                       className="bg-gray-50"
-                      readOnly
                     />
                   </div>
                   
                   <div className="space-y-2">
-                    <Label>Farmer *</Label>
-                    <Select 
-                      value={formData.farmerId} 
-                      onValueChange={(value) => setFormData({ ...formData, farmerId: value })}
-                      disabled={loadingFarmers}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder={loadingFarmers ? "Loading farmers..." : "Select farmer"} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {farmers.map((farmer) => (
-                          <SelectItem key={farmer.farmer_id} value={farmer.farmer_id}>
-                            {farmer.farmer_id} - {farmer.farmer_name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Cattle Type *</Label>
-                    <Select 
-                      value={formData.cattleType} 
-                      onValueChange={(value) => setFormData({ ...formData, cattleType: value, breed: '' })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select cattle type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="cow">Cow</SelectItem>
-                        <SelectItem value="buffalo">Buffalo</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label>Breed *</Label>
-                    <Select 
-                      value={formData.breed} 
-                      onValueChange={(value) => setFormData({ ...formData, breed: value })}
-                      disabled={!formData.cattleType}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select breed" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {getBreedOptions().map((breed) => (
-                          <SelectItem key={breed} value={breed.toLowerCase()}>
-                            {breed}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="age">Age (years) *</Label>
+                    <Label htmlFor="farmerName">Farmer Name *</Label>
                     <Input
-                      id="age"
-                      type="number"
-                      placeholder="Enter age in years"
-                      value={formData.age}
-                      onChange={(e) => setFormData({ ...formData, age: e.target.value })}
-                      min="0"
-                      max="20"
+                      id="farmerName"
+                      placeholder="Enter farmer's name"
+                      value={formData.farmerName}
+                      onChange={(e) => setFormData({ ...formData, farmerName: e.target.value })}
+                    />
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="type">Cattle Type *</Label>
+                    <Input
+                      id="type"
+                      placeholder="e.g., Cow, Buffalo"
+                      value={formData.type}
+                      onChange={(e) => setFormData({ ...formData, type: e.target.value })}
                     />
                   </div>
                   
                   <div className="space-y-2">
-                    <Label>Date of Onboarding</Label>
+                    <Label htmlFor="breed">Breed *</Label>
+                    <Input
+                      id="breed"
+                      placeholder="e.g., Jersey, Holstein, Murrah"
+                      value={formData.breed}
+                      onChange={(e) => setFormData({ ...formData, breed: e.target.value })}
+                    />
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Date of Birth</Label>
                     <Popover>
                       <PopoverTrigger asChild>
                         <Button
                           variant="outline"
                           className={cn(
                             "w-full justify-start text-left font-normal",
-                            !formData.dateOfOnboarding && "text-muted-foreground"
+                            !formData.dob && "text-muted-foreground"
                           )}
                         >
                           <CalendarIcon className="mr-2 h-4 w-4" />
-                          {formData.dateOfOnboarding ? format(formData.dateOfOnboarding, "PPP") : "Pick a date"}
+                          {formData.dob ? format(formData.dob, "PPP") : "Pick a date"}
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0" align="start">
                         <Calendar
                           mode="single"
-                          selected={formData.dateOfOnboarding}
-                          onSelect={(date) => date && setFormData({ ...formData, dateOfOnboarding: date })}
+                          selected={formData.dob}
+                          onSelect={(date) => date && setFormData({ ...formData, dob: date })}
                           initialFocus
                           className="pointer-events-auto"
                         />
                       </PopoverContent>
                     </Popover>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="weightKg">Weight (kg) *</Label>
+                    <Input
+                      id="weightKg"
+                      type="number"
+                      placeholder="Enter weight in kg"
+                      value={formData.weightKg}
+                      onChange={(e) => setFormData({ ...formData, weightKg: e.target.value })}
+                      min="50"
+                      max="1000"
+                    />
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="ownerPhone">Owner Phone *</Label>
+                    <Input
+                      id="ownerPhone"
+                      placeholder="Enter owner's phone number"
+                      value={formData.ownerPhone}
+                      onChange={(e) => setFormData({ ...formData, ownerPhone: e.target.value })}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2 flex items-center space-x-2 pt-6">
+                    <Checkbox 
+                      id="lactation"
+                      checked={formData.lactation}
+                      onCheckedChange={(checked) => setFormData({ ...formData, lactation: !!checked })}
+                    />
+                    <Label htmlFor="lactation">Currently Lactating</Label>
                   </div>
                 </div>
                 
@@ -290,7 +248,7 @@ const CattleOnboarding = () => {
                     className="flex-1 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700"
                     disabled={isLoading}
                   >
-                    {isLoading ? 'Registering...' : 'Register Cattle'}
+                    {isLoading ? 'Registering...' : 'Register Cattle 🐄'}
                   </Button>
                 </div>
               </form>

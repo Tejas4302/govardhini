@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
@@ -13,7 +14,7 @@ interface AnalyticsData {
   pendingFeedRequests: number;
   cattleByType: Array<{ name: string; value: number }>;
   milkProductionByDate: Array<{ date: string; production: number }>;
-  villageDistribution: Array<{ village: string; farmers: number }>;
+  farmersByState: Array<{ state: string; farmers: number }>;
 }
 
 const Analytics = () => {
@@ -25,7 +26,7 @@ const Analytics = () => {
     pendingFeedRequests: 0,
     cattleByType: [],
     milkProductionByDate: [],
-    villageDistribution: []
+    farmersByState: []
   });
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
@@ -41,22 +42,22 @@ const Analytics = () => {
       // Fetch basic counts
       const [farmersResult, cattleResult, milkResult, healthResult, feedResult] = await Promise.all([
         supabase.from('farmers').select('id', { count: 'exact' }),
-        supabase.from('cattle').select('id', { count: 'exact' }),
-        supabase.from('milk_production').select('milk_produced'),
-        supabase.from('health_checks').select('id', { count: 'exact' }).eq('alert_sent', true),
-        supabase.from('feed_requests').select('id', { count: 'exact' }).eq('status', 'pending')
+        supabase.from('cattle_profiles').select('id', { count: 'exact' }),
+        supabase.from('milk_production').select('quantity_litres'),
+        supabase.from('health_checkups').select('id', { count: 'exact' }).gt('temperature', 39.5),
+        supabase.from('feed_requests').select('id', { count: 'exact' }).eq('status', 'Pending')
       ]);
 
       // Calculate total milk production
-      const totalMilk = milkResult.data?.reduce((sum, record) => sum + (record.milk_produced || 0), 0) || 0;
+      const totalMilk = milkResult.data?.reduce((sum, record) => sum + (record.quantity_litres || 0), 0) || 0;
 
       // Fetch cattle by type
       const { data: cattleByType } = await supabase
-        .from('cattle')
-        .select('cattle_type')
+        .from('cattle_profiles')
+        .select('type')
         .then(result => {
           const counts = result.data?.reduce((acc: any, cattle) => {
-            acc[cattle.cattle_type] = (acc[cattle.cattle_type] || 0) + 1;
+            acc[cattle.type] = (acc[cattle.type] || 0) + 1;
             return acc;
           }, {}) || {};
           
@@ -68,20 +69,19 @@ const Analytics = () => {
           };
         });
 
-      // Fetch village distribution
-      const { data: villageData } = await supabase
+      // Fetch farmers by state
+      const { data: farmersByState } = await supabase
         .from('farmers')
-        .select('village')
+        .select('state')
         .then(result => {
           const counts = result.data?.reduce((acc: any, farmer) => {
-            const village = farmer.village.replace('_', ' ').toUpperCase();
-            acc[village] = (acc[village] || 0) + 1;
+            acc[farmer.state] = (acc[farmer.state] || 0) + 1;
             return acc;
           }, {}) || {};
           
           return {
-            data: Object.entries(counts).map(([village, farmers]) => ({ 
-              village, 
+            data: Object.entries(counts).map(([state, farmers]) => ({ 
+              state, 
               farmers: Number(farmers) 
             }))
           };
@@ -93,12 +93,12 @@ const Analytics = () => {
       
       const { data: milkByDate } = await supabase
         .from('milk_production')
-        .select('production_date, milk_produced')
-        .gte('production_date', sevenDaysAgo.toISOString().split('T')[0])
+        .select('date, quantity_litres')
+        .gte('date', sevenDaysAgo.toISOString().split('T')[0])
         .then(result => {
           const dateGroups = result.data?.reduce((acc: any, record) => {
-            const date = record.production_date;
-            acc[date] = (acc[date] || 0) + (record.milk_produced || 0);
+            const date = record.date;
+            acc[date] = (acc[date] || 0) + (record.quantity_litres || 0);
             return acc;
           }, {}) || {};
           
@@ -118,7 +118,7 @@ const Analytics = () => {
         pendingFeedRequests: feedResult.count || 0,
         cattleByType: cattleByType || [],
         milkProductionByDate: milkByDate || [],
-        villageDistribution: villageData || []
+        farmersByState: farmersByState || []
       });
 
     } catch (error) {
@@ -152,7 +152,7 @@ const Analytics = () => {
       
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-7xl mx-auto">
-          <h1 className="text-3xl font-bold text-gray-800 mb-8">Analytics Dashboard</h1>
+          <h1 className="text-3xl font-bold text-gray-800 mb-8">Analytics Dashboard 📊</h1>
 
           {/* Key Metrics */}
           <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
@@ -206,7 +206,7 @@ const Analytics = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
             <Card className="bg-white/90 backdrop-blur shadow-xl border-0">
               <CardHeader>
-                <CardTitle>Cattle Distribution by Type</CardTitle>
+                <CardTitle>Cattle Distribution by Type 🐄</CardTitle>
                 <CardDescription>Breakdown of cattle types</CardDescription>
               </CardHeader>
               <CardContent>
@@ -234,14 +234,14 @@ const Analytics = () => {
 
             <Card className="bg-white/90 backdrop-blur shadow-xl border-0">
               <CardHeader>
-                <CardTitle>Village Distribution</CardTitle>
-                <CardDescription>Farmers by village</CardDescription>
+                <CardTitle>Farmers by State 📍</CardTitle>
+                <CardDescription>Geographic distribution</CardDescription>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={data.villageDistribution}>
+                  <BarChart data={data.farmersByState}>
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="village" />
+                    <XAxis dataKey="state" />
                     <YAxis />
                     <Tooltip />
                     <Bar dataKey="farmers" fill="#8884d8" />
@@ -254,7 +254,7 @@ const Analytics = () => {
           {/* Milk Production Trend */}
           <Card className="bg-white/90 backdrop-blur shadow-xl border-0">
             <CardHeader>
-              <CardTitle>Milk Production Trend (Last 7 Days)</CardTitle>
+              <CardTitle>Milk Production Trend (Last 7 Days) 🥛</CardTitle>
               <CardDescription>Daily milk production in liters</CardDescription>
             </CardHeader>
             <CardContent>
