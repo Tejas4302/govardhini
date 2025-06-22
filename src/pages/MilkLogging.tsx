@@ -103,61 +103,70 @@ const MilkLogging = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-amber-50 to-orange-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
       <Navigation user={user} />
       
-      <div className="container mx-auto px-4 py-8">
+      {/* Animated background */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -inset-10 opacity-20">
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
+          <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-cyan-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-1000"></div>
+        </div>
+      </div>
+      
+      <div className="relative z-10 container mx-auto px-4 py-8">
         <div className="max-w-2xl mx-auto">
-          <Card className="bg-white/90 backdrop-blur shadow-xl border-0">
+          <Card className="glass-card border-0 animate-fade-in">
             <CardHeader className="text-center">
-              <div className="mx-auto w-16 h-16 bg-gradient-to-br from-blue-600 to-cyan-600 rounded-full flex items-center justify-center mb-4">
+              <div className="mx-auto w-16 h-16 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-full flex items-center justify-center mb-4 shadow-lg">
                 <span className="text-white text-3xl">🥛</span>
               </div>
-              <CardTitle className="text-2xl font-bold text-gray-800">Milk Production Logging</CardTitle>
-              <CardDescription>Record daily milk production</CardDescription>
+              <CardTitle className="text-2xl font-bold text-white">Milk Production Logging</CardTitle>
+              <CardDescription className="text-gray-300">Record daily milk production</CardDescription>
             </CardHeader>
             
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="entryId">Entry ID</Label>
+                    <Label htmlFor="entryId" className="text-white">Entry ID</Label>
                     <Input
                       id="entryId"
                       value={formData.entryId}
-                      className="bg-gray-50"
+                      className="glass-input text-white placeholder:text-gray-400 border-white/20"
                       readOnly
                     />
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="cattleId">Cattle ID *</Label>
+                    <Label htmlFor="cattleId" className="text-white">Cattle ID *</Label>
                     <Input
                       id="cattleId"
                       placeholder="Enter cattle ID"
                       value={formData.cattleId}
                       onChange={(e) => setFormData({ ...formData, cattleId: e.target.value })}
+                      className="glass-input text-white placeholder:text-gray-400 border-white/20"
                     />
                   </div>
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label>Production Date</Label>
+                    <Label className="text-white">Production Date</Label>
                     <Popover>
                       <PopoverTrigger asChild>
                         <Button
                           variant="outline"
                           className={cn(
-                            "w-full justify-start text-left font-normal",
-                            !formData.productionDate && "text-muted-foreground"
+                            "w-full justify-start text-left font-normal glass-input text-white border-white/20 hover:bg-white/20",
+                            !formData.productionDate && "text-gray-400"
                           )}
                         >
                           <CalendarIcon className="mr-2 h-4 w-4" />
                           {formData.productionDate ? format(formData.productionDate, "PPP") : "Pick a date"}
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
+                      <PopoverContent className="w-auto p-0 bg-white/10 backdrop-blur-lg border-white/20" align="start">
                         <Calendar
                           mode="single"
                           selected={formData.productionDate}
@@ -170,7 +179,7 @@ const MilkLogging = () => {
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="quantityLitres">Milk Produced (Liters) *</Label>
+                    <Label htmlFor="quantityLitres" className="text-white">Milk Produced (Liters) *</Label>
                     <Input
                       id="quantityLitres"
                       type="number"
@@ -180,30 +189,36 @@ const MilkLogging = () => {
                       onChange={(e) => setFormData({ ...formData, quantityLitres: e.target.value })}
                       min="0"
                       max="100"
+                      className="glass-input text-white placeholder:text-gray-400 border-white/20"
                     />
                   </div>
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="shift">Shift (Optional)</Label>
+                  <Label htmlFor="shift" className="text-white">Shift (Optional)</Label>
                   <Input
                     id="shift"
                     placeholder="e.g., Morning, Evening"
                     value={formData.shift}
                     onChange={(e) => setFormData({ ...formData, shift: e.target.value })}
+                    className="glass-input text-white placeholder:text-gray-400 border-white/20"
                   />
                 </div>
                 
                 <div className="space-y-2">
-                  <Label>Recorded By</Label>
-                  <Input value={user.name || 'Current User'} readOnly className="bg-gray-50" />
+                  <Label className="text-white">Recorded By</Label>
+                  <Input 
+                    value={user.name || 'Current User'} 
+                    readOnly 
+                    className="glass-input text-white placeholder:text-gray-400 border-white/20 opacity-70" 
+                  />
                 </div>
                 
                 <div className="flex gap-4 pt-4">
                   <Button
                     type="button"
                     variant="outline"
-                    className="flex-1"
+                    className="flex-1 glass-input text-white border-white/20 hover:bg-white/20"
                     onClick={() => navigate('/dashboard')}
                     disabled={isLoading}
                   >
@@ -211,7 +226,7 @@ const MilkLogging = () => {
                   </Button>
                   <Button
                     type="submit"
-                    className="flex-1 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
+                    className="flex-1 glass-button text-white"
                     disabled={isLoading}
                   >
                     {isLoading ? 'Logging...' : 'Log Milk Production 🥛'}

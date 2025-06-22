@@ -77,16 +77,16 @@ const Dashboard = () => {
 
   const getQuickActions = () => {
     const baseActions = [
-      { title: 'Farmer Registration', desc: 'Register new farmers', icon: '👨‍🌾', path: '/farmer-onboarding' },
-      { title: 'Cattle Onboarding', desc: 'Add new cattle', icon: '🐄', path: '/cattle-onboarding' },
-      { title: 'Health Check', desc: 'Record cattle health', icon: '❤️', path: '/health-check' },
-      { title: 'Milk Production', desc: 'Log milk production', icon: '🥛', path: '/milk-logging' },
+      { title: 'Farmer Registration', desc: 'Register new farmers', icon: '👨‍🌾', path: '/farmer-onboarding', gradient: 'from-emerald-500 to-green-600' },
+      { title: 'Cattle Onboarding', desc: 'Add new cattle', icon: '🐄', path: '/cattle-onboarding', gradient: 'from-amber-500 to-orange-600' },
+      { title: 'Health Check', desc: 'Record cattle health', icon: '❤️', path: '/health-check', gradient: 'from-red-500 to-pink-600' },
+      { title: 'Milk Production', desc: 'Log milk production', icon: '🥛', path: '/milk-logging', gradient: 'from-blue-500 to-cyan-600' },
     ];
 
     if (user.role === 'admin' || user.role === 'office_staff') {
       baseActions.push(
-        { title: 'Feed Requests', desc: 'Manage feed requests', icon: '🌾', path: '/feed-requests' },
-        { title: 'Analytics', desc: 'View reports & charts', icon: '📊', path: '/analytics' }
+        { title: 'Feed Requests', desc: 'Manage feed requests', icon: '🌾', path: '/feed-requests', gradient: 'from-yellow-500 to-amber-600' },
+        { title: 'Analytics', desc: 'View reports & charts', icon: '📊', path: '/analytics', gradient: 'from-purple-500 to-indigo-600' }
       );
     }
 
@@ -94,98 +94,122 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
       <Navigation user={user} />
       
+      {/* Animated background */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -inset-10 opacity-30">
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-green-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
+          <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-blue-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-1000"></div>
+          <div className="absolute bottom-1/4 left-1/3 w-96 h-96 bg-purple-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-2000"></div>
+        </div>
+      </div>
+
       {/* Header */}
-      <div className="bg-gray-900 px-4 py-6 border-b border-gray-700">
+      <div className="relative z-10 px-4 py-6">
         <div className="container mx-auto">
-          <h1 className="text-2xl font-bold text-white mb-2">Dashboard</h1>
-          <div className="flex items-center gap-3">
-            <Badge className="bg-green-600 text-white">
-              {user.role.replace('_', ' ').toUpperCase()}
-            </Badge>
+          <div className="animate-fade-in">
+            <h1 className="text-3xl font-bold text-white mb-2">Dashboard</h1>
+            <div className="flex items-center gap-3">
+              <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 text-white border-0 px-4 py-2 rounded-full">
+                {user.role.replace('_', ' ').toUpperCase()}
+              </Badge>
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-6">
+      <div className="relative z-10 container mx-auto px-4 py-6">
         {/* Key Metrics */}
         <div className="mb-8">
-          <h2 className="text-xl font-semibold text-white mb-4">Key Metrics</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <Card className="bg-gray-800 border-gray-700 text-white">
+          <h2 className="text-xl font-semibold text-white mb-6 animate-slide-up">Key Metrics</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <Card className="metric-card text-white border-0 animate-fade-in" style={{animationDelay: '0.1s'}}>
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-gray-400 text-sm">Total Farmers</p>
-                    <p className="text-3xl font-bold">{isLoading ? '...' : stats.totalFarmers}</p>
+                    <p className="text-gray-300 text-sm font-medium">Total Farmers</p>
+                    <p className="text-3xl font-bold mt-2">{isLoading ? '...' : stats.totalFarmers}</p>
                   </div>
-                  <div className="text-4xl">👨‍🌾</div>
+                  <div className="text-4xl opacity-80">👨‍🌾</div>
                 </div>
               </CardContent>
             </Card>
             
-            <Card className="bg-gray-800 border-gray-700 text-white">
+            <Card className="metric-card text-white border-0 animate-fade-in" style={{animationDelay: '0.2s'}}>
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-gray-400 text-sm">Total Cattle</p>
-                    <p className="text-3xl font-bold">{isLoading ? '...' : stats.totalCattle}</p>
+                    <p className="text-gray-300 text-sm font-medium">Total Cattle</p>
+                    <p className="text-3xl font-bold mt-2">{isLoading ? '...' : stats.totalCattle}</p>
                   </div>
-                  <div className="text-4xl">🐄</div>
+                  <div className="text-4xl opacity-80">🐄</div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="metric-card text-white border-0 animate-fade-in" style={{animationDelay: '0.3s'}}>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-gray-300 text-sm font-medium">Today's Milk</p>
+                    <p className="text-3xl font-bold mt-2">{isLoading ? '...' : stats.todayMilk}L</p>
+                  </div>
+                  <div className="text-4xl opacity-80">🥛</div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="metric-card text-white border-0 animate-fade-in" style={{animationDelay: '0.4s'}}>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-gray-300 text-sm font-medium">Health Alerts</p>
+                    <p className="text-3xl font-bold mt-2">{isLoading ? '...' : stats.healthAlerts}</p>
+                  </div>
+                  <div className="text-4xl opacity-80">🚨</div>
                 </div>
               </CardContent>
             </Card>
           </div>
-          
-          <Card className="bg-gray-800 border-gray-700 text-white">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-gray-400 text-sm">Today's Milk Production</p>
-                  <p className="text-3xl font-bold">{isLoading ? '...' : stats.todayMilk}L</p>
-                </div>
-                <div className="text-4xl">🥛</div>
-              </div>
-            </CardContent>
-          </Card>
         </div>
 
         {/* Quick Actions */}
         <div className="mb-8">
-          <h2 className="text-xl font-semibold text-white mb-4">Quick Actions</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <h2 className="text-xl font-semibold text-white mb-6 animate-slide-up" style={{animationDelay: '0.5s'}}>Quick Actions</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {getQuickActions().map((action, index) => (
               <Button
                 key={index}
                 variant="outline"
-                className="h-auto p-6 flex items-center justify-start space-x-4 bg-gray-800 border-gray-700 text-white hover:bg-gray-700 hover:border-green-500 transition-all duration-200"
+                className={`glass-card h-auto p-6 flex items-center justify-start space-x-4 text-white border-white/20 hover:border-white/40 animate-fade-in`}
+                style={{animationDelay: `${0.6 + index * 0.1}s`}}
                 onClick={() => navigate(action.path)}
               >
-                <div className="w-12 h-12 bg-green-600 rounded-lg flex items-center justify-center text-2xl">
+                <div className={`w-12 h-12 bg-gradient-to-r ${action.gradient} rounded-xl flex items-center justify-center text-2xl shadow-lg`}>
                   {action.icon}
                 </div>
                 <div className="text-left">
                   <p className="font-semibold text-white">{action.title}</p>
-                  <p className="text-sm text-gray-400">{action.desc}</p>
+                  <p className="text-sm text-gray-300">{action.desc}</p>
                 </div>
               </Button>
             ))}
           </div>
         </div>
 
-        {/* Health Status */}
+        {/* Health Status Alert */}
         {stats.healthAlerts > 0 && (
-          <Card className="bg-red-900 border-red-700 text-white">
+          <Card className="glass-card border-red-500/50 text-white animate-fade-in" style={{animationDelay: '1s'}}>
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-red-200 text-sm">Health Alerts</p>
-                  <p className="text-3xl font-bold">{stats.healthAlerts}</p>
-                  <p className="text-red-200 text-sm">Require attention</p>
+                  <p className="text-red-200 text-sm font-medium">Health Alerts</p>
+                  <p className="text-3xl font-bold text-red-300">{stats.healthAlerts}</p>
+                  <p className="text-red-200 text-sm">Require immediate attention</p>
                 </div>
-                <div className="text-4xl">🚨</div>
+                <div className="text-4xl animate-pulse">🚨</div>
               </div>
             </CardContent>
           </Card>
