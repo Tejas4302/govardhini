@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -83,16 +84,16 @@ const FarmerOnboarding = () => {
     localStorage.setItem('offline_farmers', JSON.stringify(offlineData));
   };
 
-  const checkPhoneNumberConflict = async (phoneNumber: string) => {
+  const checkPhoneNumberConflict = async (phoneNumber: string): Promise<boolean> => {
     try {
       // Check if phone number exists in users table
       const { data: existingUser, error } = await supabase
         .from('users')
         .select('id, full_name')
-        .eq('phone', phoneNumber)
-        .single();
+        .eq('phone_number', phoneNumber)
+        .maybeSingle();
 
-      if (error && error.code !== 'PGRST116') { // PGRST116 is "not found" error
+      if (error) {
         console.error('Error checking phone number:', error);
         return false;
       }
