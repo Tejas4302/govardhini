@@ -266,47 +266,6 @@ export type Database = {
           },
         ]
       }
-      sms_notifications: {
-        Row: {
-          created_at: string
-          farmer_id: string | null
-          id: string
-          message_content: string
-          message_type: string
-          phone_number: string
-          sent_at: string | null
-          status: string
-        }
-        Insert: {
-          created_at?: string
-          farmer_id?: string | null
-          id?: string
-          message_content: string
-          message_type: string
-          phone_number: string
-          sent_at?: string | null
-          status?: string
-        }
-        Update: {
-          created_at?: string
-          farmer_id?: string | null
-          id?: string
-          message_content?: string
-          message_type?: string
-          phone_number?: string
-          sent_at?: string | null
-          status?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "sms_notifications_farmer_id_fkey"
-            columns: ["farmer_id"]
-            isOneToOne: false
-            referencedRelation: "farmers"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       user_role_assignments: {
         Row: {
           assigned_at: string

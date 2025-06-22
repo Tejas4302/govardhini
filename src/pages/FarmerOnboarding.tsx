@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -120,7 +121,7 @@ const FarmerOnboarding = () => {
       } else {
         toast({
           title: "Success! ✅",
-          description: `Farmer ${formData.fullName} has been registered successfully. SMS notification sent!`,
+          description: `Farmer ${formData.fullName} has been registered successfully.`,
         });
         
         await syncOfflineData();
