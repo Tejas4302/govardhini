@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -61,6 +62,7 @@ const Profile = () => {
     
     setIsLoading(true);
     try {
+      // Try to update the users table (which matches the current structure)
       const { error } = await supabase
         .from('users')
         .update({
@@ -70,11 +72,28 @@ const Profile = () => {
         .eq('id', user.id);
 
       if (error) {
-        toast({
-          title: "Error",
-          description: "Failed to update profile",
-          variant: "destructive"
-        });
+        console.error('Update error:', error);
+        
+        // Show appropriate error message based on error type
+        if (error.message.includes('Failed to fetch') || error.message.includes('network')) {
+          toast({
+            title: "Network Error",
+            description: "Unable to connect. Please check your internet connection and try again.",
+            variant: "destructive"
+          });
+        } else if (error.code === '42P01') {
+          toast({
+            title: "Database Error",
+            description: "Profile table not found. Please contact support.",
+            variant: "destructive"
+          });
+        } else {
+          toast({
+            title: "Error",
+            description: error.message || "Failed to update profile",
+            variant: "destructive"
+          });
+        }
         return;
       }
 
@@ -94,10 +113,10 @@ const Profile = () => {
       });
 
     } catch (error) {
-      console.error('Update error:', error);
+      console.error('Unexpected error:', error);
       toast({
-        title: "Error",
-        description: "An error occurred while updating profile",
+        title: "Network Error",
+        description: "Connection failed. Please try again.",
         variant: "destructive"
       });
     } finally {

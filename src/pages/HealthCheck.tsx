@@ -26,10 +26,40 @@ const HealthCheck = () => {
   });
   
   const [isLoading, setIsLoading] = useState(false);
+  const [validatingCattle, setValidatingCattle] = useState(false);
+  const [cattleExists, setCattleExists] = useState<boolean | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
   
   const user = JSON.parse(localStorage.getItem('govardhini_user') || '{}');
+
+  const validateCattleId = async (cattleId: string) => {
+    if (!cattleId.trim()) {
+      setCattleExists(null);
+      return;
+    }
+
+    setValidatingCattle(true);
+    try {
+      const { data, error } = await supabase
+        .from('cattle_profiles')
+        .select('cattle_id')
+        .eq('cattle_id', cattleId)
+        .single();
+
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error validating cattle:', error);
+        setCattleExists(null);
+      } else {
+        setCattleExists(!!data);
+      }
+    } catch (error) {
+      console.error('Unexpected error:', error);
+      setCattleExists(null);
+    } finally {
+      setValidatingCattle(false);
+    }
+  };
 
   const saveOffline = (data: any) => {
     const offlineData = JSON.parse(localStorage.getItem('offline_health') || '[]');
@@ -44,6 +74,15 @@ const HealthCheck = () => {
       toast({
         title: "Error",
         description: "Please fill in all required fields",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (cattleExists === false) {
+      toast({
+        title: "Cattle Not Found",
+        description: "The cattle ID you entered doesn't exist. Please register the cattle first or check the ID.",
         variant: "destructive"
       });
       return;
@@ -67,12 +106,33 @@ const HealthCheck = () => {
         .insert(healthCheckData);
 
       if (error) {
-        saveOffline(formData);
-        toast({
-          title: "Saved Offline 📱",
-          description: "No internet connection. Data saved locally and will sync when online.",
-          variant: "default"
-        });
+        console.error('Database error:', error);
+        
+        // Check if it's a foreign key constraint error
+        if (error.code === '23503' && error.message.includes('cattle_id_fkey')) {
+          toast({
+            title: "Cattle Not Found",
+            description: "The cattle ID doesn't exist. Please register the cattle first.",
+            variant: "destructive"
+          });
+          return;
+        }
+        
+        // Check if it's a network/connection error
+        if (error.message.includes('Failed to fetch') || error.message.includes('network')) {
+          saveOffline(formData);
+          toast({
+            title: "Saved Offline 📱",
+            description: "No internet connection. Data saved locally and will sync when online.",
+            variant: "default"
+          });
+        } else {
+          toast({
+            title: "Database Error",
+            description: error.message || "Failed to save health check",
+            variant: "destructive"
+          });
+        }
       } else {
         // Show alert if health issue detected
         if (parseFloat(formData.temperature) > 39.5 || formData.issue !== '') {
@@ -87,29 +147,41 @@ const HealthCheck = () => {
             description: "Health check recorded successfully",
           });
         }
+        
+        // Reset form
+        setFormData({
+          entryId: `HC${Date.now().toString().slice(-6)}`,
+          cattleId: '',
+          checkDate: new Date(),
+          temperature: '',
+          issue: '',
+          issueType: '',
+          recoveryStatus: '',
+        });
+        setCattleExists(null);
       }
-      
-      // Reset form
-      setFormData({
-        entryId: `HC${Date.now().toString().slice(-6)}`,
-        cattleId: '',
-        checkDate: new Date(),
-        temperature: '',
-        issue: '',
-        issueType: '',
-        recoveryStatus: '',
-      });
 
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Unexpected error:', error);
       saveOffline(formData);
       toast({
-        title: "Saved Offline 📱",
-        description: "Data saved locally. Will sync when connection is restored.",
+        title: "Network Error 📱",
+        description: "Connection failed. Data saved locally and will sync when online.",
       });
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleCattleIdChange = (value: string) => {
+    setFormData({ ...formData, cattleId: value });
+    
+    // Debounce validation
+    const timeoutId = setTimeout(() => {
+      validateCattleId(value);
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
   };
 
   return (
@@ -149,14 +221,34 @@ const HealthCheck = () => {
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="cattleId" className="text-white">Cattle ID *</Label>
+                    <Label htmlFor="cattleId" className="text-white">
+                      Cattle ID *
+                      {validatingCattle && <span className="text-blue-400 ml-2">Validating...</span>}
+                      {cattleExists === true && <span className="text-green-400 ml-2">✓ Found</span>}
+                      {cattleExists === false && <span className="text-red-400 ml-2">✗ Not found</span>}
+                    </Label>
                     <Input
                       id="cattleId"
                       placeholder="Enter cattle ID"
                       value={formData.cattleId}
-                      onChange={(e) => setFormData({ ...formData, cattleId: e.target.value })}
-                      className="glass-input text-white placeholder:text-gray-400 border-white/20"
+                      onChange={(e) => handleCattleIdChange(e.target.value)}
+                      className={cn(
+                        "glass-input text-white placeholder:text-gray-400 border-white/20",
+                        cattleExists === false && "border-red-500"
+                      )}
                     />
+                    {cattleExists === false && (
+                      <p className="text-red-400 text-sm">
+                        Cattle not found. <Button 
+                          type="button" 
+                          variant="link" 
+                          className="text-blue-400 p-0 h-auto"
+                          onClick={() => navigate('/cattle-onboarding')}
+                        >
+                          Register cattle first
+                        </Button>
+                      </p>
+                    )}
                   </div>
                 </div>
                 
@@ -259,7 +351,7 @@ const HealthCheck = () => {
                   <Button
                     type="submit"
                     className="flex-1 glass-button text-white"
-                    disabled={isLoading}
+                    disabled={isLoading || cattleExists === false}
                   >
                     {isLoading ? 'Saving...' : 'Record Health Check 🩺'}
                   </Button>
