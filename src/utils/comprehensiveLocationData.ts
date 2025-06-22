@@ -1,6 +1,24 @@
 
 // Comprehensive location data for Indian states with districts, taluks, villages and pincodes
-export const comprehensiveLocationData = {
+
+interface TalukData {
+  villages: string[];
+  pincodes: string[];
+}
+
+interface DistrictData {
+  taluks: { [talukName: string]: TalukData };
+}
+
+interface StateData {
+  [districtName: string]: DistrictData;
+}
+
+interface ComprehensiveLocationData {
+  [stateName: string]: StateData;
+}
+
+export const comprehensiveLocationData: ComprehensiveLocationData = {
   "Karnataka": {
     "Bengaluru Urban": {
       taluks: {
@@ -107,43 +125,54 @@ export const getAllStates = (): string[] => {
 };
 
 export const getDistrictsByState = (state: string): string[] => {
-  return Object.keys(comprehensiveLocationData[state as keyof typeof comprehensiveLocationData] || {});
+  const stateData = comprehensiveLocationData[state];
+  return stateData ? Object.keys(stateData) : [];
 };
 
 export const getTaluksByDistrict = (state: string, district: string): string[] => {
-  const stateData = comprehensiveLocationData[state as keyof typeof comprehensiveLocationData];
+  const stateData = comprehensiveLocationData[state];
   if (!stateData) return [];
-  const districtData = stateData[district as keyof typeof stateData];
+  
+  const districtData = stateData[district];
   if (!districtData) return [];
+  
   return Object.keys(districtData.taluks);
 };
 
 export const getVillagesByTaluk = (state: string, district: string, taluk: string): string[] => {
-  const stateData = comprehensiveLocationData[state as keyof typeof comprehensiveLocationData];
+  const stateData = comprehensiveLocationData[state];
   if (!stateData) return [];
-  const districtData = stateData[district as keyof typeof stateData];
+  
+  const districtData = stateData[district];
   if (!districtData) return [];
-  const talukData = districtData.taluks[taluk as keyof typeof districtData.taluks];
+  
+  const talukData = districtData.taluks[taluk];
   if (!talukData) return [];
+  
   return talukData.villages;
 };
 
 export const getPincodesByLocation = (state: string, district: string, taluk: string): string[] => {
-  const stateData = comprehensiveLocationData[state as keyof typeof comprehensiveLocationData];
+  const stateData = comprehensiveLocationData[state];
   if (!stateData) return [];
-  const districtData = stateData[district as keyof typeof stateData];
+  
+  const districtData = stateData[district];
   if (!districtData) return [];
-  const talukData = districtData.taluks[taluk as keyof typeof districtData.taluks];
+  
+  const talukData = districtData.taluks[taluk];
   if (!talukData) return [];
+  
   return talukData.pincodes;
 };
 
 export const getPincodeByVillage = (state: string, district: string, taluk: string, village: string): string | null => {
-  const stateData = comprehensiveLocationData[state as keyof typeof comprehensiveLocationData];
+  const stateData = comprehensiveLocationData[state];
   if (!stateData) return null;
-  const districtData = stateData[district as keyof typeof stateData];
+  
+  const districtData = stateData[district];
   if (!districtData) return null;
-  const talukData = districtData.taluks[taluk as keyof typeof districtData.taluks];
+  
+  const talukData = districtData.taluks[taluk];
   if (!talukData) return null;
   
   const villageIndex = talukData.villages.indexOf(village);
