@@ -17,7 +17,6 @@ import Analytics from "./pages/Analytics";
 import NotFound from "./pages/NotFound";
 import OfflineSync from "./components/OfflineSync";
 import Index from "./pages/Index";
-import Login from "./pages/Login";
 import FarmersList from "./pages/FarmersList";
 import FarmerProfile from "./pages/FarmerProfile";
 import UserManagement from "./pages/UserManagement";
@@ -44,7 +43,6 @@ const App: React.FC = () => {
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
-            <Route path="/login" element={<Login />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/farmer-onboarding" element={<FarmerOnboarding />} />
             <Route path="/cattle-onboarding" element={<CattleOnboarding />} />
