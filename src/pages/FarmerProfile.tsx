@@ -305,7 +305,7 @@ const FarmerProfile = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-green-900 to-emerald-900">
         <Navigation user={user} />
         <div className="flex items-center justify-center h-96">
           <div className="text-white text-xl">Loading farmer profile...</div>
@@ -316,7 +316,7 @@ const FarmerProfile = () => {
 
   if (!farmer) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-green-900 to-emerald-900">
         <Navigation user={user} />
         <div className="flex items-center justify-center h-96">
           <div className="text-white text-xl">Farmer not found</div>
@@ -326,7 +326,7 @@ const FarmerProfile = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-green-900 to-emerald-900">
       <Navigation user={user} />
       
       <div className="relative z-10 container mx-auto px-4 py-8">

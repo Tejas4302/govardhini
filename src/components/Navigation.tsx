@@ -1,10 +1,10 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { User } from 'lucide-react';
+import { getProfilePhoto, clearProfilePhoto } from '@/utils/profilePhotoStorage';
 
 interface NavigationProps {
   user: {
@@ -21,8 +21,13 @@ const Navigation = ({ user }: NavigationProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  // Get persistent profile photo
+  const persistentProfilePhoto = user.id ? getProfilePhoto(user.id) : null;
+  const profileImageUrl = persistentProfilePhoto || user.profileImage;
+
   const handleLogout = () => {
     localStorage.removeItem('govardhini_user');
+    // Don't clear the profile photo on logout - keep it for next login
     toast({
       title: "Logged out successfully",
       description: "Thank you for using Govardhini",
@@ -52,7 +57,7 @@ const Navigation = ({ user }: NavigationProps) => {
               className="flex items-center space-x-2 hover:bg-green-600/20 text-green-50"
             >
               <Avatar className="w-8 h-8">
-                <AvatarImage src={user.profileImage} alt="Profile" />
+                <AvatarImage src={profileImageUrl} alt="Profile" />
                 <AvatarFallback className="grass-green text-white text-sm">
                   {user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
                 </AvatarFallback>
