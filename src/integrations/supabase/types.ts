@@ -329,8 +329,54 @@ export type Database = {
           },
         ]
       }
+      user_role_history: {
+        Row: {
+          changed_at: string
+          changed_by: string | null
+          id: string
+          new_role: string
+          old_role: string | null
+          reason: string | null
+          user_id: string
+        }
+        Insert: {
+          changed_at?: string
+          changed_by?: string | null
+          id?: string
+          new_role: string
+          old_role?: string | null
+          reason?: string | null
+          user_id: string
+        }
+        Update: {
+          changed_at?: string
+          changed_by?: string | null
+          id?: string
+          new_role?: string
+          old_role?: string | null
+          reason?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_role_history_changed_by_fkey"
+            columns: ["changed_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_role_history_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       users: {
         Row: {
+          active_role: string
           approved_at: string | null
           approved_by: string | null
           created_at: string
@@ -342,6 +388,7 @@ export type Database = {
           status: string
         }
         Insert: {
+          active_role: string
           approved_at?: string | null
           approved_by?: string | null
           created_at?: string
@@ -353,6 +400,7 @@ export type Database = {
           status?: string
         }
         Update: {
+          active_role?: string
           approved_at?: string | null
           approved_by?: string | null
           created_at?: string
@@ -370,6 +418,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      change_user_role: {
+        Args: {
+          target_user_id: string
+          new_role: string
+          change_reason?: string
+        }
+        Returns: undefined
+      }
       get_current_user_role: {
         Args: Record<PropertyKey, never>
         Returns: string

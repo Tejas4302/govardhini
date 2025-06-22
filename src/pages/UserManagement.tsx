@@ -6,7 +6,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import Navigation from '@/components/Navigation';
 import AdminGuard from '@/components/AdminGuard';
-import { Users, CheckCircle, XCircle, Clock, ArrowLeft, AlertTriangle, Trash2 } from 'lucide-react';
+import { Users, CheckCircle, XCircle, Clock, ArrowLeft, AlertTriangle, Trash2, UserCog } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import {
   Table,
@@ -27,12 +27,22 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 interface User {
   id: string;
   full_name: string;
   phone_number: string;
   designation: string;
+  active_role: string;
   status: string;
   created_at: string;
 }
@@ -41,10 +51,18 @@ const UserManagement = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [processingUserId, setProcessingUserId] = useState<string | null>(null);
+  const [roleChangeData, setRoleChangeData] = useState<{
+    userId: string;
+    userName: string;
+    currentRole: string;
+    newRole: string;
+    reason: string;
+  } | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
   
   const user = JSON.parse(localStorage.getItem('govardhini_user') || '{}');
+  const availableRoles = ['Field Officer', 'Office Staff', 'Admin'];
 
   useEffect(() => {
     fetchUsers();
@@ -143,6 +161,47 @@ const UserManagement = () => {
     }
   };
 
+  const changeUserRole = async () => {
+    if (!roleChangeData) return;
+
+    try {
+      setProcessingUserId(roleChangeData.userId);
+      
+      const { error } = await supabase.rpc('change_user_role', {
+        target_user_id: roleChangeData.userId,
+        new_role: roleChangeData.newRole,
+        change_reason: roleChangeData.reason || null
+      });
+
+      if (error) {
+        console.error('Error changing user role:', error);
+        toast({
+          title: "Error",
+          description: `Failed to change user role: ${error.message}`,
+          variant: "destructive"
+        });
+        return;
+      }
+
+      toast({
+        title: "Success",
+        description: `${roleChangeData.userName}'s role has been changed from ${roleChangeData.currentRole} to ${roleChangeData.newRole}`,
+      });
+
+      setRoleChangeData(null);
+      await fetchUsers();
+    } catch (error) {
+      console.error('Error changing user role:', error);
+      toast({
+        title: "Error",
+        description: "Failed to change user role",
+        variant: "destructive"
+      });
+    } finally {
+      setProcessingUserId(null);
+    }
+  };
+
   const deleteUser = async (userId: string, userName: string) => {
     try {
       setProcessingUserId(userId);
@@ -198,6 +257,22 @@ const UserManagement = () => {
     );
   };
 
+  const getRoleBadge = (originalRole: string, activeRole: string) => {
+    const hasRoleChanged = originalRole !== activeRole;
+    return (
+      <div className="flex flex-col gap-1">
+        <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/30">
+          {activeRole}
+        </Badge>
+        {hasRoleChanged && (
+          <Badge className="bg-gray-500/20 text-gray-300 border-gray-500/30 text-xs">
+            Originally: {originalRole}
+          </Badge>
+        )}
+      </div>
+    );
+  };
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-IN', {
       year: 'numeric',
@@ -244,7 +319,7 @@ const UserManagement = () => {
                   Manage Users
                 </CardTitle>
                 <CardDescription className="text-emerald-300">
-                  Approve, reject, or delete user registrations. Only approved users can access the system.
+                  Approve, reject, delete user registrations, or change user roles. Only approved users can access the system.
                 </CardDescription>
               </CardHeader>
               
@@ -265,7 +340,7 @@ const UserManagement = () => {
                         <TableRow className="border-emerald-500/20">
                           <TableHead className="text-emerald-200 font-semibold">Name</TableHead>
                           <TableHead className="text-emerald-200 font-semibold">Phone</TableHead>
-                          <TableHead className="text-emerald-200 font-semibold">Designation</TableHead>
+                          <TableHead className="text-emerald-200 font-semibold">Role</TableHead>
                           <TableHead className="text-emerald-200 font-semibold">Status</TableHead>
                           <TableHead className="text-emerald-200 font-semibold">Registered</TableHead>
                           <TableHead className="text-emerald-200 font-semibold">Actions</TableHead>
@@ -280,7 +355,7 @@ const UserManagement = () => {
                           >
                             <TableCell className="text-white font-medium">{userData.full_name}</TableCell>
                             <TableCell className="text-emerald-300">{userData.phone_number}</TableCell>
-                            <TableCell className="text-emerald-300">{userData.designation}</TableCell>
+                            <TableCell>{getRoleBadge(userData.designation, userData.active_role)}</TableCell>
                             <TableCell>{getStatusBadge(userData.status)}</TableCell>
                             <TableCell className="text-emerald-300 text-sm">{formatDate(userData.created_at)}</TableCell>
                             <TableCell>
@@ -359,9 +434,88 @@ const UserManagement = () => {
                                   </>
                                 )}
                                 {userData.status === 'approved' && (
-                                  <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/30">
-                                    Active User
-                                  </Badge>
+                                  <>
+                                    <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/30">
+                                      Active User
+                                    </Badge>
+                                    
+                                    {/* Role Change Button */}
+                                    {userData.id !== user.id && (
+                                      <AlertDialog>
+                                        <AlertDialogTrigger asChild>
+                                          <Button
+                                            size="sm"
+                                            disabled={processingUserId === userData.id}
+                                            className="bg-blue-600 hover:bg-blue-700"
+                                          >
+                                            <UserCog className="w-4 h-4 mr-1" />
+                                            Change Role
+                                          </Button>
+                                        </AlertDialogTrigger>
+                                        <AlertDialogContent className="glass-card border-blue-500/30 bg-slate-800/90 backdrop-blur-xl text-white max-w-md">
+                                          <AlertDialogHeader>
+                                            <AlertDialogTitle className="text-blue-300">Change User Role</AlertDialogTitle>
+                                            <AlertDialogDescription className="text-blue-200">
+                                              Change the role for <strong>{userData.full_name}</strong>. This will not affect their past contributions.
+                                            </AlertDialogDescription>
+                                          </AlertDialogHeader>
+                                          <div className="space-y-4 py-4">
+                                            <div>
+                                              <Label className="text-emerald-300">Current Role: {userData.active_role}</Label>
+                                            </div>
+                                            <div>
+                                              <Label htmlFor="new-role" className="text-emerald-300">New Role</Label>
+                                              <Select 
+                                                onValueChange={(value) => setRoleChangeData({
+                                                  userId: userData.id,
+                                                  userName: userData.full_name,
+                                                  currentRole: userData.active_role,
+                                                  newRole: value,
+                                                  reason: roleChangeData?.reason || ''
+                                                })}
+                                              >
+                                                <SelectTrigger className="bg-slate-700 border-emerald-500/30">
+                                                  <SelectValue placeholder="Select new role" />
+                                                </SelectTrigger>
+                                                <SelectContent className="bg-slate-700 border-emerald-500/30">
+                                                  {availableRoles.filter(role => role !== userData.active_role).map((role) => (
+                                                    <SelectItem key={role} value={role} className="text-white hover:bg-emerald-500/20">
+                                                      {role}
+                                                    </SelectItem>
+                                                  ))}
+                                                </SelectContent>
+                                              </Select>
+                                            </div>
+                                            <div>
+                                              <Label htmlFor="reason" className="text-emerald-300">Reason (Optional)</Label>
+                                              <Input
+                                                id="reason"
+                                                placeholder="Reason for role change"
+                                                className="bg-slate-700 border-emerald-500/30 text-white"
+                                                value={roleChangeData?.reason || ''}
+                                                onChange={(e) => setRoleChangeData(prev => prev ? {...prev, reason: e.target.value} : null)}
+                                              />
+                                            </div>
+                                          </div>
+                                          <AlertDialogFooter>
+                                            <AlertDialogCancel 
+                                              className="border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/20"
+                                              onClick={() => setRoleChangeData(null)}
+                                            >
+                                              Cancel
+                                            </AlertDialogCancel>
+                                            <AlertDialogAction
+                                              onClick={changeUserRole}
+                                              disabled={!roleChangeData?.newRole}
+                                              className="bg-blue-600 hover:bg-blue-700"
+                                            >
+                                              Change Role
+                                            </AlertDialogAction>
+                                          </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                      </AlertDialog>
+                                    )}
+                                  </>
                                 )}
                                 {userData.status === 'rejected' && (
                                   <Badge className="bg-red-500/20 text-red-300 border-red-500/30">

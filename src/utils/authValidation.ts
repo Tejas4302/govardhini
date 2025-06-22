@@ -6,7 +6,7 @@ export const validateUserStatus = async (phoneNumber: string): Promise<{ isValid
     // First check if user exists and get their status
     const { data: userData, error } = await supabase
       .from('users')
-      .select('id, full_name, phone_number, designation, status')
+      .select('id, full_name, phone_number, designation, active_role, status')
       .eq('phone_number', phoneNumber)
       .single();
 

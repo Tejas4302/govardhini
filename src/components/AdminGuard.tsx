@@ -17,7 +17,10 @@ const AdminGuard: React.FC<AdminGuardProps> = ({ children }) => {
     return <Navigate to="/auth" replace />;
   }
   
-  if (!checkAdminPermission(user.designation, user.status)) {
+  // Use active_role instead of designation for permission check
+  const userRole = user.active_role || user.designation;
+  
+  if (!checkAdminPermission(userRole, user.status)) {
     toast({
       title: "Access Denied",
       description: "This page requires admin privileges",
