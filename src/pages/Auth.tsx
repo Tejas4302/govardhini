@@ -210,10 +210,19 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md shadow-xl border-0 bg-gray-800 text-white">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-4">
+      {/* Animated background */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -inset-10 opacity-30">
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-green-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
+          <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-blue-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-1000"></div>
+          <div className="absolute bottom-1/4 left-1/3 w-96 h-96 bg-purple-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-2000"></div>
+        </div>
+      </div>
+
+      <Card className="w-full max-w-md glass-card border-0 text-white relative z-10 animate-fade-in">
         <CardHeader className="text-center pb-6">
-          <div className="mx-auto w-16 h-16 bg-gradient-to-br from-green-500 to-green-700 rounded-full flex items-center justify-center mb-4">
+          <div className="mx-auto w-16 h-16 bg-gradient-to-br from-green-500 to-green-700 rounded-full flex items-center justify-center mb-4 shadow-xl">
             <span className="text-white text-2xl font-bold">🐄</span>
           </div>
           <CardTitle className="text-2xl font-bold text-white">Govardhini</CardTitle>
@@ -223,12 +232,22 @@ const Auth = () => {
         </CardHeader>
         <CardContent>
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-            <TabsList className="grid w-full grid-cols-2 bg-gray-700">
-              <TabsTrigger value="login" className="data-[state=active]:bg-green-600 data-[state=active]:text-white">Login</TabsTrigger>
-              <TabsTrigger value="signup" className="data-[state=active]:bg-green-600 data-[state=active]:text-white">Sign Up</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-2 glass-card border-white/20">
+              <TabsTrigger 
+                value="login" 
+                className="data-[state=active]:bg-green-600/80 data-[state=active]:text-white text-gray-300 transition-all duration-200"
+              >
+                Login
+              </TabsTrigger>
+              <TabsTrigger 
+                value="signup" 
+                className="data-[state=active]:bg-green-600/80 data-[state=active]:text-white text-gray-300 transition-all duration-200"
+              >
+                Sign Up
+              </TabsTrigger>
             </TabsList>
             
-            <TabsContent value="login">
+            <TabsContent value="login" className="animate-slide-up">
               <form onSubmit={handleLogin} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="phone" className="text-gray-200">Phone Number</Label>
@@ -238,7 +257,7 @@ const Auth = () => {
                     placeholder="Enter your phone number"
                     value={loginData.phone}
                     onChange={(e) => setLoginData(prev => ({ ...prev, phone: e.target.value }))}
-                    className="bg-gray-700 border-gray-600 text-white placeholder:text-gray-400 focus:border-green-500"
+                    className="glass-input text-white placeholder:text-gray-400"
                     disabled={isLoading}
                   />
                 </div>
@@ -251,7 +270,7 @@ const Auth = () => {
                     placeholder="Enter your password"
                     value={loginData.password}
                     onChange={(e) => setLoginData(prev => ({ ...prev, password: e.target.value }))}
-                    className="bg-gray-700 border-gray-600 text-white placeholder:text-gray-400 focus:border-green-500"
+                    className="glass-input text-white placeholder:text-gray-400"
                     disabled={isLoading}
                   />
                 </div>
@@ -259,14 +278,14 @@ const Auth = () => {
                 <Button 
                   type="submit" 
                   disabled={isLoading}
-                  className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 transition-all duration-200"
+                  className="w-full glass-button text-white font-semibold py-3 border-0 shadow-lg"
                 >
                   {isLoading ? 'Logging in...' : 'Login to Govardhini'}
                 </Button>
               </form>
             </TabsContent>
             
-            <TabsContent value="signup">
+            <TabsContent value="signup" className="animate-slide-up">
               <form onSubmit={handleSignup} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="fullName" className="text-gray-200">Full Name</Label>
@@ -276,7 +295,7 @@ const Auth = () => {
                     placeholder="Enter your full name"
                     value={signupData.fullName}
                     onChange={(e) => setSignupData(prev => ({ ...prev, fullName: e.target.value }))}
-                    className="bg-gray-700 border-gray-600 text-white placeholder:text-gray-400 focus:border-green-500"
+                    className="glass-input text-white placeholder:text-gray-400"
                     disabled={isLoading}
                   />
                 </div>
@@ -289,7 +308,7 @@ const Auth = () => {
                     placeholder="Enter your phone number"
                     value={signupData.phoneNumber}
                     onChange={(e) => setSignupData(prev => ({ ...prev, phoneNumber: e.target.value }))}
-                    className="bg-gray-700 border-gray-600 text-white placeholder:text-gray-400 focus:border-green-500"
+                    className="glass-input text-white placeholder:text-gray-400"
                     disabled={isLoading}
                   />
                 </div>
@@ -301,13 +320,13 @@ const Auth = () => {
                     onValueChange={(value) => setSignupData(prev => ({ ...prev, designation: value }))}
                     disabled={isLoading}
                   >
-                    <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
+                    <SelectTrigger className="glass-input text-white border-white/20">
                       <SelectValue placeholder="Choose your designation" />
                     </SelectTrigger>
-                    <SelectContent className="bg-gray-700 border-gray-600">
-                      <SelectItem value="Field Officer">Field Officer</SelectItem>
-                      <SelectItem value="Office Staff">Office Staff</SelectItem>
-                      <SelectItem value="Admin">Admin</SelectItem>
+                    <SelectContent className="glass-card border-white/20 bg-slate-800/90 backdrop-blur-xl">
+                      <SelectItem value="Field Officer" className="text-white hover:bg-white/10">Field Officer</SelectItem>
+                      <SelectItem value="Office Staff" className="text-white hover:bg-white/10">Office Staff</SelectItem>
+                      <SelectItem value="Admin" className="text-white hover:bg-white/10">Admin</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -320,7 +339,7 @@ const Auth = () => {
                     placeholder="Create a password (min 6 characters)"
                     value={signupData.password}
                     onChange={(e) => setSignupData(prev => ({ ...prev, password: e.target.value }))}
-                    className="bg-gray-700 border-gray-600 text-white placeholder:text-gray-400 focus:border-green-500"
+                    className="glass-input text-white placeholder:text-gray-400"
                     disabled={isLoading}
                   />
                 </div>
@@ -333,7 +352,7 @@ const Auth = () => {
                     placeholder="Confirm your password"
                     value={signupData.confirmPassword}
                     onChange={(e) => setSignupData(prev => ({ ...prev, confirmPassword: e.target.value }))}
-                    className="bg-gray-700 border-gray-600 text-white placeholder:text-gray-400 focus:border-green-500"
+                    className="glass-input text-white placeholder:text-gray-400"
                     disabled={isLoading}
                   />
                 </div>
@@ -341,7 +360,7 @@ const Auth = () => {
                 <Button 
                   type="submit" 
                   disabled={isLoading}
-                  className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 transition-all duration-200"
+                  className="w-full glass-button text-white font-semibold py-3 border-0 shadow-lg"
                 >
                   {isLoading ? 'Creating Account...' : 'Create Account'}
                 </Button>

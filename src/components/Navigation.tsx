@@ -3,7 +3,8 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
-import { Bell } from 'lucide-react';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { user as UserIcon } from 'lucide-react';
 
 interface NavigationProps {
   user: {
@@ -29,14 +30,14 @@ const Navigation = ({ user }: NavigationProps) => {
   };
 
   return (
-    <nav className="bg-gray-800 border-b border-gray-700 sticky top-0 z-50">
+    <nav className="glass-card border-b border-white/20 sticky top-0 z-50 backdrop-blur-xl">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center space-x-4">
             <Button
               variant="ghost"
               onClick={() => navigate('/dashboard')}
-              className="flex items-center space-x-2 hover:bg-gray-700 text-white"
+              className="flex items-center space-x-2 hover:bg-white/10 text-white"
             >
               <span className="text-2xl">🐄</span>
               <span className="font-bold text-xl">Govardhini</span>
@@ -46,19 +47,23 @@ const Navigation = ({ user }: NavigationProps) => {
           <div className="flex items-center space-x-4">
             <Button
               variant="ghost"
-              size="sm"
-              className="hover:bg-gray-700 text-white"
+              onClick={() => navigate('/profile')}
+              className="flex items-center space-x-2 hover:bg-white/10 text-white"
             >
-              <Bell className="w-5 h-5" />
+              <Avatar className="w-8 h-8">
+                <AvatarFallback className="bg-gradient-to-br from-green-500 to-emerald-600 text-white text-sm">
+                  {user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <span className="text-sm text-gray-300 hidden md:block">
+                {user.name}
+              </span>
             </Button>
-            <span className="text-sm text-gray-300">
-              {user.name}
-            </span>
             <Button
               variant="outline"
               size="sm"
               onClick={handleLogout}
-              className="border-gray-600 text-gray-300 hover:bg-gray-700 hover:border-red-500 hover:text-red-400"
+              className="border-white/20 text-gray-300 hover:bg-white/10 hover:border-red-500/50 hover:text-red-400 transition-all duration-200"
             >
               Logout
             </Button>
