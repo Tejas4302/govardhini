@@ -49,13 +49,13 @@ const Dashboard = () => {
       // Fetch all stats in parallel
       const [farmersResult, cattleResult, milkResult, healthResult] = await Promise.all([
         supabase.from('farmers').select('id', { count: 'exact' }),
-        supabase.from('cattle').select('id', { count: 'exact' }),
-        supabase.from('milk_production').select('milk_produced').eq('production_date', today),
-        supabase.from('health_checks').select('id', { count: 'exact' }).eq('alert_sent', true)
+        supabase.from('cattle_profiles').select('id', { count: 'exact' }),
+        supabase.from('milk_production').select('quantity_litres').eq('date', today),
+        supabase.from('health_checkups').select('id', { count: 'exact' }).not('issue', 'is', null)
       ]);
 
       // Calculate today's total milk production
-      const todayMilk = milkResult.data?.reduce((sum, record) => sum + (record.milk_produced || 0), 0) || 0;
+      const todayMilk = milkResult.data?.reduce((sum, record) => sum + (record.quantity_litres || 0), 0) || 0;
 
       setStats({
         totalFarmers: farmersResult.count || 0,
