@@ -104,6 +104,7 @@ const Auth = () => {
         phone: data.phone_number,
         role: data.designation.toLowerCase().replace(' ', '_'),
         designation: data.designation,
+        active_role: data.active_role,
         status: data.status,
         email: data.phone_number,
         loginTime: new Date().toISOString()
@@ -113,7 +114,7 @@ const Auth = () => {
       
       toast({
         title: "Welcome to Govardhini!",
-        description: `Logged in successfully as ${data.designation}`,
+        description: `Logged in successfully as ${data.active_role}`,
       });
       
       navigate('/dashboard');
@@ -234,6 +235,7 @@ const Auth = () => {
           phone_number: signupData.phoneNumber,
           password_hash: hashedPassword,
           designation: signupData.designation,
+          active_role: signupData.designation, // Set active_role to match designation initially
           status: 'pending' // Explicitly set to pending
         })
         .select()
