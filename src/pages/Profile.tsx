@@ -61,7 +61,18 @@ const Profile = () => {
     if (file) {
       const reader = new FileReader();
       reader.onload = () => {
-        setProfileImage(reader.result as string);
+        const imageDataUrl = reader.result as string;
+        setProfileImage(imageDataUrl);
+        
+        // Immediately save to localStorage to persist across sessions
+        if (user) {
+          const updatedUser = {
+            ...user,
+            profileImage: imageDataUrl
+          };
+          localStorage.setItem('govardhini_user', JSON.stringify(updatedUser));
+          setUser(updatedUser);
+        }
       };
       reader.readAsDataURL(file);
     }
@@ -206,15 +217,15 @@ const Profile = () => {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-green-900 to-emerald-900">
       <Navigation user={user} />
       
       {/* Animated background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -inset-10 opacity-30">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-green-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
-          <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-blue-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-1000"></div>
-          <div className="absolute bottom-1/4 left-1/3 w-96 h-96 bg-purple-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-2000"></div>
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-emerald-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
+          <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-green-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-1000"></div>
+          <div className="absolute bottom-1/4 left-1/3 w-96 h-96 bg-teal-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-2000"></div>
         </div>
       </div>
 
@@ -228,7 +239,7 @@ const Profile = () => {
               <div className="relative mx-auto w-32 h-32 mb-4">
                 <Avatar className="w-32 h-32 border-4 border-white/20">
                   <AvatarImage src={profileImage} alt="Profile" />
-                  <AvatarFallback className="bg-gradient-to-br from-green-500 to-emerald-600 text-white text-2xl">
+                  <AvatarFallback className="bg-gradient-to-br from-emerald-500 to-green-600 text-white text-2xl">
                     {user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
