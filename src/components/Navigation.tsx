@@ -1,8 +1,9 @@
+
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { User } from 'lucide-react';
 
 interface NavigationProps {
@@ -12,6 +13,7 @@ interface NavigationProps {
     phone?: string;
     role: string;
     name: string;
+    profileImage?: string;
   };
 }
 
@@ -50,6 +52,7 @@ const Navigation = ({ user }: NavigationProps) => {
               className="flex items-center space-x-2 hover:bg-white/10 text-white"
             >
               <Avatar className="w-8 h-8">
+                <AvatarImage src={user.profileImage} alt="Profile" />
                 <AvatarFallback className="bg-gradient-to-br from-green-500 to-emerald-600 text-white text-sm">
                   {user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
                 </AvatarFallback>
