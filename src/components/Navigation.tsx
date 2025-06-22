@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
@@ -18,11 +17,42 @@ interface NavigationProps {
 }
 
 const Navigation = ({ user }: NavigationProps) => {
+  const [currentUser, setCurrentUser] = useState(user);
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  // Listen for changes in localStorage to update profile image
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const updatedUser = JSON.parse(localStorage.getItem('govardhini_user') || '{}');
+      setCurrentUser(updatedUser);
+    };
+
+    // Listen for custom storage events
+    window.addEventListener('storage', handleStorageChange);
+    
+    // Also check periodically for updates (in case of same-tab updates)
+    const interval = setInterval(handleStorageChange, 1000);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      clearInterval(interval);
+    };
+  }, []);
+
   const handleLogout = () => {
+    // Don't clear profile image, keep it for next login
+    const userWithImage = JSON.parse(localStorage.getItem('govardhini_user') || '{}');
+    const profileImage = userWithImage.profileImage;
+    
+    // Clear user data but keep profile image for next login
     localStorage.removeItem('govardhini_user');
+    
+    // Store profile image separately for next login
+    if (profileImage) {
+      localStorage.setItem('govardhini_profile_image', profileImage);
+    }
+    
     toast({
       title: "Logged out successfully",
       description: "Thank you for using Govardhini",
@@ -52,13 +82,13 @@ const Navigation = ({ user }: NavigationProps) => {
               className="flex items-center space-x-2 hover:bg-green-600/20 text-green-50"
             >
               <Avatar className="w-8 h-8">
-                <AvatarImage src={user.profileImage} alt="Profile" />
+                <AvatarImage src={currentUser.profileImage} alt="Profile" />
                 <AvatarFallback className="grass-green text-white text-sm">
-                  {user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                  {currentUser.name.split(' ').map(n => n[0]).join('').toUpperCase()}
                 </AvatarFallback>
               </Avatar>
               <span className="text-sm text-green-200 hidden md:block">
-                {user.name}
+                {currentUser.name}
               </span>
             </Button>
             <Button
