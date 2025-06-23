@@ -1,11 +1,12 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Users } from 'lucide-react';
-import { getProfilePhoto, clearAllProfilePhotos } from '@/utils/profilePhotoStorage';
+import { Users, Bell } from 'lucide-react';
+import { profilePhotoService } from '@/services/profilePhotoService';
+import { adminNotificationService, AdminNotification } from '@/services/adminNotificationService';
 
 interface NavigationProps {
   user: {
@@ -23,17 +24,47 @@ interface NavigationProps {
 const Navigation = ({ user }: NavigationProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [profileImageUrl, setProfileImageUrl] = useState<string>('');
+  const [notifications, setNotifications] = useState<AdminNotification[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
 
-  // Get persistent profile photo with proper fallback
-  const persistentProfilePhoto = user.id ? getProfilePhoto(user.id) : null;
-  const profileImageUrl = persistentProfilePhoto || user.profileImage || '';
+  useEffect(() => {
+    if (user.id) {
+      loadProfilePhoto(user.id);
+    }
+    
+    // Load admin notifications if user is admin
+    if (isAdmin) {
+      loadAdminNotifications();
+    }
+  }, [user.id]);
+
+  const loadProfilePhoto = async (userId: string) => {
+    try {
+      const photoUrl = await profilePhotoService.getProfilePhotoUrl(userId);
+      if (photoUrl) {
+        setProfileImageUrl(photoUrl);
+      } else {
+        setProfileImageUrl(user.profileImage || '');
+      }
+    } catch (error) {
+      console.error('Error loading profile photo:', error);
+      setProfileImageUrl(user.profileImage || '');
+    }
+  };
+
+  const loadAdminNotifications = async () => {
+    try {
+      const adminNotifications = await adminNotificationService.getNotifications();
+      setNotifications(adminNotifications);
+      setUnreadCount(adminNotifications.filter(n => !n.is_read).length);
+    } catch (error) {
+      console.error('Error loading admin notifications:', error);
+    }
+  };
 
   const handleLogout = () => {
-    // Clear user session data
     localStorage.removeItem('govardhini_user');
-    
-    // Clear all profile photos on logout
-    clearAllProfilePhotos();
     
     toast({
       title: "Logged out successfully",
@@ -81,6 +112,24 @@ const Navigation = ({ user }: NavigationProps) => {
                 </span>
               </div>
             </Button>
+            
+            {/* Admin notification bell */}
+            {isAdmin && (
+              <div className="relative">
+                <Button
+                  variant="ghost"
+                  onClick={() => navigate('/user-management')}
+                  className="text-emerald-200 hover:bg-emerald-600/20 hover:text-emerald-100"
+                >
+                  <Bell className="w-4 h-4" />
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </span>
+                  )}
+                </Button>
+              </div>
+            )}
             
             {/* Only show admin features if user is actually an admin */}
             {isAdmin && (

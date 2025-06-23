@@ -9,6 +9,44 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      admin_notifications: {
+        Row: {
+          created_at: string
+          id: string
+          is_read: boolean
+          message: string
+          title: string
+          type: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message: string
+          title: string
+          type: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message?: string
+          title?: string
+          type?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cattle_profiles: {
         Row: {
           added_by: string
@@ -385,6 +423,7 @@ export type Database = {
           id: string
           password_hash: string
           phone_number: string
+          profile_image_url: string | null
           status: string
         }
         Insert: {
@@ -397,6 +436,7 @@ export type Database = {
           id?: string
           password_hash: string
           phone_number: string
+          profile_image_url?: string | null
           status?: string
         }
         Update: {
@@ -409,6 +449,7 @@ export type Database = {
           id?: string
           password_hash?: string
           phone_number?: string
+          profile_image_url?: string | null
           status?: string
         }
         Relationships: []

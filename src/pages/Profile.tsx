@@ -9,7 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import Navigation from '@/components/Navigation';
 import { User as UserIcon, Phone as PhoneIcon, Image as ImageIcon, Edit as EditIcon, Lock as LockIcon, Trash2 as TrashIcon } from 'lucide-react';
-import { getProfilePhoto, saveProfilePhoto, clearProfilePhoto, initializeProfilePhoto } from '@/utils/profilePhotoStorage';
+import { profilePhotoService } from '@/services/profilePhotoService';
 
 interface UserData {
   id: string;
@@ -26,6 +26,7 @@ const Profile = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [profileImage, setProfileImage] = useState<string>('');
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -57,36 +58,64 @@ const Profile = () => {
       phoneNumber: parsedUser.phone || ''
     });
     
-    // Initialize profile photo system for this user
-    initializeProfilePhoto(parsedUser.id);
-    
-    // Load persistent profile photo
-    const persistentPhoto = getProfilePhoto(parsedUser.id);
-    setProfileImage(persistentPhoto || parsedUser.profileImage || '');
+    // Load profile photo from Supabase
+    loadProfilePhoto(parsedUser.id);
   }, [navigate]);
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const imageDataUrl = reader.result as string;
-        setProfileImage(imageDataUrl);
-        
-        // Save to persistent storage and update user object
+  const loadProfilePhoto = async (userId: string) => {
+    try {
+      const photoUrl = await profilePhotoService.getProfilePhotoUrl(userId);
+      if (photoUrl) {
+        setProfileImage(photoUrl);
+        // Update user object with the loaded photo
         if (user) {
-          saveProfilePhoto(imageDataUrl, user.id);
+          const updatedUser = { ...user, profileImage: photoUrl };
+          localStorage.setItem('govardhini_user', JSON.stringify(updatedUser));
+          setUser(updatedUser);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading profile photo:', error);
+    }
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && user) {
+      setIsUploadingPhoto(true);
+      
+      try {
+        const result = await profilePhotoService.uploadProfilePhoto(file, user.id);
+        
+        if (result.success && result.url) {
+          setProfileImage(result.url);
           
-          // Update local user state to reflect the change immediately
-          setUser(prev => prev ? { ...prev, profileImage: imageDataUrl } : null);
+          // Update local user state
+          const updatedUser = { ...user, profileImage: result.url };
+          localStorage.setItem('govardhini_user', JSON.stringify(updatedUser));
+          setUser(updatedUser);
           
           toast({
             title: "Success",
             description: "Profile photo updated successfully"
           });
+        } else {
+          toast({
+            title: "Error",
+            description: result.error || "Failed to upload profile photo",
+            variant: "destructive"
+          });
         }
-      };
-      reader.readAsDataURL(file);
+      } catch (error) {
+        console.error('Error uploading photo:', error);
+        toast({
+          title: "Error",
+          description: "Failed to upload profile photo",
+          variant: "destructive"
+        });
+      } finally {
+        setIsUploadingPhoto(false);
+      }
     }
   };
 
@@ -95,7 +124,6 @@ const Profile = () => {
     
     setIsLoading(true);
     try {
-      // Try to update the users table (which matches the current structure)
       const { error } = await supabase
         .from('users')
         .update({
@@ -107,7 +135,6 @@ const Profile = () => {
       if (error) {
         console.error('Update error:', error);
         
-        // Show appropriate error message based on error type
         if (error.message.includes('Failed to fetch') || error.message.includes('network')) {
           toast({
             title: "Network Error",
@@ -130,12 +157,11 @@ const Profile = () => {
         return;
       }
 
-      // Update localStorage with the new data (including current profile image)
       const updatedUser = {
         ...user,
         name: formData.fullName,
         phone: formData.phoneNumber,
-        profileImage: profileImage // Ensure profile image persists
+        profileImage: profileImage
       };
       localStorage.setItem('govardhini_user', JSON.stringify(updatedUser));
       setUser(updatedUser);
@@ -240,6 +266,9 @@ const Profile = () => {
 
     setIsDeleting(true);
     try {
+      // Delete profile photo first
+      await profilePhotoService.deleteProfilePhoto(user.id);
+      
       // Delete user from the users table
       const { error } = await supabase
         .from('users')
@@ -256,9 +285,7 @@ const Profile = () => {
         return;
       }
 
-      // Clear local storage including profile photo
       localStorage.removeItem('govardhini_user');
-      clearProfilePhoto(user.id);
       
       toast({
         title: "Account Deleted",
@@ -285,7 +312,6 @@ const Profile = () => {
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-green-900 to-emerald-900">
       <Navigation user={user} />
       
-      {/* Animated background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -inset-10 opacity-30">
           <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-emerald-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
@@ -298,7 +324,6 @@ const Profile = () => {
         <div className="max-w-2xl mx-auto space-y-6">
           <h1 className="text-3xl font-bold text-white mb-8 animate-fade-in">Profile Settings</h1>
           
-          {/* Profile Information Card */}
           <Card className="glass-card border-0 text-white animate-slide-up">
             <CardHeader className="text-center pb-6">
               <div className="relative mx-auto w-32 h-32 mb-4">
@@ -312,6 +337,7 @@ const Profile = () => {
                   size="sm"
                   className="absolute bottom-0 right-0 glass-button border-0 p-2 h-10 w-10"
                   onClick={() => document.getElementById('image-upload')?.click()}
+                  disabled={isUploadingPhoto}
                 >
                   <ImageIcon className="w-4 h-4" />
                 </Button>
@@ -325,6 +351,9 @@ const Profile = () => {
               </div>
               <CardTitle className="text-2xl font-bold text-white">{user.name}</CardTitle>
               <p className="text-gray-300">{user.role.replace('_', ' ').toUpperCase()}</p>
+              {isUploadingPhoto && (
+                <p className="text-sm text-gray-400">Uploading photo...</p>
+              )}
             </CardHeader>
             
             <CardContent className="space-y-6">
@@ -397,9 +426,6 @@ const Profile = () => {
                           fullName: user.name,
                           phoneNumber: user.phone || ''
                         });
-                        // Reset profile image to persistent storage value
-                        const persistentPhoto = getProfilePhoto(user.id);
-                        setProfileImage(persistentPhoto || user.profileImage || '');
                       }}
                       disabled={isLoading}
                       className="glass-card border-white/20 text-white hover:bg-white/10"
@@ -420,7 +446,6 @@ const Profile = () => {
             </CardContent>
           </Card>
 
-          {/* Password Change Card */}
           <Card className="glass-card border-0 text-white animate-slide-up">
             <CardHeader>
               <CardTitle className="text-xl font-bold text-white flex items-center gap-2">
@@ -502,7 +527,6 @@ const Profile = () => {
             </CardContent>
           </Card>
 
-          {/* Account Deletion Card */}
           <Card className="glass-card border-0 text-white animate-slide-up border-red-500/20">
             <CardHeader>
               <CardTitle className="text-xl font-bold text-red-400 flex items-center gap-2">
