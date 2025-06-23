@@ -30,7 +30,11 @@ export const adminNotificationService: AdminNotificationService = {
         return [];
       }
 
-      return data || [];
+      // Type cast the data to match our interface
+      return (data || []).map(item => ({
+        ...item,
+        type: item.type as 'new_signup' | 'user_action' | 'system'
+      }));
     } catch (error) {
       console.error('Unexpected error fetching notifications:', error);
       return [];

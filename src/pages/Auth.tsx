@@ -113,9 +113,6 @@ const Auth = () => {
       
       localStorage.setItem('govardhini_user', JSON.stringify(userData));
       
-      // Initialize profile photo system for the logged-in user
-      initializeProfilePhoto(data.id);
-      
       toast({
         title: "Welcome to Govardhini!",
         description: `Logged in successfully as ${data.active_role}`,
