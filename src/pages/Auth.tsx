@@ -140,7 +140,7 @@ const Auth = () => {
           </div>
           <CardTitle className="text-3xl font-bold text-white">Govardhini</CardTitle>
           <CardDescription className="text-emerald-300 text-lg">
-            PREMIUM CATTLE FEED
+            GAU SUPOSHANA
           </CardDescription>
         </CardHeader>
         <CardContent>
