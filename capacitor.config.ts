@@ -3,7 +3,7 @@ import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'app.lovable.0a455a4d7cec4f6bad46cf6b4c6126fe',
-  appName: 'govardhini-dairy-connect',
+  appName: 'govardhini',
   webDir: 'dist',
   server: {
     url: 'https://0a455a4d-7cec-4f6b-ad46-cf6b4c6126fe.lovableproject.com?forceHideBadge=true',
