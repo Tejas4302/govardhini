@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Eye, EyeOff } from 'lucide-react';
@@ -112,7 +112,7 @@ const CreateUserForm = ({ isOpen, onClose, onUserCreated }: CreateUserFormProps)
         description: `User account created successfully for ${formData.fullName}`,
       });
 
-      // Reset form and close dialog
+      // Reset form and close sheet
       setFormData({
         fullName: '',
         phoneNumber: '',
@@ -144,16 +144,16 @@ const CreateUserForm = ({ isOpen, onClose, onUserCreated }: CreateUserFormProps)
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="glass-card border-emerald-500/20 bg-gradient-to-br from-emerald-500/5 to-green-500/5 text-white max-w-md">
-        <DialogHeader>
-          <DialogTitle className="text-xl font-bold text-white">Create New User Account</DialogTitle>
-          <DialogDescription className="text-emerald-300">
+    <Sheet open={isOpen} onOpenChange={onClose}>
+      <SheetContent className="glass-card border-emerald-500/20 bg-gradient-to-br from-emerald-500/5 to-green-500/5 text-white w-[400px] sm:w-[540px]">
+        <SheetHeader>
+          <SheetTitle className="text-xl font-bold text-white">Create New User Account</SheetTitle>
+          <SheetDescription className="text-emerald-300">
             Create a new user account with login credentials
-          </DialogDescription>
-        </DialogHeader>
+          </SheetDescription>
+        </SheetHeader>
         
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 mt-6">
           <div className="space-y-2">
             <Label htmlFor="fullName" className="text-emerald-200">Full Name</Label>
             <Input
@@ -261,8 +261,8 @@ const CreateUserForm = ({ isOpen, onClose, onUserCreated }: CreateUserFormProps)
             </Button>
           </div>
         </form>
-      </DialogContent>
-    </Dialog>
+      </SheetContent>
+    </Sheet>
   );
 };
 
