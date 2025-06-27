@@ -86,7 +86,11 @@ const Navigation = ({ user }: NavigationProps) => {
               onClick={() => navigate('/dashboard')}
               className="flex items-center space-x-2 hover:bg-green-600/20 text-green-50"
             >
-              <span className="text-2xl">🐄</span>
+              <img 
+                src="/lovable-uploads/90826b5b-bdf3-4b8c-be34-883255175d64.png" 
+                alt="Govardhini Logo"
+                className="w-8 h-6 object-contain"
+              />
               <span className="font-bold text-xl">Govardhini</span>
             </Button>
           </div>
