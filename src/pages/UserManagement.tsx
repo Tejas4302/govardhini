@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,7 +5,8 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import Navigation from '@/components/Navigation';
 import AdminGuard from '@/components/AdminGuard';
-import { Users, ArrowLeft } from 'lucide-react';
+import CreateUserForm from '@/components/UserManagement/CreateUserForm';
+import { Users, ArrowLeft, UserPlus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import {
   Table,
@@ -26,6 +26,7 @@ const UserManagement = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [processingUserId, setProcessingUserId] = useState<string | null>(null);
   const [roleChangeData, setRoleChangeData] = useState<RoleChangeData | null>(null);
+  const [showCreateUserForm, setShowCreateUserForm] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
   
@@ -232,16 +233,26 @@ const UserManagement = () => {
         <div className="relative z-10 container mx-auto px-4 py-8">
           <div className="max-w-6xl mx-auto">
             {/* Back Button and Header */}
-            <div className="flex items-center mb-8">
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center">
+                <Button
+                  variant="ghost"
+                  onClick={() => navigate('/dashboard')}
+                  className="mr-4 text-emerald-300 hover:text-emerald-100 hover:bg-emerald-500/20"
+                >
+                  <ArrowLeft className="w-5 h-5 mr-2" />
+                  Back to Dashboard
+                </Button>
+                <h1 className="text-4xl font-bold text-white animate-fade-in">User Management</h1>
+              </div>
+              
               <Button
-                variant="ghost"
-                onClick={() => navigate('/dashboard')}
-                className="mr-4 text-emerald-300 hover:text-emerald-100 hover:bg-emerald-500/20"
+                onClick={() => setShowCreateUserForm(true)}
+                className="grass-green hover:bg-emerald-700 text-white font-semibold"
               >
-                <ArrowLeft className="w-5 h-5 mr-2" />
-                Back to Dashboard
+                <UserPlus className="w-5 h-5 mr-2" />
+                Create New User
               </Button>
-              <h1 className="text-4xl font-bold text-white animate-fade-in">User Management</h1>
             </div>
             
             <Card className="glass-card border-emerald-500/20 bg-gradient-to-br from-emerald-500/5 to-green-500/5 animate-fade-in">
@@ -251,7 +262,7 @@ const UserManagement = () => {
                   Manage Users
                 </CardTitle>
                 <CardDescription className="text-emerald-300">
-                  Approve, reject, delete user registrations, or change user roles. Only approved users can access the system.
+                  Create new users, approve registrations, delete user accounts, or change user roles. Only approved users can access the system.
                 </CardDescription>
               </CardHeader>
               
@@ -274,7 +285,7 @@ const UserManagement = () => {
                           <TableHead className="text-emerald-200 font-semibold">Phone</TableHead>
                           <TableHead className="text-emerald-200 font-semibold">Role</TableHead>
                           <TableHead className="text-emerald-200 font-semibold">Status</TableHead>
-                          <TableHead className="text-emerald-200 font-semibold">Registered</TableHead>
+                          <TableHead className="text-emerald-200 font-semibold">Created</TableHead>
                           <TableHead className="text-emerald-200 font-semibold">Actions</TableHead>
                         </TableRow>
                       </TableHeader>
@@ -317,6 +328,12 @@ const UserManagement = () => {
             </Card>
           </div>
         </div>
+
+        <CreateUserForm
+          isOpen={showCreateUserForm}
+          onClose={() => setShowCreateUserForm(false)}
+          onUserCreated={fetchUsers}
+        />
       </div>
     </AdminGuard>
   );
