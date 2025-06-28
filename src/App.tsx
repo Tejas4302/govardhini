@@ -53,16 +53,17 @@ const App: React.FC = () => {
       <TooltipProvider>
         {/* Root: full-screen flex column, no horizontal scroll */}
         <div className="flex flex-col h-screen w-screen overflow-x-hidden">
-          {/* Toasters stay fixed above content */}
+          {/* Toasters stay fixed above scrolling content */}
           <Toaster />
           <Sonner />
 
-          {/* Main content: grows and scrolls vertically */}
+          {/* Main content: takes remaining height and scrolls vertically */}
           <main className="flex-1 w-screen overflow-y-auto">
             <BrowserRouter>
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/auth" element={<Auth />} />
+
                 <Route
                   path="/dashboard"
                   element={
