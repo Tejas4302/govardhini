@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import SplashScreen from "./components/SplashScreen";
+import ProtectedRoute from "./components/ProtectedRoute";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
@@ -60,20 +61,20 @@ const App: React.FC = () => {
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/farmer-onboarding" element={<FarmerOnboarding />} />
-              <Route path="/cattle-onboarding" element={<CattleOnboarding />} />
-              <Route path="/health-check" element={<HealthCheck />} />
-              <Route path="/milk-logging" element={<MilkLogging />} />
-              <Route path="/feed-requests" element={<FeedRequests />} />
-              <Route path="/analytics" element={<Analytics />} />
-              <Route path="/farmers" element={<FarmersList />} />
-              <Route path="/farmer/:farmerId" element={<FarmerProfile />} />
-              <Route path="/user-management" element={<UserManagement />} />
-              <Route path="/recent-activities" element={<RecentActivities />} />
-              <Route path="/search-farmers" element={<SearchFarmers />} />
-              <Route path="/system-reports" element={<SystemReports />} />
-              <Route path="/profile" element={<Profile />} />
+              <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+              <Route path="/farmer-onboarding" element={<ProtectedRoute><FarmerOnboarding /></ProtectedRoute>} />
+              <Route path="/cattle-onboarding" element={<ProtectedRoute><CattleOnboarding /></ProtectedRoute>} />
+              <Route path="/health-check" element={<ProtectedRoute><HealthCheck /></ProtectedRoute>} />
+              <Route path="/milk-logging" element={<ProtectedRoute><MilkLogging /></ProtectedRoute>} />
+              <Route path="/feed-requests" element={<ProtectedRoute><FeedRequests /></ProtectedRoute>} />
+              <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
+              <Route path="/farmers" element={<ProtectedRoute><FarmersList /></ProtectedRoute>} />
+              <Route path="/farmer/:farmerId" element={<ProtectedRoute><FarmerProfile /></ProtectedRoute>} />
+              <Route path="/user-management" element={<ProtectedRoute><UserManagement /></ProtectedRoute>} />
+              <Route path="/recent-activities" element={<ProtectedRoute><RecentActivities /></ProtectedRoute>} />
+              <Route path="/search-farmers" element={<ProtectedRoute><SearchFarmers /></ProtectedRoute>} />
+              <Route path="/system-reports" element={<ProtectedRoute><SystemReports /></ProtectedRoute>} />
+              <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
               <Route path="*" element={<NotFound />} />
             </Routes>
             <OfflineSync />
