@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -222,15 +221,18 @@ const FarmerOnboarding = () => {
       
       <div className="relative z-10 container mx-auto px-4 py-8">
         <div className="max-w-2xl mx-auto">
-          {/* Back Button */}
-          <Button
-            onClick={() => navigate(-1)}
-            variant="outline"
-            className="mb-4 glass-input text-white border-emerald-500/30 hover:bg-emerald-500/20"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
-          </Button>
+          {/* Updated Back Button to match SearchFarmers page */}
+          <div className="flex items-center mb-8">
+            <Button
+              variant="ghost"
+              onClick={() => navigate('/dashboard')}
+              className="mr-4 text-emerald-300 hover:text-emerald-100 hover:bg-emerald-500/20"
+            >
+              <ArrowLeft className="w-5 h-5 mr-2" />
+              Back to Dashboard
+            </Button>
+            <h1 className="text-4xl font-bold text-white animate-fade-in">Farmer Registration</h1>
+          </div>
 
           <Card className="glass-card border-emerald-500/20 bg-gradient-to-br from-emerald-500/5 to-green-500/5 animate-fade-in">
             <CardHeader className="text-center">
