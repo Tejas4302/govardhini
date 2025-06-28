@@ -42,7 +42,7 @@ const App: React.FC = () => {
     // Reduced splash screen duration for better UX
     const timer = setTimeout(() => {
       setIsLoading(false);
-    }, 800);
+    }, 200);
 
     return () => clearTimeout(timer);
   }, []);
