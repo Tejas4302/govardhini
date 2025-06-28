@@ -29,18 +29,18 @@
     <meta name="twitter:image" content="/lovable-uploads/1d0a967e-dcec-4094-8df3-740a1553df4e.png" />
     
     <!-- Capacitor will inject native bridge here -->
-    <style>
-  /* 1. Base reset & full-height */
-  html, body {
+   <style>
+  /* 1. Full‐viewport sizing */
+  html, body, #root {
     margin: 0;
     padding: 0;
-    height: 100%;
-    width: 100%;
-    overflow-x: hidden;     /* no sideways scroll */
-    overflow-y: auto;       /* allow vertical scroll */
+    width: 100vw;
+    height: 100vh;
+    overflow-x: hidden;   /* no side scroll */
+    overflow-y: auto;     /* vertical scroll when needed */
   }
 
-  /* 2. Safe-area insets (for notches) */
+  /* 2. Safe‐area insets for notches */
   body {
     padding-top: env(safe-area-inset-top);
     padding-bottom: env(safe-area-inset-bottom);
@@ -49,26 +49,12 @@
     box-sizing: border-box;
   }
 
-  /* 3. Make your React root a flex container */
-  #root {
-    display: flex;
-    flex-direction: column;
-    min-height: 100%;
-    width: 100%;
-  }
-
-  /* 4. Ensure your top-level app container (inside React) can scroll */
-  /*    e.g. if your App component uses a .app-container class: */
-  .app-container {
-    flex: 1;                /* take all remaining vertical space */
-    overflow-y: auto;       /* scroll if content is taller */
-  }
-
-  /* 5. Prevent font-size zoom on iOS */
+  /* 3. Prevent font zoom on iOS */
   input, select, textarea {
     font-size: 16px !important;
   }
 </style>
+
 
   </head>
 
