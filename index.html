@@ -70,36 +70,33 @@
         margin: 0;
       }
 
-      /* Ensure your app can scroll horizontally if needed */
+      /* Allow horizontal scrolling when content overflows */
       html,
       body,
       #root {
-        width: 100%;
-        max-width: 100vw;
-        /* allow scrolling instead of hiding overflow */
         overflow-x: auto;
+        /* Remove any rigid max-width so the scrollbar can appear */
+        max-width: none;
       }
 
       /* =========================================================================
-   Wrap any wide element (e.g. tables) in this to get a touch-friendly
-   horizontal scrollbar on mobile:
-     <div class="table-container">…your <table>…</div>
-============================================================================ */
-.table-container {
-  width: 100%;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
-/* (optional) style the scrollbar track/thumb */
-.table-container::-webkit-scrollbar {
-  height: 6px;
-}
-.table-container::-webkit-scrollbar-thumb {
-  background-color: rgba(255,255,255,0.3);
-  border-radius: 3px;
-}
-
+         Wrap any wide element (e.g. tables) in this to get a touch-friendly
+         horizontal scrollbar on mobile:
+         <div class="table-container">…your <table>…</div>
+      ========================================================================= */
+      .table-container {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+      /* Optional: style the scrollbar track/thumb */
+      .table-container::-webkit-scrollbar {
+        height: 6px;
+      }
+      .table-container::-webkit-scrollbar-thumb {
+        background-color: rgba(255, 255, 255, 0.3);
+        border-radius: 3px;
+      }
     </style>
   </head>
 
