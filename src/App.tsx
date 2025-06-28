@@ -1,65 +1,16 @@
-
 import React, { useState, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import SplashScreen from "./components/SplashScreen";
-import ProtectedRoute from "./components/ProtectedRoute";
-import Auth from "./pages/Auth";
-import Dashboard from "./pages/Dashboard";
-import Profile from "./pages/Profile";
-import FarmerOnboarding from "./pages/FarmerOnboarding";
-import CattleOnboarding from "./pages/CattleOnboarding";
-import HealthCheck from "./pages/HealthCheck";
-import MilkLogging from "./pages/MilkLogging";
-import FeedRequests from "./pages/FeedRequests";
-import Analytics from "./pages/Analytics";
-import NotFound from "./pages/NotFound";
-import OfflineSync from "./components/OfflineSync";
-import Index from "./pages/Index";
-import FarmersList from "./pages/FarmersList";
-import FarmerProfile from "./pages/FarmerProfile";
-import UserManagement from "./pages/UserManagement";
-import RecentActivities from "./pages/RecentActivities";
-import SearchFarmers from "./pages/SearchFarmers";
-import SystemReports from "./pages/SystemReports";
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 1,
-      refetchOnWindowFocus: false,
-    },
-  },
-});
-
-const App: React.FC = () => {
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    // Reduced splash screen duration for better UX
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 800);
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  if (isLoading) {
-    return <SplashScreen />;
-  }
-
-  import React, { useState, useEffect } from "react";
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+
 import SplashScreen from "./components/SplashScreen";
 import ProtectedRoute from "./components/ProtectedRoute";
+import OfflineSync from "./components/OfflineSync";
+
 import Auth from "./pages/Auth";
+import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
 import FarmerOnboarding from "./pages/FarmerOnboarding";
@@ -68,15 +19,13 @@ import HealthCheck from "./pages/HealthCheck";
 import MilkLogging from "./pages/MilkLogging";
 import FeedRequests from "./pages/FeedRequests";
 import Analytics from "./pages/Analytics";
-import NotFound from "./pages/NotFound";
-import OfflineSync from "./components/OfflineSync";
-import Index from "./pages/Index";
 import FarmersList from "./pages/FarmersList";
 import FarmerProfile from "./pages/FarmerProfile";
 import UserManagement from "./pages/UserManagement";
 import RecentActivities from "./pages/RecentActivities";
 import SearchFarmers from "./pages/SearchFarmers";
 import SystemReports from "./pages/SystemReports";
+import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -91,9 +40,7 @@ const App: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 800);
+    const timer = setTimeout(() => setIsLoading(false), 800);
     return () => clearTimeout(timer);
   }, []);
 
@@ -104,13 +51,9 @@ const App: React.FC = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        {/* Root container: full-screen flex, no horizontal scroll */}
         <div className="flex flex-col min-h-screen w-full overflow-x-hidden">
-          {/* Toasters outside scrollable area */}
           <Toaster />
           <Sonner />
-
-          {/* Main content: grows to fill space, vertical scroll if needed */}
           <main className="flex-1 overflow-y-auto">
             <BrowserRouter>
               <Routes>
