@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -190,14 +189,14 @@ const CattleOnboarding = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-green-900 to-emerald-900">
       <Navigation user={user} />
       
       {/* Animated background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -inset-10 opacity-20">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-amber-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
-          <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-orange-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-1000"></div>
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-emerald-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
+          <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-green-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-1000"></div>
         </div>
       </div>
       
@@ -205,7 +204,7 @@ const CattleOnboarding = () => {
         <div className="max-w-2xl mx-auto">
           <Card className="glass-card border-0 animate-fade-in">
             <CardHeader className="text-center">
-              <div className="mx-auto w-16 h-16 bg-gradient-to-br from-amber-500 to-orange-600 rounded-full flex items-center justify-center mb-4 shadow-lg">
+              <div className="mx-auto w-16 h-16 bg-gradient-to-br from-emerald-500 to-green-600 rounded-full flex items-center justify-center mb-4 shadow-lg">
                 <span className="text-white text-3xl">🐄</span>
               </div>
               <CardTitle className="text-2xl font-bold text-white">Cattle Registration</CardTitle>
@@ -354,10 +353,10 @@ const CattleOnboarding = () => {
                     type="button"
                     variant="outline"
                     className="flex-1 glass-input text-white border-white/20 hover:bg-white/20"
-                    onClick={() => formData.farmerId ? navigate(`/farmer/${formData.farmerId}`) : navigate('/dashboard')}
+                    onClick={() => navigate('/dashboard')}
                     disabled={isLoading}
                   >
-                    Cancel
+                    Back to Dashboard
                   </Button>
                   <Button
                     type="submit"

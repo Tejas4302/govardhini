@@ -174,14 +174,14 @@ const MilkLogging = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-green-900 to-emerald-900">
       <Navigation user={user} />
       
       {/* Animated background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -inset-10 opacity-20">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
-          <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-cyan-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-1000"></div>
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-emerald-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
+          <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-green-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-1000"></div>
         </div>
       </div>
       
@@ -189,7 +189,7 @@ const MilkLogging = () => {
         <div className="max-w-2xl mx-auto">
           <Card className="glass-card border-0 animate-fade-in">
             <CardHeader className="text-center">
-              <div className="mx-auto w-16 h-16 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-full flex items-center justify-center mb-4 shadow-lg">
+              <div className="mx-auto w-16 h-16 bg-gradient-to-br from-emerald-500 to-green-600 rounded-full flex items-center justify-center mb-4 shadow-lg">
                 <span className="text-white text-3xl">🥛</span>
               </div>
               <CardTitle className="text-2xl font-bold text-white">Milk Production Logging</CardTitle>
@@ -313,7 +313,7 @@ const MilkLogging = () => {
                     onClick={() => navigate('/dashboard')}
                     disabled={isLoading}
                   >
-                    Cancel
+                    Back to Dashboard
                   </Button>
                   <Button
                     type="submit"
