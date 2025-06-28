@@ -15,7 +15,7 @@ const SplashScreen = () => {
             />
           </div>
           <h1 className="text-4xl font-bold text-white mb-2">GOVARDHINI</h1>
-          <h2 className="text-2xl font-semibold text-emerald-300">GAU SUPOSHANA</h2>
+          <h2 className="text-2xl font-semibold text-emerald-300">PREMIUM CATTLE FEED</h2>
         </div>
         <Loader2 className="w-8 h-8 animate-spin text-emerald-400 mx-auto" />
         <p className="text-emerald-200 mt-4 text-sm">Loading your dairy management system...</p>
