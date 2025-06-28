@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -37,10 +38,10 @@ const App: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate app initialization
+    // Reduced splash screen duration for better UX
     const timer = setTimeout(() => {
       setIsLoading(false);
-    }, 2000);
+    }, 800);
 
     return () => clearTimeout(timer);
   }, []);
@@ -52,30 +53,32 @@ const App: React.FC = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/farmer-onboarding" element={<FarmerOnboarding />} />
-            <Route path="/cattle-onboarding" element={<CattleOnboarding />} />
-            <Route path="/health-check" element={<HealthCheck />} />
-            <Route path="/milk-logging" element={<MilkLogging />} />
-            <Route path="/feed-requests" element={<FeedRequests />} />
-            <Route path="/analytics" element={<Analytics />} />
-            <Route path="/farmers" element={<FarmersList />} />
-            <Route path="/farmer/:farmerId" element={<FarmerProfile />} />
-            <Route path="/user-management" element={<UserManagement />} />
-            <Route path="/recent-activities" element={<RecentActivities />} />
-            <Route path="/search-farmers" element={<SearchFarmers />} />
-            <Route path="/system-reports" element={<SystemReports />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-          <OfflineSync />
-        </BrowserRouter>
+        <div className="w-full max-w-full overflow-x-hidden">
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/farmer-onboarding" element={<FarmerOnboarding />} />
+              <Route path="/cattle-onboarding" element={<CattleOnboarding />} />
+              <Route path="/health-check" element={<HealthCheck />} />
+              <Route path="/milk-logging" element={<MilkLogging />} />
+              <Route path="/feed-requests" element={<FeedRequests />} />
+              <Route path="/analytics" element={<Analytics />} />
+              <Route path="/farmers" element={<FarmersList />} />
+              <Route path="/farmer/:farmerId" element={<FarmerProfile />} />
+              <Route path="/user-management" element={<UserManagement />} />
+              <Route path="/recent-activities" element={<RecentActivities />} />
+              <Route path="/search-farmers" element={<SearchFarmers />} />
+              <Route path="/system-reports" element={<SystemReports />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+            <OfflineSync />
+          </BrowserRouter>
+        </div>
       </TooltipProvider>
     </QueryClientProvider>
   );

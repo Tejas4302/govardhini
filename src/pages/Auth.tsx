@@ -119,7 +119,7 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-green-900 to-teal-900 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-green-900 to-teal-900 flex items-center justify-center p-4 w-full max-w-full overflow-x-hidden">
       {/* Enhanced animated background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -inset-10 opacity-30">
@@ -129,21 +129,21 @@ const Auth = () => {
         </div>
       </div>
 
-      <Card className="w-full max-w-md glass-card border-emerald-500/20 bg-gradient-to-br from-emerald-500/5 to-green-500/5 text-white relative z-10 animate-fade-in">
+      <Card className="w-full max-w-md glass-card border-emerald-500/20 bg-gradient-to-br from-emerald-500/5 to-green-500/5 text-white relative z-10 animate-fade-in mx-auto">
         <CardHeader className="text-center pb-6">
           <div className="mx-auto w-32 h-20 mb-4 flex items-center justify-center">
             <img 
-              src="/lovable-uploads/90826b5b-bdf3-4b8c-be34-883255175d64.png" 
+              src="/lovable-uploads/1d0a967e-dcec-4094-8df3-740a1553df4e.png" 
               alt="Govardhini Logo"
               className="w-full h-full object-contain"
             />
           </div>
           <CardTitle className="text-3xl font-bold text-white">Govardhini</CardTitle>
           <CardDescription className="text-emerald-300 text-lg">
-            PREMIUM CATTLE FEED
+            GAU SUPOSHANA
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-6">
           <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="phone" className="text-emerald-200">Phone Number</Label>
@@ -153,7 +153,7 @@ const Auth = () => {
                 placeholder="Enter your phone number"
                 value={loginData.phone}
                 onChange={(e) => setLoginData(prev => ({ ...prev, phone: e.target.value }))}
-                className="glass-input border-emerald-500/30 text-white placeholder:text-emerald-300"
+                className="glass-input border-emerald-500/30 text-white placeholder:text-emerald-300 w-full"
                 disabled={isLoading}
                 maxLength={10}
               />
@@ -168,7 +168,7 @@ const Auth = () => {
                   placeholder="Enter your password"
                   value={loginData.password}
                   onChange={(e) => setLoginData(prev => ({ ...prev, password: e.target.value }))}
-                  className="glass-input border-emerald-500/30 text-white placeholder:text-emerald-300 pr-12"
+                  className="glass-input border-emerald-500/30 text-white placeholder:text-emerald-300 pr-12 w-full"
                   disabled={isLoading}
                 />
                 <Button

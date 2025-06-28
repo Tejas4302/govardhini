@@ -1,6 +1,6 @@
 
 {
-  "name": "GOVARDHINI PREMIUM CATTLE FEED",
+  "name": "Govardhini",
   "short_name": "Govardhini",
   "description": "Premium Cattle Feed Management System for Govardhini",
   "start_url": "/",
@@ -9,6 +9,12 @@
   "theme_color": "#10b981",
   "orientation": "portrait",
   "icons": [
+    {
+      "src": "/lovable-uploads/1d0a967e-dcec-4094-8df3-740a1553df4e.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
     {
       "src": "/favicon.ico",
       "sizes": "64x64 32x32 24x24 16x16",
