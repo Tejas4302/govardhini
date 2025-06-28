@@ -83,7 +83,12 @@
       /* =========================================================================
    Wrap any wide element (e.g. tables) in this to get a touch-friendly
    horizontal scrollbar on mobile:
-     <div class="table-container">…your <table>…</div>
+    <div className="table-container">
+  <table className="min-w-[600px]">
+    {/* … your headers & rows … */}
+  </table>
+</div>
+
 ============================================================================ */
 .table-container {
   width: 100%;
