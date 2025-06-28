@@ -2,41 +2,32 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <!-- Use device‐height so 100vh always matches the screen -->
     <meta
       name="viewport"
-      content="width=device-width, height=device-height, initial-scale=1, viewport-fit=cover, user-scalable=no"
+      content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no"
     />
     <title>Govardhini</title>
-    <!-- … your other meta & icons … -->
+    <!-- (your other meta tags & PWA icons here) -->
 
     <style>
-      /* 1. Make html/body exactly fill the screen */
-      html, body {
+      /* 1. Make html/body/root fill exactly the viewport */
+      html,
+      body,
+      #root {
         margin: 0;
         padding: 0;
         width: 100%;
         height: 100%;
-        overflow: hidden; /* don’t let the browser add scrollbars itself */
+        overflow-x: hidden; /* no sideways scroll */
       }
 
-      /* 2. Root must fill the screen */
+      /* 2. Enable vertical scroll when needed */
+      body,
       #root {
-        position: fixed;
-        inset: 0; /* top:0; right:0; bottom:0; left:0 */
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
+        overflow-y: auto;
       }
 
-      /* 3. Only the inner content scrolls vertically */
-      #root > div {
-        flex: 1;               /* fill all vertical space */
-        overflow-y: auto;      /* scroll if needed */
-        overflow-x: hidden;    /* never sideways */
-      }
-
-      /* 4. Safe‐area insets for notches */
+      /* 3. Safe-area insets for notches */
       body {
         padding-top: env(safe-area-inset-top);
         padding-bottom: env(safe-area-inset-bottom);
@@ -45,19 +36,23 @@
         box-sizing: border-box;
       }
 
-      /* 5. Prevent iOS font zoom on inputs */
-      input, select, textarea {
+      /* 4. Prevent iOS font zoom in inputs */
+      input,
+      select,
+      textarea {
         font-size: 16px !important;
       }
 
-      /* 6. Force Tailwind containers full width if any remain */
+      /* 5. Force Tailwind container classes full-width */
       .container {
-        width: 100% !important;
         max-width: 100% !important;
-        margin: 0 !important;
+        width: 100% !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
       }
     </style>
   </head>
+
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>

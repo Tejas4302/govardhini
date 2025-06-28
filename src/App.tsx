@@ -51,17 +51,17 @@ const App: React.FC = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        {/* The div here becomes #root > div and will scroll */}
-        <div className="flex flex-col overflow-x-hidden">
+        {/* Root: full-height flex column, no horizontal overflow */}
+        <div className="flex flex-col h-full w-full overflow-x-hidden">
           <Toaster />
           <Sonner />
 
-          <main className="flex-1 overflow-y-auto">
+          {/* Main: grows to fill height, scrolls vertically if needed */}
+          <main className="flex-1 w-full overflow-y-auto">
             <BrowserRouter>
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/auth" element={<Auth />} />
-
                 <Route
                   path="/dashboard"
                   element={
@@ -70,9 +70,102 @@ const App: React.FC = () => {
                     </ProtectedRoute>
                   }
                 />
-
-                {/* … all your other routes … */}
-
+                <Route
+                  path="/farmer-onboarding"
+                  element={
+                    <ProtectedRoute>
+                      <FarmerOnboarding />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/cattle-onboarding"
+                  element={
+                    <ProtectedRoute>
+                      <CattleOnboarding />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/health-check"
+                  element={
+                    <ProtectedRoute>
+                      <HealthCheck />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/milk-logging"
+                  element={
+                    <ProtectedRoute>
+                      <MilkLogging />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/feed-requests"
+                  element={
+                    <ProtectedRoute>
+                      <FeedRequests />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/analytics"
+                  element={
+                    <ProtectedRoute>
+                      <Analytics />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/farmers"
+                  element={
+                    <ProtectedRoute>
+                      <FarmersList />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/farmer/:farmerId"
+                  element={
+                    <ProtectedRoute>
+                      <FarmerProfile />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/user-management"
+                  element={
+                    <ProtectedRoute>
+                      <UserManagement />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/recent-activities"
+                  element={
+                    <ProtectedRoute>
+                      <RecentActivities />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/search-farmers"
+                  element={
+                    <ProtectedRoute>
+                      <SearchFarmers />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/system-reports"
+                  element={
+                    <ProtectedRoute>
+                      <SystemReports />
+                    </ProtectedRoute>
+                  }
+                />
                 <Route
                   path="/profile"
                   element={
@@ -81,7 +174,6 @@ const App: React.FC = () => {
                     </ProtectedRoute>
                   }
                 />
-
                 <Route path="*" element={<NotFound />} />
               </Routes>
               <OfflineSync />
