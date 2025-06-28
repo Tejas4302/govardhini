@@ -30,34 +30,35 @@
     
     <!-- Capacitor will inject native bridge here -->
    <style>
-  /* 1. Full‐viewport sizing */
-  html, body, #root {
-    margin: 0;
-    padding: 0;
-    width: 100vw;
-    height: 100vh;
-    overflow-x: hidden;   /* no side scroll */
-    overflow-y: auto;     /* vertical scroll when needed */
-  }
+      /* 1. Make html, body, and root fill the viewport */
+      html,
+      body,
+      #root {
+        margin: 0;
+        padding: 0;
+        width: 100vw;
+        height: 100vh;
+        overflow-x: hidden;
+        overflow-y: auto;
+      }
 
-  /* 2. Safe‐area insets for notches */
-  body {
-    padding-top: env(safe-area-inset-top);
-    padding-bottom: env(safe-area-inset-bottom);
-    padding-left: env(safe-area-inset-left);
-    padding-right: env(safe-area-inset-right);
-    box-sizing: border-box;
-  }
+      /* 2. Respect notches on iOS (safe-area insets) */
+      body {
+        padding-top: env(safe-area-inset-top);
+        padding-bottom: env(safe-area-inset-bottom);
+        padding-left: env(safe-area-inset-left);
+        padding-right: env(safe-area-inset-right);
+        box-sizing: border-box;
+      }
 
-  /* 3. Prevent font zoom on iOS */
-  input, select, textarea {
-    font-size: 16px !important;
-  }
-</style>
-
-
+      /* 3. Prevent iOS text zoom on form fields */
+      input,
+      select,
+      textarea {
+        font-size: 16px !important;
+      }
+    </style>
   </head>
-
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
