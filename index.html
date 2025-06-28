@@ -81,15 +81,25 @@
       }
 
       /* =========================================================================
-         Wrap any wide element (e.g. tables) in this to get a touch-friendly
-         horizontal scrollbar on mobile:
-         <div class="table-container">…your <table>…</div>
-      ========================================================================= */
-      .table-container {
-        width: 100%;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-      }
+   Wrap any wide element (e.g. tables) in this to get a touch-friendly
+   horizontal scrollbar on mobile:
+     <div class="table-container">…your <table>…</div>
+============================================================================ */
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* (optional) style the scrollbar track/thumb */
+.table-container::-webkit-scrollbar {
+  height: 6px;
+}
+.table-container::-webkit-scrollbar-thumb {
+  background-color: rgba(255,255,255,0.3);
+  border-radius: 3px;
+}
+
     </style>
   </head>
 
