@@ -1,10 +1,21 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Eye, EyeOff } from 'lucide-react';
@@ -15,119 +26,104 @@ interface CreateUserFormProps {
   onUserCreated: () => void;
 }
 
-const CreateUserForm = ({ isOpen, onClose, onUserCreated }: CreateUserFormProps) => {
+const CreateUserForm = ({
+  isOpen,
+  onClose,
+  onUserCreated,
+}: CreateUserFormProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const { toast } = useToast();
-  
   const [formData, setFormData] = useState({
     fullName: '',
     phoneNumber: '',
     password: '',
-    designation: ''
+    designation: '',
   });
 
   const availableRoles = ['Field Officer', 'Office Staff', 'Admin'];
-
-  const hashPassword = async (password: string): Promise<string> => {
-    const encoder = new TextEncoder();
-    const data = encoder.encode(password);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      if (!formData.fullName || !formData.phoneNumber || !formData.password || !formData.designation) {
+      // 1) Validate inputs
+      if (
+        !formData.fullName ||
+        !formData.phoneNumber ||
+        !formData.password ||
+        !formData.designation
+      ) {
         toast({
-          title: "Error",
-          description: "Please fill in all fields",
-          variant: "destructive"
+          title: 'Error',
+          description: 'Please fill in all fields',
+          variant: 'destructive',
+        });
+        return;
+      }
+      if (!/^\d{10}$/.test(formData.phoneNumber)) {
+        toast({
+          title: 'Error',
+          description: 'Please enter a valid 10-digit phone number',
+          variant: 'destructive',
         });
         return;
       }
 
-      // Validate phone number (10 digits)
-      if (formData.phoneNumber.length !== 10 || !/^\d+$/.test(formData.phoneNumber)) {
-        toast({
-          title: "Error",
-          description: "Please enter a valid 10-digit phone number",
-          variant: "destructive"
-        });
-        return;
-      }
+      // 2) Sign up with Supabase Auth
+      const { user, error: signUpError } = await supabase.auth.signUp({
+        phone: formData.phoneNumber,
+        password: formData.password,
+      });
+      if (signUpError) throw signUpError;
+      if (!user) throw new Error('No user returned from auth.signUp');
 
-      // Check if phone number already exists
-      const { data: existingUser } = await supabase
-        .from('users')
-        .select('phone_number')
-        .eq('phone_number', formData.phoneNumber)
-        .single();
-
-      if (existingUser) {
-        toast({
-          title: "Error",
-          description: "A user with this phone number already exists",
-          variant: "destructive"
-        });
-        return;
-      }
-
-      // Hash the password
-      const hashedPassword = await hashPassword(formData.password);
-      
-      // Get current admin user
-      const currentUser = JSON.parse(localStorage.getItem('govardhini_user') || '{}');
-
-      // Create new user
-      const { error } = await supabase
+      // 3) Insert into your public.users table
+      const { error: profileError } = await supabase
         .from('users')
         .insert({
+          id: user.id,                // link to auth.users.id
           full_name: formData.fullName,
           phone_number: formData.phoneNumber,
-          password_hash: hashedPassword,
-          designation: formData.designation,
-          active_role: formData.designation,
-          status: 'approved',
-          approved_at: new Date().toISOString(),
-          approved_by: currentUser.id
+          // you can add other columns here...
         });
+      if (profileError) throw profileError;
 
-      if (error) {
-        console.error('Error creating user:', error);
-        toast({
-          title: "Error",
-          description: "Failed to create user account",
-          variant: "destructive"
+      // 4) Record the role assignment
+      //    Assume you store the current admin’s ID in localStorage:
+      const currentAdmin = JSON.parse(
+        localStorage.getItem('govardhini_user') || '{}'
+      );
+      const { error: roleError } = await supabase
+        .from('user_role_assignments')
+        .insert({
+          user_id: user.id,
+          assigned_by: currentAdmin.id,
+          role_assigned: formData.designation,
         });
-        return;
-      }
+      if (roleError) throw roleError;
 
       toast({
-        title: "Success",
-        description: `User account created successfully for ${formData.fullName}`,
+        title: 'Success',
+        description: `Created user ${formData.fullName} as ${formData.designation}`,
       });
 
-      // Reset form and close sheet
+      // reset + close
       setFormData({
         fullName: '',
         phoneNumber: '',
         password: '',
-        designation: ''
+        designation: '',
       });
       onClose();
       onUserCreated();
-
-    } catch (error) {
-      console.error('Error creating user:', error);
+    } catch (err: any) {
+      console.error(err);
       toast({
-        title: "Error",
-        description: "An error occurred while creating the user account",
-        variant: "destructive"
+        title: 'Error',
+        description: err.message || 'Something went wrong',
+        variant: 'destructive',
       });
     } finally {
       setIsLoading(false);
@@ -135,81 +131,86 @@ const CreateUserForm = ({ isOpen, onClose, onUserCreated }: CreateUserFormProps)
   };
 
   const generatePassword = () => {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    let password = '';
+    const chars =
+      'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let pwd = '';
     for (let i = 0; i < 8; i++) {
-      password += chars.charAt(Math.floor(Math.random() * chars.length));
+      pwd += chars.charAt(Math.floor(Math.random() * chars.length));
     }
-    setFormData(prev => ({ ...prev, password }));
+    setFormData((f) => ({ ...f, password: pwd }));
   };
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
       <SheetContent className="glass-card border-emerald-500/20 bg-gradient-to-br from-emerald-500/5 to-green-500/5 text-white w-[400px] sm:w-[540px]">
         <SheetHeader>
-          <SheetTitle className="text-xl font-bold text-white">Create New User Account</SheetTitle>
-          <SheetDescription className="text-emerald-300">
-            Create a new user account with login credentials
+          <SheetTitle>Create New User Account</SheetTitle>
+          <SheetDescription>
+            Fill details to register a new user
           </SheetDescription>
         </SheetHeader>
-        
+
         <form onSubmit={handleSubmit} className="space-y-4 mt-6">
+          {/* Full Name */}
           <div className="space-y-2">
-            <Label htmlFor="fullName" className="text-emerald-200">Full Name</Label>
+            <Label htmlFor="fullName">Full Name</Label>
             <Input
               id="fullName"
               type="text"
-              placeholder="Enter full name"
               value={formData.fullName}
-              onChange={(e) => setFormData(prev => ({ ...prev, fullName: e.target.value }))}
-              className="glass-input border-emerald-500/30 text-white placeholder:text-emerald-300"
+              onChange={(e) =>
+                setFormData((f) => ({ ...f, fullName: e.target.value }))
+              }
               disabled={isLoading}
             />
           </div>
 
+          {/* Phone */}
           <div className="space-y-2">
-            <Label htmlFor="phoneNumber" className="text-emerald-200">Phone Number</Label>
+            <Label htmlFor="phoneNumber">Phone Number</Label>
             <Input
               id="phoneNumber"
               type="tel"
-              placeholder="Enter 10-digit phone number"
               value={formData.phoneNumber}
-              onChange={(e) => setFormData(prev => ({ ...prev, phoneNumber: e.target.value }))}
-              className="glass-input border-emerald-500/30 text-white placeholder:text-emerald-300"
-              disabled={isLoading}
+              onChange={(e) =>
+                setFormData((f) => ({ ...f, phoneNumber: e.target.value }))
+              }
               maxLength={10}
+              disabled={isLoading}
             />
           </div>
 
+          {/* Designation */}
           <div className="space-y-2">
-            <Label htmlFor="designation" className="text-emerald-200">Designation</Label>
+            <Label htmlFor="designation">Designation</Label>
             <Select
               value={formData.designation}
-              onValueChange={(value) => setFormData(prev => ({ ...prev, designation: value }))}
+              onValueChange={(val) =>
+                setFormData((f) => ({ ...f, designation: val }))
+              }
               disabled={isLoading}
             >
-              <SelectTrigger className="glass-input border-emerald-500/30 text-white">
-                <SelectValue placeholder="Select designation" />
+              <SelectTrigger>
+                <SelectValue placeholder="Select role" />
               </SelectTrigger>
-              <SelectContent className="glass-card border-emerald-500/20 bg-slate-800">
-                {availableRoles.map((role) => (
-                  <SelectItem key={role} value={role} className="text-white hover:bg-emerald-500/20">
-                    {role}
+              <SelectContent>
+                {availableRoles.map((r) => (
+                  <SelectItem key={r} value={r}>
+                    {r}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
 
+          {/* Password */}
           <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="password" className="text-emerald-200">Password</Label>
+            <div className="flex justify-between">
+              <Label htmlFor="password">Password</Label>
               <Button
-                type="button"
-                variant="ghost"
                 size="sm"
+                variant="ghost"
                 onClick={generatePassword}
-                className="text-emerald-400 hover:text-emerald-300 text-xs"
                 disabled={isLoading}
               >
                 Generate
@@ -218,46 +219,33 @@ const CreateUserForm = ({ isOpen, onClose, onUserCreated }: CreateUserFormProps)
             <div className="relative">
               <Input
                 id="password"
-                type={showPassword ? "text" : "password"}
-                placeholder="Enter password"
+                type={showPassword ? 'text' : 'password'}
                 value={formData.password}
-                onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
-                className="glass-input border-emerald-500/30 text-white placeholder:text-emerald-300 pr-12"
+                onChange={(e) =>
+                  setFormData((f) => ({ ...f, password: e.target.value }))
+                }
                 disabled={isLoading}
+                className="pr-10"
               />
               <Button
-                type="button"
                 variant="ghost"
                 size="sm"
-                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-0 top-0 h-full px-2"
+                onClick={() => setShowPassword((s) => !s)}
                 disabled={isLoading}
               >
-                {showPassword ? (
-                  <EyeOff className="h-4 w-4 text-emerald-400" />
-                ) : (
-                  <Eye className="h-4 w-4 text-emerald-400" />
-                )}
+                {showPassword ? <EyeOff /> : <Eye />}
               </Button>
             </div>
           </div>
 
+          {/* Actions */}
           <div className="flex gap-2 pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onClose}
-              disabled={isLoading}
-              className="flex-1 border-emerald-500/30 text-emerald-200 hover:bg-emerald-500/20"
-            >
+            <Button variant="outline" onClick={onClose} disabled={isLoading}>
               Cancel
             </Button>
-            <Button
-              type="submit"
-              disabled={isLoading}
-              className="flex-1 grass-green hover:bg-emerald-700 text-white"
-            >
-              {isLoading ? 'Creating...' : 'Create User'}
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? 'Creating…' : 'Create User'}
             </Button>
           </div>
         </form>
