@@ -51,10 +51,14 @@ const App: React.FC = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <div className="flex flex-col min-h-screen w-full overflow-x-hidden">
+        {/* Root: full-screen flex column, no horizontal scroll */}
+        <div className="flex flex-col h-screen w-screen overflow-x-hidden">
+          {/* Toasters stay fixed above content */}
           <Toaster />
           <Sonner />
-          <main className="flex-1 overflow-y-auto">
+
+          {/* Main content: grows and scrolls vertically */}
+          <main className="flex-1 w-screen overflow-y-auto">
             <BrowserRouter>
               <Routes>
                 <Route path="/" element={<Index />} />
