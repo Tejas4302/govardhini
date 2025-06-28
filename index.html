@@ -7,68 +7,27 @@
       content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no"
     />
     <title>Govardhini</title>
-    <meta
-      name="description"
-      content="Premium Cattle Feed Management System for Govardhini"
-    />
-    <meta name="author" content="Lovable" />
+    <!-- (your other meta tags & PWA icons here) -->
 
-    <!-- Mobile App Meta Tags -->
-    <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta
-      name="apple-mobile-web-app-status-bar-style"
-      content="black-translucent"
-    />
-    <meta name="apple-mobile-web-app-title" content="Govardhini" />
-    <meta name="theme-color" content="#0f172a" />
-
-    <!-- PWA Icons -->
-    <link
-      rel="icon"
-      type="image/png"
-      href="/lovable-uploads/1d0a967e-dcec-4094-8df3-740a1553df4e.png"
-    />
-    <link
-      rel="apple-touch-icon"
-      href="/lovable-uploads/1d0a967e-dcec-4094-8df3-740a1553df4e.png"
-    />
-
-    <!-- Open Graph -->
-    <meta property="og:title" content="Govardhini" />
-    <meta
-      property="og:description"
-      content="Premium Cattle Feed Management System for Govardhini"
-    />
-    <meta property="og:type" content="website" />
-    <meta
-      property="og:image"
-      content="/lovable-uploads/1d0a967e-dcec-4094-8df3-740a1553df4e.png"
-    />
-
-    <!-- Twitter -->
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@lovable_dev" />
-    <meta
-      name="twitter:image"
-      content="/lovable-uploads/1d0a967e-dcec-4094-8df3-740a1553df4e.png"
-    />
-
-    <!-- ====== Responsive & Safe-area Styles ====== -->
     <style>
-      /* 1. Make html, body, and root fill the viewport */
+      /* 1. Make html/body/root fill exactly the viewport */
       html,
       body,
       #root {
         margin: 0;
         padding: 0;
-        width: 100vw;
-        height: 100vh;
-        overflow-x: hidden;
+        width: 100%;
+        height: 100%;
+        overflow-x: hidden; /* no sideways scroll */
+      }
+
+      /* 2. Enable vertical scroll when needed */
+      body,
+      #root {
         overflow-y: auto;
       }
 
-      /* 2. Respect safe-area insets for notches */
+      /* 3. Safe-area insets for notches */
       body {
         padding-top: env(safe-area-inset-top);
         padding-bottom: env(safe-area-inset-bottom);
@@ -77,14 +36,14 @@
         box-sizing: border-box;
       }
 
-      /* 3. Prevent iOS font zoom on form fields */
+      /* 4. Prevent iOS font zoom in inputs */
       input,
       select,
       textarea {
         font-size: 16px !important;
       }
 
-      /* 4. Force all Tailwind containers to full width */
+      /* 5. Force Tailwind container classes full-width */
       .container {
         max-width: 100% !important;
         width: 100% !important;
@@ -93,6 +52,7 @@
       }
     </style>
   </head>
+
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
