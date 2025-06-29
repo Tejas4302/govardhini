@@ -46,6 +46,7 @@ export const validateUserStatus = async (phoneNumber: string): Promise<{ isValid
 };
 
 export const checkAdminPermission = (userRole: string, userStatus: string): boolean => {
+  console.log('Checking admin permission:', { userRole, userStatus });
   return userRole === 'Admin' && userStatus === 'approved';
 };
 
@@ -60,4 +61,24 @@ export const hasPermission = (userRole: string, requiredRole: string): boolean =
   const requiredLevel = roleHierarchy[requiredRole as keyof typeof roleHierarchy] || 0;
 
   return userLevel >= requiredLevel;
+};
+
+// New function to verify admin status from localStorage
+export const verifyAdminStatus = (): boolean => {
+  try {
+    const userData = localStorage.getItem('govardhini_user');
+    if (!userData) return false;
+    
+    const user = JSON.parse(userData);
+    console.log('Verifying admin status for user:', user);
+    
+    // Check both active_role and designation for backwards compatibility
+    const isAdmin = (user.active_role === 'Admin' || user.designation === 'Admin') && user.status === 'approved';
+    console.log('Admin verification result:', isAdmin);
+    
+    return isAdmin;
+  } catch (error) {
+    console.error('Error verifying admin status:', error);
+    return false;
+  }
 };

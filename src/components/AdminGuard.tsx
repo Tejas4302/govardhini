@@ -2,7 +2,7 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
-import { checkAdminPermission } from '@/utils/authValidation';
+import { verifyAdminStatus } from '@/utils/authValidation';
 
 interface AdminGuardProps {
   children: React.ReactNode;
@@ -14,13 +14,12 @@ const AdminGuard: React.FC<AdminGuardProps> = ({ children }) => {
   const user = JSON.parse(localStorage.getItem('govardhini_user') || '{}');
   
   if (!user.id) {
+    console.log('No user ID found, redirecting to auth');
     return <Navigate to="/auth" replace />;
   }
   
-  // Use active_role instead of designation for permission check
-  const userRole = user.active_role || user.designation;
-  
-  if (!checkAdminPermission(userRole, user.status)) {
+  if (!verifyAdminStatus()) {
+    console.log('User is not admin, showing access denied');
     toast({
       title: "Access Denied",
       description: "This page requires admin privileges",
@@ -29,6 +28,7 @@ const AdminGuard: React.FC<AdminGuardProps> = ({ children }) => {
     return <Navigate to="/dashboard" replace />;
   }
   
+  console.log('Admin access granted for user:', user);
   return <>{children}</>;
 };
 

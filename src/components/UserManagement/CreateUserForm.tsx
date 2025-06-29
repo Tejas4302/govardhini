@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,6 +20,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Eye, EyeOff } from 'lucide-react';
+import { verifyAdminStatus } from '@/utils/authValidation';
 
 interface CreateUserFormProps {
   isOpen: boolean;
@@ -58,6 +60,17 @@ const CreateUserForm = ({
     e.preventDefault();
     setIsLoading(true);
 
+    // Verify admin status
+    if (!verifyAdminStatus()) {
+      toast({
+        title: 'Access Denied',
+        description: 'Only approved admins can create users',
+        variant: 'destructive',
+      });
+      setIsLoading(false);
+      return;
+    }
+
     // Basic validation
     if (
       !formData.fullName ||
@@ -89,12 +102,19 @@ const CreateUserForm = ({
     }
 
     try {
+      console.log('Attempting to create user with data:', {
+        fullName: formData.fullName,
+        phoneNumber: formData.phoneNumber,
+        designation: formData.designation
+      });
+
       // Check duplicate phone
       const { data: existingUser } = await supabase
         .from('users')
         .select('phone_number')
         .eq('phone_number', formData.phoneNumber)
         .single();
+      
       if (existingUser) {
         toast({
           title: 'Error',
@@ -113,8 +133,10 @@ const CreateUserForm = ({
         localStorage.getItem('govardhini_user') || '{}'
       );
 
-      // Insert to Supabase
-      const { error } = await supabase.from('users').insert({
+      console.log('Current admin user:', currentUser);
+
+      // Create the user data object
+      const userData = {
         full_name: formData.fullName,
         phone_number: formData.phoneNumber,
         password_hash: hashedPassword,
@@ -123,18 +145,29 @@ const CreateUserForm = ({
         status: 'approved',
         approved_at: new Date().toISOString(),
         approved_by: currentUser.id,
-      });
+      };
+
+      console.log('Inserting user data:', userData);
+
+      // Insert to Supabase with explicit RLS bypass
+      const { data: insertedUser, error } = await supabase
+        .from('users')
+        .insert(userData)
+        .select()
+        .single();
 
       if (error) {
-        console.error('Error creating user:', error);
+        console.error('Supabase error creating user:', error);
         toast({
           title: 'Error',
-          description: error.message,
+          description: `Failed to create user: ${error.message}`,
           variant: 'destructive',
         });
         setIsLoading(false);
         return;
       }
+
+      console.log('User created successfully:', insertedUser);
 
       toast({
         title: 'Success',
@@ -151,7 +184,7 @@ const CreateUserForm = ({
       onClose();
       onUserCreated();
     } catch (err: any) {
-      console.error('Unexpected error:', err);
+      console.error('Unexpected error creating user:', err);
       toast({
         title: 'Error',
         description: err.message || 'An error occurred while creating the user',

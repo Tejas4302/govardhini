@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -20,6 +21,7 @@ import { User, RoleChangeData } from '@/types/userManagement';
 import UserStatusBadge from '@/components/UserManagement/UserStatusBadge';
 import UserRoleBadge from '@/components/UserManagement/UserRoleBadge';
 import UserActions from '@/components/UserManagement/UserActions';
+import { verifyAdminStatus } from '@/utils/authValidation';
 
 const UserManagement = () => {
   const [users, setUsers] = useState<User[]>([]);
@@ -34,12 +36,26 @@ const UserManagement = () => {
   const availableRoles = ['Field Officer', 'Office Staff', 'Admin'];
 
   useEffect(() => {
+    console.log('UserManagement component mounted, current user:', user);
     fetchUsers();
   }, []);
 
   const fetchUsers = async () => {
     try {
       setIsLoading(true);
+      console.log('Fetching users...');
+      
+      // Verify admin status before fetching
+      if (!verifyAdminStatus()) {
+        toast({
+          title: "Access Denied",
+          description: "Only approved admins can view user management",
+          variant: "destructive"
+        });
+        navigate('/dashboard');
+        return;
+      }
+
       const { data, error } = await supabase
         .from('users')
         .select('*')
@@ -49,12 +65,13 @@ const UserManagement = () => {
         console.error('Error fetching users:', error);
         toast({
           title: "Error",
-          description: "Failed to fetch users. Please check your admin permissions.",
+          description: `Failed to fetch users: ${error.message}`,
           variant: "destructive"
         });
         return;
       }
       
+      console.log('Fetched users:', data);
       setUsers(data || []);
     } catch (error) {
       console.error('Error fetching users:', error);
@@ -71,12 +88,25 @@ const UserManagement = () => {
   const updateUserStatus = async (userId: string, status: string, userName: string) => {
     try {
       setProcessingUserId(userId);
+      console.log('Updating user status:', { userId, status, userName });
+      
+      // Verify admin status
+      if (!verifyAdminStatus()) {
+        toast({
+          title: "Access Denied",
+          description: "Only approved admins can update user status",
+          variant: "destructive"
+        });
+        return;
+      }
       
       const updateData: any = { 
         status,
         approved_at: status === 'approved' ? new Date().toISOString() : null,
         approved_by: status === 'approved' ? user.id : null
       };
+
+      console.log('Update data:', updateData);
 
       const { error } = await supabase
         .from('users')
@@ -87,11 +117,13 @@ const UserManagement = () => {
         console.error('Error updating user status:', error);
         toast({
           title: "Error",
-          description: `Failed to ${status} user. Please check your admin permissions.`,
+          description: `Failed to ${status} user: ${error.message}`,
           variant: "destructive"
         });
         return;
       }
+
+      console.log('User status updated successfully');
 
       if (status === 'approved') {
         const userToApprove = users.find(u => u.id === userId);
@@ -133,6 +165,17 @@ const UserManagement = () => {
 
     try {
       setProcessingUserId(roleChangeData.userId);
+      console.log('Changing user role:', roleChangeData);
+      
+      // Verify admin status
+      if (!verifyAdminStatus()) {
+        toast({
+          title: "Access Denied",
+          description: "Only approved admins can change user roles",
+          variant: "destructive"
+        });
+        return;
+      }
       
       const { error } = await supabase.rpc('change_user_role', {
         target_user_id: roleChangeData.userId,
@@ -149,6 +192,8 @@ const UserManagement = () => {
         });
         return;
       }
+
+      console.log('User role changed successfully');
 
       toast({
         title: "Success",
@@ -172,6 +217,17 @@ const UserManagement = () => {
   const deleteUser = async (userId: string, userName: string) => {
     try {
       setProcessingUserId(userId);
+      console.log('Deleting user:', { userId, userName });
+      
+      // Verify admin status
+      if (!verifyAdminStatus()) {
+        toast({
+          title: "Access Denied",
+          description: "Only approved admins can delete users",
+          variant: "destructive"
+        });
+        return;
+      }
       
       const { error } = await supabase
         .from('users')
@@ -182,11 +238,13 @@ const UserManagement = () => {
         console.error('Error deleting user:', error);
         toast({
           title: "Error",
-          description: `Failed to delete user ${userName}. Please check your admin permissions.`,
+          description: `Failed to delete user ${userName}: ${error.message}`,
           variant: "destructive"
         });
         return;
       }
+
+      console.log('User deleted successfully');
 
       toast({
         title: "Success",
