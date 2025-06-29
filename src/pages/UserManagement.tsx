@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -31,7 +30,7 @@ const UserManagement = () => {
   const [showCreateUserForm, setShowCreateUserForm] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
-  
+
   const user = JSON.parse(localStorage.getItem('govardhini_user') || '{}');
   const availableRoles = ['Field Officer', 'Office Staff', 'Admin'];
 
@@ -44,7 +43,7 @@ const UserManagement = () => {
     try {
       setIsLoading(true);
       console.log('Fetching users...');
-      
+
       // Verify admin status before fetching
       if (!verifyAdminStatus()) {
         toast({
@@ -70,7 +69,7 @@ const UserManagement = () => {
         });
         return;
       }
-      
+
       console.log('Fetched users:', data);
       setUsers(data || []);
     } catch (error) {
@@ -89,7 +88,7 @@ const UserManagement = () => {
     try {
       setProcessingUserId(userId);
       console.log('Updating user status:', { userId, status, userName });
-      
+
       // Verify admin status
       if (!verifyAdminStatus()) {
         toast({
@@ -99,8 +98,8 @@ const UserManagement = () => {
         });
         return;
       }
-      
-      const updateData: any = { 
+
+      const updateData: any = {
         status,
         approved_at: status === 'approved' ? new Date().toISOString() : null,
         approved_by: status === 'approved' ? user.id : null
@@ -166,17 +165,9 @@ const UserManagement = () => {
     try {
       setProcessingUserId(roleChangeData.userId);
       console.log('Changing user role:', roleChangeData);
-      
-      // Verify admin status
-      if (!verifyAdminStatus()) {
-        toast({
-          title: "Access Denied",
-          description: "Only approved admins can change user roles",
-          variant: "destructive"
-        });
-        return;
-      }
-      
+
+      // Removed the verifyAdminStatus() check from here
+
       const { error } = await supabase.rpc('change_user_role', {
         target_user_id: roleChangeData.userId,
         new_role: roleChangeData.newRole,
@@ -218,7 +209,7 @@ const UserManagement = () => {
     try {
       setProcessingUserId(userId);
       console.log('Deleting user:', { userId, userName });
-      
+
       // Verify admin status
       if (!verifyAdminStatus()) {
         toast({
@@ -228,7 +219,7 @@ const UserManagement = () => {
         });
         return;
       }
-      
+
       const { error } = await supabase
         .from('users')
         .delete()
@@ -278,7 +269,7 @@ const UserManagement = () => {
     <AdminGuard>
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-green-900 to-emerald-900">
         <Navigation user={user} />
-        
+
         {/* Enhanced animated background */}
         <div className="fixed inset-0 overflow-hidden pointer-events-none">
           <div className="absolute -inset-10 opacity-30">
@@ -287,7 +278,7 @@ const UserManagement = () => {
             <div className="absolute bottom-1/4 left-1/3 w-96 h-96 bg-green-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-2000"></div>
           </div>
         </div>
-        
+
         <div className="relative z-10 container mx-auto px-4 py-8">
           <div className="max-w-6xl mx-auto">
             {/* Back Button and Header */}
@@ -303,7 +294,7 @@ const UserManagement = () => {
                 </Button>
                 <h1 className="text-4xl font-bold text-white animate-fade-in">User Management</h1>
               </div>
-              
+
               <Button
                 onClick={() => setShowCreateUserForm(true)}
                 className="grass-green hover:bg-emerald-700 text-white font-semibold"
@@ -312,7 +303,7 @@ const UserManagement = () => {
                 Create New User
               </Button>
             </div>
-            
+
             <Card className="glass-card border-emerald-500/20 bg-gradient-to-br from-emerald-500/5 to-green-500/5 animate-fade-in">
               <CardHeader>
                 <CardTitle className="text-2xl font-bold text-white flex items-center">
@@ -323,7 +314,7 @@ const UserManagement = () => {
                   Create new users, approve registrations, delete user accounts, or change user roles. Only approved users can access the system.
                 </CardDescription>
               </CardHeader>
-              
+
               <CardContent>
                 {isLoading ? (
                   <div className="text-center text-white py-8">
@@ -349,9 +340,9 @@ const UserManagement = () => {
                       </TableHeader>
                       <TableBody>
                         {users.map((userData, index) => (
-                          <TableRow 
-                            key={userData.id} 
-                            className="border-emerald-500/10 hover:bg-emerald-500/10 transition-colors animate-slide-up" 
+                          <TableRow
+                            key={userData.id}
+                            className="border-emerald-500/10 hover:bg-emerald-500/10 transition-colors animate-slide-up"
                             style={{animationDelay: `${index * 0.1}s`}}
                           >
                             <TableCell className="text-white font-medium">{userData.full_name}</TableCell>
