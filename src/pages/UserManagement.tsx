@@ -6,6 +6,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import Navigation from '@/components/Navigation';
 import AdminGuard from '@/components/AdminGuard';
+import CreateUserForm from '@/components/UserManagement/CreateUserForm';
 import RoleChangeAction from '@/components/UserManagement/RoleChangeAction';
 import { Users, ArrowLeft, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -36,6 +37,7 @@ const UserManagement = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [processingUserId, setProcessingUserId] = useState<string | null>(null);
+  const [showCreateUserForm, setShowCreateUserForm] = useState(false);
   const [deleteSheetOpen, setDeleteSheetOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
   const { toast } = useToast();
@@ -47,17 +49,6 @@ const UserManagement = () => {
   useEffect(() => {
     console.log('UserManagement component mounted, current user:', user);
     fetchUsers();
-
-    // Listen for refresh event from Navigation component
-    const handleRefreshUsers = () => {
-      fetchUsers();
-    };
-
-    window.addEventListener('refreshUsers', handleRefreshUsers);
-    
-    return () => {
-      window.removeEventListener('refreshUsers', handleRefreshUsers);
-    };
   }, []);
 
   const fetchUsers = async () => {
@@ -380,6 +371,12 @@ const UserManagement = () => {
             </Card>
           </div>
         </div>
+
+        <CreateUserForm
+          isOpen={showCreateUserForm}
+          onClose={() => setShowCreateUserForm(false)}
+          onUserCreated={fetchUsers}
+        />
       </div>
     </AdminGuard>
   );
