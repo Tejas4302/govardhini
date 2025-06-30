@@ -7,7 +7,8 @@ import { supabase } from '@/integrations/supabase/client';
 import Navigation from '@/components/Navigation';
 import AdminGuard from '@/components/AdminGuard';
 import CreateUserForm from '@/components/UserManagement/CreateUserForm';
-import { Users, ArrowLeft } from 'lucide-react';
+import RoleChangeAction from '@/components/UserManagement/RoleChangeAction';
+import { Users, ArrowLeft, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import {
   Table,
@@ -21,7 +22,6 @@ import { User } from '@/types/userManagement';
 import UserStatusBadge from '@/components/UserManagement/UserStatusBadge';
 import UserRoleBadge from '@/components/UserManagement/UserRoleBadge';
 import { verifyAdminStatus } from '@/utils/authValidation';
-import { Trash2 } from 'lucide-react';
 import {
   Sheet,
   SheetContent,
@@ -44,6 +44,7 @@ const UserManagement = () => {
   const navigate = useNavigate();
 
   const user = JSON.parse(localStorage.getItem('govardhini_user') || '{}');
+  const availableRoles = ['Admin', 'Office Staff', 'Field Officer'];
 
   useEffect(() => {
     console.log('UserManagement component mounted, current user:', user);
@@ -92,6 +93,59 @@ const UserManagement = () => {
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleRoleChange = async (userId: string, userName: string, newRole: string, reason?: string) => {
+    try {
+      setProcessingUserId(userId);
+      console.log('Changing user role:', { userId, userName, newRole, reason });
+
+      // Verify admin status
+      if (!verifyAdminStatus()) {
+        toast({
+          title: "Access Denied",
+          description: "Only approved admins can change user roles",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      const { error } = await supabase
+        .from('users')
+        .update({ 
+          active_role: newRole,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', userId);
+
+      if (error) {
+        console.error('Error changing user role:', error);
+        toast({
+          title: "Error",
+          description: `Failed to change role for ${userName}: ${error.message}`,
+          variant: "destructive"
+        });
+        return;
+      }
+
+      console.log('User role changed successfully');
+
+      toast({
+        title: "Success",
+        description: `${userName}'s role has been changed to ${newRole}`,
+      });
+
+      await fetchUsers();
+    } catch (error) {
+      console.error('Error changing user role:', error);
+      toast({
+        title: "Error",
+        description: "Failed to change user role",
+        variant: "destructive"
+      });
+    } finally {
+      setProcessingUserId(null);
     }
   };
 
@@ -240,62 +294,71 @@ const UserManagement = () => {
                             <TableCell className="text-emerald-300 text-sm">{formatDate(userData.created_at)}</TableCell>
                             <TableCell>
                               {userData.id !== user.id && (
-                                <Sheet open={deleteSheetOpen && userToDelete?.id === userData.id} onOpenChange={(open) => {
-                                  setDeleteSheetOpen(open);
-                                  if (!open) setUserToDelete(null);
-                                }}>
-                                  <SheetTrigger asChild>
-                                    <Button
-                                      size="sm"
-                                      variant="ghost"
-                                      disabled={processingUserId === userData.id}
-                                      className="text-red-400 hover:text-red-300 hover:bg-red-500/10 border-0 bg-transparent"
-                                      onClick={() => setUserToDelete(userData)}
-                                      style={{ 
-                                        width: '32px', 
-                                        height: '32px', 
-                                        minWidth: '32px', 
-                                        minHeight: '32px',
-                                        padding: '0',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center'
-                                      }}
-                                    >
-                                      <Trash2 className="w-4 h-4" style={{ flexShrink: 0 }} />
-                                    </Button>
-                                  </SheetTrigger>
-                                  <SheetContent className="glass-card border-red-500/30 bg-slate-800/90 backdrop-blur-xl text-white">
-                                    <SheetHeader>
-                                      <SheetTitle className="text-red-300 flex items-center">
-                                        <AlertTriangle className="w-5 h-5 mr-2" />
-                                        Delete User Account
-                                      </SheetTitle>
-                                      <SheetDescription className="text-red-200">
-                                        Are you sure you want to delete <strong>{userData.full_name}</strong>'s account? 
-                                        Their data contributions (farmers, cattle, etc.) will be preserved in the system.
-                                      </SheetDescription>
-                                    </SheetHeader>
-                                    <SheetFooter className="mt-6">
+                                <div className="flex gap-1">
+                                  <RoleChangeAction
+                                    user={userData}
+                                    availableRoles={availableRoles}
+                                    processingUserId={processingUserId}
+                                    onRoleChange={handleRoleChange}
+                                  />
+                                  
+                                  <Sheet open={deleteSheetOpen && userToDelete?.id === userData.id} onOpenChange={(open) => {
+                                    setDeleteSheetOpen(open);
+                                    if (!open) setUserToDelete(null);
+                                  }}>
+                                    <SheetTrigger asChild>
                                       <Button
-                                        variant="outline"
-                                        onClick={() => {
-                                          setDeleteSheetOpen(false);
-                                          setUserToDelete(null);
+                                        size="sm"
+                                        variant="ghost"
+                                        disabled={processingUserId === userData.id}
+                                        className="text-red-400 hover:text-red-300 hover:bg-red-500/10 border-0 bg-transparent"
+                                        onClick={() => setUserToDelete(userData)}
+                                        style={{ 
+                                          width: '32px', 
+                                          height: '32px', 
+                                          minWidth: '32px', 
+                                          minHeight: '32px',
+                                          padding: '0',
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          justifyContent: 'center'
                                         }}
-                                        className="border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/20"
                                       >
-                                        Cancel
+                                        <Trash2 className="w-4 h-4" style={{ flexShrink: 0 }} />
                                       </Button>
-                                      <Button
-                                        onClick={() => deleteUser(userData.id, userData.full_name)}
-                                        className="bg-red-700 hover:bg-red-800"
-                                      >
-                                        Delete Account
-                                      </Button>
-                                    </SheetFooter>
-                                  </SheetContent>
-                                </Sheet>
+                                    </SheetTrigger>
+                                    <SheetContent className="glass-card border-red-500/30 bg-slate-800/90 backdrop-blur-xl text-white">
+                                      <SheetHeader>
+                                        <SheetTitle className="text-red-300 flex items-center">
+                                          <AlertTriangle className="w-5 h-5 mr-2" />
+                                          Delete User Account
+                                        </SheetTitle>
+                                        <SheetDescription className="text-red-200">
+                                          Are you sure you want to delete <strong>{userData.full_name}</strong>'s account? 
+                                          Their data contributions (farmers, cattle, etc.) will be preserved in the system.
+                                        </SheetDescription>
+                                      </SheetHeader>
+                                      <SheetFooter className="mt-6">
+                                        <Button
+                                          variant="outline"
+                                          onClick={() => {
+                                            setDeleteSheetOpen(false);
+                                            setUserToDelete(null);
+                                          }}
+                                          className="border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/20"
+                                        >
+                                          Cancel
+                                        </Button>
+                                        <Button
+                                          onClick={() => deleteUser(userData.id, userData.full_name)}
+                                          className="bg-red-700 hover:bg-red-800"
+                                        >
+                                          Delete Account
+                                        </Button>
+                                      </SheetFooter>
+                                    </SheetContent>
+                                  </Sheet>
+                                </div>
                               )}
                             </TableCell>
                           </TableRow>
