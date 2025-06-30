@@ -1,11 +1,13 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Users, Bell } from 'lucide-react';
+import { Users, Bell, UserPlus } from 'lucide-react';
 import { profilePhotoService } from '@/services/profilePhotoService';
 import { adminNotificationService, AdminNotification } from '@/services/adminNotificationService';
+
 interface NavigationProps {
   user: {
     id?: string;
@@ -18,16 +20,14 @@ interface NavigationProps {
     status?: string;
   };
 }
-const Navigation = ({
-  user
-}: NavigationProps) => {
+
+const Navigation = ({ user }: NavigationProps) => {
   const navigate = useNavigate();
-  const {
-    toast
-  } = useToast();
+  const { toast } = useToast();
   const [profileImageUrl, setProfileImageUrl] = useState<string>('');
   const [notifications, setNotifications] = useState<AdminNotification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
+
   useEffect(() => {
     if (user.id) {
       loadProfilePhoto(user.id);
@@ -38,6 +38,7 @@ const Navigation = ({
       loadAdminNotifications();
     }
   }, [user.id]);
+
   const loadProfilePhoto = async (userId: string) => {
     try {
       const photoUrl = await profilePhotoService.getProfilePhotoUrl(userId);
@@ -51,6 +52,7 @@ const Navigation = ({
       setProfileImageUrl(user.profileImage || '');
     }
   };
+
   const loadAdminNotifications = async () => {
     try {
       const adminNotifications = await adminNotificationService.getNotifications();
@@ -60,6 +62,7 @@ const Navigation = ({
       console.error('Error loading admin notifications:', error);
     }
   };
+
   const handleLogout = () => {
     localStorage.removeItem('govardhini_user');
     toast({
@@ -69,20 +72,34 @@ const Navigation = ({
     navigate('/auth');
   };
 
-  // Check if user is admin for conditional rendering
-  const isAdmin = user.designation === 'Admin' && user.status === 'approved';
-  return <nav className="agricultural-glass border-b border-green-300/30 sticky top-0 z-50 backdrop-blur-xl">
+  // Check if user is admin (case insensitive)
+  const isAdmin = user.designation?.toLowerCase() === 'admin';
+
+  return (
+    <nav className="agricultural-glass border-b border-green-300/30 sticky top-0 z-50 backdrop-blur-xl">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center space-x-4">
-            <Button variant="ghost" onClick={() => navigate('/dashboard')} className="flex items-center space-x-2 hover:bg-green-600/20 text-green-50">
-              <img alt="Govardhini Logo" className="w-8 h-6 object-contain" src="/lovable-uploads/70165f06-942c-4ed7-977c-5db20865feb3.jpg" />
+            <Button
+              variant="ghost"
+              onClick={() => navigate('/dashboard')}
+              className="flex items-center space-x-2 hover:bg-green-600/20 text-green-50"
+            >
+              <img
+                alt="Govardhini Logo"
+                className="w-8 h-6 object-contain"
+                src="/lovable-uploads/70165f06-942c-4ed7-977c-5db20865feb3.jpg"
+              />
               <span className="font-bold text-xl">Govardhini</span>
             </Button>
           </div>
           
           <div className="flex items-center space-x-4">
-            <Button variant="ghost" onClick={() => navigate('/profile')} className="flex items-center space-x-2 hover:bg-green-600/20 text-green-50">
+            <Button
+              variant="ghost"
+              onClick={() => navigate('/profile')}
+              className="flex items-center space-x-2 hover:bg-green-600/20 text-green-50"
+            >
               <Avatar className="w-8 h-8">
                 <AvatarImage src={profileImageUrl} alt="Profile" />
                 <AvatarFallback className="grass-green text-white text-sm">
@@ -100,27 +117,60 @@ const Navigation = ({
             </Button>
             
             {/* Admin notification bell */}
-            {isAdmin && <div className="relative">
-                <Button variant="ghost" onClick={() => navigate('/user-management')} className="text-emerald-200 hover:bg-emerald-600/20 hover:text-emerald-100">
+            {isAdmin && (
+              <div className="relative">
+                <Button
+                  variant="ghost"
+                  onClick={() => navigate('/user-management')}
+                  className="text-emerald-200 hover:bg-emerald-600/20 hover:text-emerald-100"
+                >
                   <Bell className="w-4 h-4" />
-                  {unreadCount > 0 && <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
                       {unreadCount > 9 ? '9+' : unreadCount}
-                    </span>}
+                    </span>
+                  )}
                 </Button>
-              </div>}
+              </div>
+            )}
             
-            {/* Only show admin features if user is actually an admin */}
-            {isAdmin && <Button variant="ghost" onClick={() => navigate('/user-management')} className="text-emerald-200 hover:bg-emerald-600/20 hover:text-emerald-100 hidden sm:flex items-center">
+            {/* Create User button - only visible to admins */}
+            {isAdmin && (
+              <Button
+                variant="ghost"
+                onClick={() => navigate('/user-management')}
+                className="text-emerald-200 hover:bg-emerald-600/20 hover:text-emerald-100 hidden sm:flex items-center"
+              >
+                <UserPlus className="w-4 h-4 mr-1" />
+                Create User
+              </Button>
+            )}
+            
+            {/* Manage Users button - only visible to admins */}
+            {isAdmin && (
+              <Button
+                variant="ghost"
+                onClick={() => navigate('/user-management')}
+                className="text-emerald-200 hover:bg-emerald-600/20 hover:text-emerald-100 hidden lg:flex items-center"
+              >
                 <Users className="w-4 h-4 mr-1" />
                 Manage Users
-              </Button>}
+              </Button>
+            )}
             
-            <Button variant="outline" size="sm" onClick={handleLogout} className="border-green-300/30 text-green-200 hover:bg-red-700/20 hover:border-red-500/50 hover:text-red-300 transition-all duration-200">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleLogout}
+              className="border-green-300/30 text-green-200 hover:bg-red-700/20 hover:border-red-500/50 hover:text-red-300 transition-all duration-200"
+            >
               Logout
             </Button>
           </div>
         </div>
       </div>
-    </nav>;
+    </nav>
+  );
 };
+
 export default Navigation;

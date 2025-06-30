@@ -304,6 +304,33 @@ export type Database = {
           },
         ]
       }
+      password_reset_tokens: {
+        Row: {
+          created_at: string | null
+          expires_at: string | null
+          id: string
+          otp: string
+          phone_number: string
+          used: boolean | null
+        }
+        Insert: {
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          otp: string
+          phone_number: string
+          used?: boolean | null
+        }
+        Update: {
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          otp?: string
+          phone_number?: string
+          used?: boolean | null
+        }
+        Relationships: []
+      }
       user_permissions: {
         Row: {
           created_at: string | null
@@ -327,93 +354,6 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
-      }
-      user_role_assignments: {
-        Row: {
-          assigned_at: string
-          assigned_by: string | null
-          id: string
-          role_assigned: string
-          status: string
-          user_id: string
-        }
-        Insert: {
-          assigned_at?: string
-          assigned_by?: string | null
-          id?: string
-          role_assigned: string
-          status?: string
-          user_id: string
-        }
-        Update: {
-          assigned_at?: string
-          assigned_by?: string | null
-          id?: string
-          role_assigned?: string
-          status?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "user_role_assignments_assigned_by_fkey"
-            columns: ["assigned_by"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "user_role_assignments_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      user_role_history: {
-        Row: {
-          changed_at: string
-          changed_by: string | null
-          id: string
-          new_role: string
-          old_role: string | null
-          reason: string | null
-          user_id: string
-        }
-        Insert: {
-          changed_at?: string
-          changed_by?: string | null
-          id?: string
-          new_role: string
-          old_role?: string | null
-          reason?: string | null
-          user_id: string
-        }
-        Update: {
-          changed_at?: string
-          changed_by?: string | null
-          id?: string
-          new_role?: string
-          old_role?: string | null
-          reason?: string | null
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "user_role_history_changed_by_fkey"
-            columns: ["changed_by"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "user_role_history_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       users: {
         Row: {
@@ -462,14 +402,6 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      change_user_role: {
-        Args: {
-          target_user_id: string
-          new_role: string
-          change_reason?: string
-        }
-        Returns: undefined
-      }
       get_current_user_role: {
         Args: Record<PropertyKey, never>
         Returns: string

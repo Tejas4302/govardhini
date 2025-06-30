@@ -18,19 +18,6 @@ export const validateUserStatus = async (phoneNumber: string): Promise<{ isValid
       };
     }
 
-    // Check if user is approved
-    if (userData.status !== 'approved') {
-      let statusMessage = 'Account not yet approved by administrator';
-      if (userData.status === 'rejected') {
-        statusMessage = 'Account has been rejected. Please contact administrator';
-      }
-      return {
-        isValid: false,
-        user: userData,
-        message: statusMessage
-      };
-    }
-
     return {
       isValid: true,
       user: userData
@@ -47,23 +34,23 @@ export const validateUserStatus = async (phoneNumber: string): Promise<{ isValid
 
 export const checkAdminPermission = (userRole: string, userStatus: string): boolean => {
   console.log('Checking admin permission:', { userRole, userStatus });
-  return userRole === 'Admin' && userStatus === 'approved';
+  return userRole.toLowerCase() === 'admin';
 };
 
 export const hasPermission = (userRole: string, requiredRole: string): boolean => {
   const roleHierarchy = {
-    'Admin': 3,
-    'Office Staff': 2,
-    'Field Officer': 1
+    'admin': 3,
+    'office staff': 2,
+    'field officer': 1
   };
 
-  const userLevel = roleHierarchy[userRole as keyof typeof roleHierarchy] || 0;
-  const requiredLevel = roleHierarchy[requiredRole as keyof typeof roleHierarchy] || 0;
+  const userLevel = roleHierarchy[userRole.toLowerCase() as keyof typeof roleHierarchy] || 0;
+  const requiredLevel = roleHierarchy[requiredRole.toLowerCase() as keyof typeof roleHierarchy] || 0;
 
   return userLevel >= requiredLevel;
 };
 
-// New function to verify admin status from localStorage
+// Updated function to verify admin status (case insensitive)
 export const verifyAdminStatus = (): boolean => {
   try {
     const userData = localStorage.getItem('govardhini_user');
@@ -72,8 +59,8 @@ export const verifyAdminStatus = (): boolean => {
     const user = JSON.parse(userData);
     console.log('Verifying admin status for user:', user);
     
-    // Check both active_role and designation for backwards compatibility
-    const isAdmin = (user.active_role === 'Admin' || user.designation === 'Admin') && user.status === 'approved';
+    // Check both active_role and designation for backwards compatibility (case insensitive)
+    const isAdmin = (user.active_role?.toLowerCase() === 'admin' || user.designation?.toLowerCase() === 'admin');
     console.log('Admin verification result:', isAdmin);
     
     return isAdmin;

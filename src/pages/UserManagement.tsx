@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,7 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import Navigation from '@/components/Navigation';
 import AdminGuard from '@/components/AdminGuard';
 import CreateUserForm from '@/components/UserManagement/CreateUserForm';
-import { Users, ArrowLeft, UserPlus } from 'lucide-react';
+import { Users, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import {
   Table,
@@ -16,23 +17,33 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { User, RoleChangeData } from '@/types/userManagement';
+import { User } from '@/types/userManagement';
 import UserStatusBadge from '@/components/UserManagement/UserStatusBadge';
 import UserRoleBadge from '@/components/UserManagement/UserRoleBadge';
-import UserActions from '@/components/UserManagement/UserActions';
 import { verifyAdminStatus } from '@/utils/authValidation';
+import { Trash2 } from 'lucide-react';
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet';
+import { AlertTriangle } from 'lucide-react';
 
 const UserManagement = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [processingUserId, setProcessingUserId] = useState<string | null>(null);
-  const [roleChangeData, setRoleChangeData] = useState<RoleChangeData | null>(null);
   const [showCreateUserForm, setShowCreateUserForm] = useState(false);
+  const [deleteSheetOpen, setDeleteSheetOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<User | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
 
   const user = JSON.parse(localStorage.getItem('govardhini_user') || '{}');
-  const availableRoles = ['Field Officer', 'Office Staff', 'Admin'];
 
   useEffect(() => {
     console.log('UserManagement component mounted, current user:', user);
@@ -84,127 +95,6 @@ const UserManagement = () => {
     }
   };
 
-  const updateUserStatus = async (userId: string, status: string, userName: string) => {
-    try {
-      setProcessingUserId(userId);
-      console.log('Updating user status:', { userId, status, userName });
-
-      // Verify admin status
-      if (!verifyAdminStatus()) {
-        toast({
-          title: "Access Denied",
-          description: "Only approved admins can update user status",
-          variant: "destructive"
-        });
-        return;
-      }
-
-      const updateData: any = {
-        status,
-        approved_at: status === 'approved' ? new Date().toISOString() : null,
-        approved_by: status === 'approved' ? user.id : null
-      };
-
-      console.log('Update data:', updateData);
-
-      const { error } = await supabase
-        .from('users')
-        .update(updateData)
-        .eq('id', userId);
-
-      if (error) {
-        console.error('Error updating user status:', error);
-        toast({
-          title: "Error",
-          description: `Failed to ${status} user: ${error.message}`,
-          variant: "destructive"
-        });
-        return;
-      }
-
-      console.log('User status updated successfully');
-
-      if (status === 'approved') {
-        const userToApprove = users.find(u => u.id === userId);
-        if (userToApprove) {
-          const { error: roleError } = await supabase
-            .from('user_role_assignments')
-            .insert({
-              user_id: userId,
-              assigned_by: user.id,
-              role_assigned: userToApprove.designation
-            });
-
-          if (roleError) {
-            console.error('Error creating role assignment:', roleError);
-          }
-        }
-      }
-
-      toast({
-        title: "Success",
-        description: `User ${userName} has been ${status} successfully`,
-      });
-
-      await fetchUsers();
-    } catch (error) {
-      console.error('Error updating user status:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update user status",
-        variant: "destructive"
-      });
-    } finally {
-      setProcessingUserId(null);
-    }
-  };
-
-  const changeUserRole = async () => {
-    if (!roleChangeData) return;
-
-    try {
-      setProcessingUserId(roleChangeData.userId);
-      console.log('Changing user role:', roleChangeData);
-
-      // Removed the verifyAdminStatus() check from here
-
-      const { error } = await supabase.rpc('change_user_role', {
-        target_user_id: roleChangeData.userId,
-        new_role: roleChangeData.newRole,
-        change_reason: roleChangeData.reason || null
-      });
-
-      if (error) {
-        console.error('Error changing user role:', error);
-        toast({
-          title: "Error",
-          description: `Failed to change user role: ${error.message}`,
-          variant: "destructive"
-        });
-        return;
-      }
-
-      console.log('User role changed successfully');
-
-      toast({
-        title: "Success",
-        description: `${roleChangeData.userName}'s role has been changed from ${roleChangeData.currentRole} to ${roleChangeData.newRole}`,
-      });
-
-      setRoleChangeData(null);
-      await fetchUsers();
-    } catch (error) {
-      console.error('Error changing user role:', error);
-      toast({
-        title: "Error",
-        description: "Failed to change user role",
-        variant: "destructive"
-      });
-    } finally {
-      setProcessingUserId(null);
-    }
-  };
-
   const deleteUser = async (userId: string, userName: string) => {
     try {
       setProcessingUserId(userId);
@@ -252,6 +142,8 @@ const UserManagement = () => {
       });
     } finally {
       setProcessingUserId(null);
+      setDeleteSheetOpen(false);
+      setUserToDelete(null);
     }
   };
 
@@ -294,14 +186,6 @@ const UserManagement = () => {
                 </Button>
                 <h1 className="text-4xl font-bold text-white animate-fade-in">User Management</h1>
               </div>
-
-              <Button
-                onClick={() => setShowCreateUserForm(true)}
-                className="grass-green hover:bg-emerald-700 text-white font-semibold"
-              >
-                <UserPlus className="w-5 h-5 mr-2" />
-                Create New User
-              </Button>
             </div>
 
             <Card className="glass-card border-emerald-500/20 bg-gradient-to-br from-emerald-500/5 to-green-500/5 animate-fade-in">
@@ -311,7 +195,7 @@ const UserManagement = () => {
                   Manage Users
                 </CardTitle>
                 <CardDescription className="text-emerald-300">
-                  Create new users, approve registrations, delete user accounts, or change user roles. Only approved users can access the system.
+                  View and manage user accounts. User data and contributions will be preserved when accounts are deleted.
                 </CardDescription>
               </CardHeader>
 
@@ -355,17 +239,64 @@ const UserManagement = () => {
                             </TableCell>
                             <TableCell className="text-emerald-300 text-sm">{formatDate(userData.created_at)}</TableCell>
                             <TableCell>
-                              <UserActions
-                                user={userData}
-                                currentUserId={user.id}
-                                availableRoles={availableRoles}
-                                processingUserId={processingUserId}
-                                roleChangeData={roleChangeData}
-                                setRoleChangeData={setRoleChangeData}
-                                onStatusUpdate={updateUserStatus}
-                                onRoleChange={changeUserRole}
-                                onDelete={deleteUser}
-                              />
+                              {userData.id !== user.id && (
+                                <Sheet open={deleteSheetOpen && userToDelete?.id === userData.id} onOpenChange={(open) => {
+                                  setDeleteSheetOpen(open);
+                                  if (!open) setUserToDelete(null);
+                                }}>
+                                  <SheetTrigger asChild>
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      disabled={processingUserId === userData.id}
+                                      className="text-red-400 hover:text-red-300 hover:bg-red-500/10 border-0 bg-transparent"
+                                      onClick={() => setUserToDelete(userData)}
+                                      style={{ 
+                                        width: '32px', 
+                                        height: '32px', 
+                                        minWidth: '32px', 
+                                        minHeight: '32px',
+                                        padding: '0',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center'
+                                      }}
+                                    >
+                                      <Trash2 className="w-4 h-4" style={{ flexShrink: 0 }} />
+                                    </Button>
+                                  </SheetTrigger>
+                                  <SheetContent className="glass-card border-red-500/30 bg-slate-800/90 backdrop-blur-xl text-white">
+                                    <SheetHeader>
+                                      <SheetTitle className="text-red-300 flex items-center">
+                                        <AlertTriangle className="w-5 h-5 mr-2" />
+                                        Delete User Account
+                                      </SheetTitle>
+                                      <SheetDescription className="text-red-200">
+                                        Are you sure you want to delete <strong>{userData.full_name}</strong>'s account? 
+                                        Their data contributions (farmers, cattle, etc.) will be preserved in the system.
+                                      </SheetDescription>
+                                    </SheetHeader>
+                                    <SheetFooter className="mt-6">
+                                      <Button
+                                        variant="outline"
+                                        onClick={() => {
+                                          setDeleteSheetOpen(false);
+                                          setUserToDelete(null);
+                                        }}
+                                        className="border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/20"
+                                      >
+                                        Cancel
+                                      </Button>
+                                      <Button
+                                        onClick={() => deleteUser(userData.id, userData.full_name)}
+                                        className="bg-red-700 hover:bg-red-800"
+                                      >
+                                        Delete Account
+                                      </Button>
+                                    </SheetFooter>
+                                  </SheetContent>
+                                </Sheet>
+                              )}
                             </TableCell>
                           </TableRow>
                         ))}
