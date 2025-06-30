@@ -1,175 +1,100 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { LogOut, Users, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useToast } from '@/hooks/use-toast';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Users, Bell, UserPlus } from 'lucide-react';
-import { profilePhotoService } from '@/services/profilePhotoService';
-import { adminNotificationService, AdminNotification } from '@/services/adminNotificationService';
+import { verifyAdminStatus } from '@/utils/authValidation';
+import CreateUserForm from '@/components/UserManagement/CreateUserForm';
 
 interface NavigationProps {
-  user: {
-    id?: string;
-    email?: string;
-    phone?: string;
-    role: string;
-    name: string;
-    profileImage?: string;
-    designation?: string;
-    status?: string;
-  };
+  user: any;
 }
 
 const Navigation = ({ user }: NavigationProps) => {
   const navigate = useNavigate();
-  const { toast } = useToast();
-  const [profileImageUrl, setProfileImageUrl] = useState<string>('');
-  const [notifications, setNotifications] = useState<AdminNotification[]>([]);
-  const [unreadCount, setUnreadCount] = useState(0);
-
-  useEffect(() => {
-    if (user.id) {
-      loadProfilePhoto(user.id);
-    }
-
-    // Load admin notifications if user is admin
-    if (isAdmin) {
-      loadAdminNotifications();
-    }
-  }, [user.id]);
-
-  const loadProfilePhoto = async (userId: string) => {
-    try {
-      const photoUrl = await profilePhotoService.getProfilePhotoUrl(userId);
-      if (photoUrl) {
-        setProfileImageUrl(photoUrl);
-      } else {
-        setProfileImageUrl(user.profileImage || '');
-      }
-    } catch (error) {
-      console.error('Error loading profile photo:', error);
-      setProfileImageUrl(user.profileImage || '');
-    }
-  };
-
-  const loadAdminNotifications = async () => {
-    try {
-      const adminNotifications = await adminNotificationService.getNotifications();
-      setNotifications(adminNotifications);
-      setUnreadCount(adminNotifications.filter(n => !n.is_read).length);
-    } catch (error) {
-      console.error('Error loading admin notifications:', error);
-    }
-  };
+  const [showCreateUserForm, setShowCreateUserForm] = useState(false);
 
   const handleLogout = () => {
     localStorage.removeItem('govardhini_user');
-    toast({
-      title: "Logged out successfully",
-      description: "Thank you for using Govardhini"
-    });
     navigate('/auth');
   };
 
-  // Check if user is admin (case insensitive)
-  const isAdmin = user.designation?.toLowerCase() === 'admin';
+  const refreshUsers = () => {
+    // This will be called after user creation to refresh the user list if we're on user management page
+    window.dispatchEvent(new CustomEvent('refreshUsers'));
+  };
 
   return (
-    <nav className="agricultural-glass border-b border-green-300/30 sticky top-0 z-50 backdrop-blur-xl">
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
-          <div className="flex items-center space-x-4">
-            <Button
-              variant="ghost"
-              onClick={() => navigate('/dashboard')}
-              className="flex items-center space-x-2 hover:bg-green-600/20 text-green-50"
-            >
-              <img
-                alt="Govardhini Logo"
-                className="w-8 h-6 object-contain"
-                src="/lovable-uploads/70165f06-942c-4ed7-977c-5db20865feb3.jpg"
-              />
-              <span className="font-bold text-xl">Govardhini</span>
-            </Button>
-          </div>
-          
-          <div className="flex items-center space-x-4">
-            <Button
-              variant="ghost"
-              onClick={() => navigate('/profile')}
-              className="flex items-center space-x-2 hover:bg-green-600/20 text-green-50"
-            >
-              <Avatar className="w-8 h-8">
-                <AvatarImage src={profileImageUrl} alt="Profile" />
-                <AvatarFallback className="grass-green text-white text-sm">
-                  {user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              <div className="hidden md:block text-left">
-                <span className="text-sm text-green-200 block">
-                  {user.name}
-                </span>
-                <span className="text-xs text-green-300">
-                  {user.designation || user.role}
-                </span>
+    <>
+      <nav className="bg-slate-800/90 backdrop-blur-xl border-b border-emerald-500/20 sticky top-0 z-50">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-between h-16">
+            {/* Logo */}
+            <div className="flex items-center space-x-2">
+              <div className="w-8 h-8 bg-gradient-to-r from-emerald-400 to-green-500 rounded-full flex items-center justify-center">
+                <span className="text-white font-bold text-sm">G</span>
               </div>
-            </Button>
-            
-            {/* Admin notification bell */}
-            {isAdmin && (
-              <div className="relative">
+              <span className="text-white font-semibold text-lg">
+                Govardhini
+              </span>
+            </div>
+
+            {/* Navigation Items */}
+            <div className="flex items-center space-x-4">
+              {/* Admin-only Create User Button */}
+              {verifyAdminStatus() && (
+                <Button
+                  onClick={() => setShowCreateUserForm(true)}
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                  size="sm"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Create User
+                </Button>
+              )}
+
+              {/* Admin-only User Management Button */}
+              {verifyAdminStatus() && (
                 <Button
                   variant="ghost"
                   onClick={() => navigate('/user-management')}
-                  className="text-emerald-200 hover:bg-emerald-600/20 hover:text-emerald-100"
+                  className="text-emerald-300 hover:text-emerald-100 hover:bg-emerald-500/20"
+                  size="sm"
                 >
-                  <Bell className="w-4 h-4" />
-                  {unreadCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                      {unreadCount > 9 ? '9+' : unreadCount}
-                    </span>
-                  )}
+                  <Users className="w-4 h-4 mr-2" />
+                  User Management
+                </Button>
+              )}
+
+              {/* User Info */}
+              <div className="flex items-center space-x-3">
+                <div className="text-right">
+                  <div className="text-white font-medium">{user.full_name}</div>
+                  <div className="text-emerald-300 text-sm">{user.active_role}</div>
+                </div>
+                
+                {/* Logout Button */}
+                <Button
+                  variant="ghost"
+                  onClick={handleLogout}
+                  className="text-red-400 hover:text-red-300 hover:bg-red-500/20"
+                  size="sm"
+                >
+                  <LogOut className="w-4 h-4" />
                 </Button>
               </div>
-            )}
-            
-            {/* Create User button - only visible to admins */}
-            {isAdmin && (
-              <Button
-                variant="ghost"
-                onClick={() => navigate('/user-management')}
-                className="text-emerald-200 hover:bg-emerald-600/20 hover:text-emerald-100 hidden sm:flex items-center"
-              >
-                <UserPlus className="w-4 h-4 mr-1" />
-                Create User
-              </Button>
-            )}
-            
-            {/* Manage Users button - only visible to admins */}
-            {isAdmin && (
-              <Button
-                variant="ghost"
-                onClick={() => navigate('/user-management')}
-                className="text-emerald-200 hover:bg-emerald-600/20 hover:text-emerald-100 hidden lg:flex items-center"
-              >
-                <Users className="w-4 h-4 mr-1" />
-                Manage Users
-              </Button>
-            )}
-            
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleLogout}
-              className="border-green-300/30 text-green-200 hover:bg-red-700/20 hover:border-red-500/50 hover:text-red-300 transition-all duration-200"
-            >
-              Logout
-            </Button>
+            </div>
           </div>
         </div>
-      </div>
-    </nav>
+      </nav>
+
+      {/* Create User Form */}
+      <CreateUserForm
+        isOpen={showCreateUserForm}
+        onClose={() => setShowCreateUserForm(false)}
+        onUserCreated={refreshUsers}
+      />
+    </>
   );
 };
 
