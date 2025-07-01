@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,7 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import Navigation from '@/components/Navigation';
-import { User as UserIcon, Phone as PhoneIcon, Image as ImageIcon, Edit as EditIcon, Lock as LockIcon, Trash2 as TrashIcon } from 'lucide-react';
+import { User as UserIcon, Phone as PhoneIcon, Image as ImageIcon, Edit as EditIcon, Lock as LockIcon, Trash2 as TrashIcon, LogOut } from 'lucide-react';
 import { profilePhotoService } from '@/services/profilePhotoService';
 
 interface UserData {
@@ -306,6 +307,15 @@ const Profile = () => {
     }
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem('govardhini_user');
+    toast({
+      title: 'Logged out',
+      description: 'See you again soon!'
+    });
+    navigate('/auth');
+  };
+
   if (!user) return null;
 
   return (
@@ -524,6 +534,29 @@ const Profile = () => {
                   </Button>
                 </div>
               )}
+            </CardContent>
+          </Card>
+
+          <Card className="glass-card border-0 text-white animate-slide-up">
+            <CardHeader>
+              <CardTitle className="text-xl font-bold text-white flex items-center gap-2">
+                <LogOut className="w-5 h-5" />
+                Logout
+              </CardTitle>
+            </CardHeader>
+            
+            <CardContent className="space-y-6">
+              <div className="flex justify-between items-center">
+                <p className="text-gray-300">Sign out from your account</p>
+                <Button
+                  onClick={handleLogout}
+                  variant="outline"
+                  className="border-red-500/50 text-red-400 hover:bg-red-700/20 hover:border-red-500 flex items-center gap-2"
+                >
+                  <LogOut className="w-4 h-4" />
+                  Logout
+                </Button>
+              </div>
             </CardContent>
           </Card>
 
