@@ -8,7 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Users, UserPlus } from 'lucide-react';
 import CreateUserForm from '@/components/UserManagement/CreateUserForm';
 import { profilePhotoService } from '@/services/profilePhotoService';
-import { adminNotificationService, AdminNotification } from '@/services/adminNotificationService';
+
 interface NavigationProps {
   user: {
     id?: string;
@@ -21,6 +21,7 @@ interface NavigationProps {
     status?: string;
   };
 }
+
 const Navigation: React.FC<NavigationProps> = ({
   user
 }) => {
@@ -29,23 +30,16 @@ const Navigation: React.FC<NavigationProps> = ({
     toast
   } = useToast();
   const [profileImageUrl, setProfileImageUrl] = useState<string>('');
-  const [notifications, setNotifications] = useState<AdminNotification[]>([]);
-  const [unreadCount, setUnreadCount] = useState(0);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
 
   // Only admins should see the Create User button
   const isAdmin = user.designation?.toLowerCase() === 'admin';
+
   useEffect(() => {
     if (user.id) {
       profilePhotoService.getProfilePhotoUrl(user.id).then(url => setProfileImageUrl(url || user.profileImage || '')).catch(() => setProfileImageUrl(user.profileImage || ''));
     }
-    if (isAdmin) {
-      adminNotificationService.getNotifications().then(notifs => {
-        setNotifications(notifs);
-        setUnreadCount(notifs.filter(n => !n.is_read).length);
-      }).catch(console.error);
-    }
-  }, [user.id, user.profileImage, isAdmin]);
+  }, [user.id, user.profileImage]);
 
   return <nav className="agricultural-glass border-b border-green-300/30 sticky top-0 z-50 backdrop-blur-xl">
       <div className="container mx-auto px-4">
@@ -73,11 +67,10 @@ const Navigation: React.FC<NavigationProps> = ({
               </div>
             </Button>
 
-            {/* Create User sheet trigger */}
+            {/* Create User sheet trigger - only icon */}
             {isAdmin && <>
-                <Button variant="ghost" onClick={() => setIsCreateOpen(true)} className="flex items-center space-x-1 text-emerald-200 hover:bg-emerald-600/20 hover:text-emerald-100">
-                  <UserPlus className="w-4 h-4" />
-                  <span>Create User</span>
+                <Button variant="ghost" onClick={() => setIsCreateOpen(true)} className="text-emerald-200 hover:bg-emerald-600/20 hover:text-emerald-100 p-2">
+                  <UserPlus className="w-5 h-5" />
                 </Button>
 
                 <CreateUserForm isOpen={isCreateOpen} onClose={() => setIsCreateOpen(false)} onUserCreated={() => {
@@ -85,11 +78,10 @@ const Navigation: React.FC<NavigationProps> = ({
                 title: 'User created!'
               });
               setIsCreateOpen(false);
-              // TODO: re-fetch your user list here if needed
             }} />
               </>}
 
-            {/* Manage Users nav (optional duplicate) */}
+            {/* Manage Users nav */}
             {isAdmin && <Button variant="ghost" onClick={() => navigate('/user-management')} className="hidden lg:flex items-center space-x-1 text-emerald-200 hover:bg-emerald-600/20 hover:text-emerald-100">
                 <Users className="w-4 h-4" />
                 <span>Manage Users</span>
@@ -99,4 +91,5 @@ const Navigation: React.FC<NavigationProps> = ({
       </div>
     </nav>;
 };
+
 export default Navigation;
