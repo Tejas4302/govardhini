@@ -368,6 +368,7 @@ export type Database = {
           phone_number: string
           profile_image_url: string | null
           status: string
+          updated_at: string
         }
         Insert: {
           active_role: string
@@ -381,6 +382,7 @@ export type Database = {
           phone_number: string
           profile_image_url?: string | null
           status?: string
+          updated_at?: string
         }
         Update: {
           active_role?: string
@@ -394,6 +396,7 @@ export type Database = {
           phone_number?: string
           profile_image_url?: string | null
           status?: string
+          updated_at?: string
         }
         Relationships: []
       }

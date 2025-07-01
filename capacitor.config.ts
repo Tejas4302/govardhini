@@ -6,8 +6,7 @@ const config: CapacitorConfig = {
   appName: 'Govardhini',
   webDir: 'dist',
   server: {
-    url: 'https://0a455a4d-7cec-4f6b-ad46-cf6b4c6126fe.lovableproject.com?forceHideBadge=true',
-    cleartext: true
+    androidScheme: 'https'
   },
   plugins: {
     SplashScreen: {
