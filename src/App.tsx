@@ -1,10 +1,18 @@
+
 import React, { useState, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { HashRouter, Routes, Route, useNavigate, useLocation } from "react-router-dom";
-import { App as CapacitorApp } from '@capacitor/app';
+
+// Import Capacitor App with error handling for web environment
+let CapacitorApp: any = null;
+try {
+  CapacitorApp = require('@capacitor/app').App;
+} catch (error) {
+  console.log('Capacitor App not available - running in web mode');
+}
 
 import SplashScreen from "./components/SplashScreen";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -43,6 +51,9 @@ const BackButtonHandler: React.FC = () => {
   const location = useLocation();
 
   useEffect(() => {
+    // Only set up back button handling if Capacitor is available
+    if (!CapacitorApp) return;
+
     const handleBackButton = () => {
       // If we're on the home/dashboard page, allow app to close
       if (location.pathname === '/' || location.pathname === '/dashboard') {
@@ -57,7 +68,9 @@ const BackButtonHandler: React.FC = () => {
     const backButtonListener = CapacitorApp.addListener('backButton', handleBackButton);
 
     return () => {
-      backButtonListener.remove();
+      if (backButtonListener && backButtonListener.remove) {
+        backButtonListener.remove();
+      }
     };
   }, [navigate, location.pathname]);
 
