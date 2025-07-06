@@ -8,6 +8,17 @@ import Navigation from '@/components/Navigation';
 import { FileText, Download, Users, User, Heart, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
+// Import Capacitor Filesystem for mobile file downloads
+let CapacitorFilesystem: any = null;
+let CapacitorShare: any = null;
+try {
+  CapacitorFilesystem = require('@capacitor/filesystem').Filesystem;
+  CapacitorFilesystem.Directory = require('@capacitor/filesystem').Directory;
+  CapacitorShare = require('@capacitor/share').Share;
+} catch (error) {
+  console.log('Capacitor plugins not available - running in web mode');
+}
+
 const SystemReports = () => {
   const [isGenerating, setIsGenerating] = useState<string | null>(null);
   const { toast } = useToast();
@@ -80,19 +91,38 @@ const SystemReports = () => {
         })
       ].join('\n');
 
-      // Download CSV file
-      const blob = new Blob([csvContent], { type: 'text/csv' });
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = filename;
-      link.click();
-      window.URL.revokeObjectURL(url);
+      // Handle mobile vs web download
+      if (CapacitorFilesystem && CapacitorShare) {
+        // Mobile download using Capacitor
+        try {
+          const result = await CapacitorFilesystem.writeFile({
+            path: filename,
+            data: csvContent,
+            directory: CapacitorFilesystem.Directory.Documents,
+            encoding: 'utf8'
+          });
 
-      toast({
-        title: "Success",
-        description: `${reportType} report downloaded successfully`,
-      });
+          // Share the file so user can save it where they want
+          await CapacitorShare.share({
+            title: `${reportType} Report`,
+            text: `Generated ${reportType} report`,
+            url: result.uri,
+            dialogTitle: 'Save Report'
+          });
+
+          toast({
+            title: "Success",
+            description: `${reportType} report saved and ready to share`,
+          });
+        } catch (capacitorError) {
+          console.error('Capacitor file operation failed, falling back to web download:', capacitorError);
+          // Fallback to web download
+          downloadForWeb(csvContent, filename);
+        }
+      } else {
+        // Web download
+        downloadForWeb(csvContent, filename);
+      }
 
     } catch (error) {
       console.error('Error generating report:', error);
@@ -104,6 +134,21 @@ const SystemReports = () => {
     } finally {
       setIsGenerating(null);
     }
+  };
+
+  const downloadForWeb = (csvContent: string, filename: string) => {
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    link.click();
+    window.URL.revokeObjectURL(url);
+
+    toast({
+      title: "Success",
+      description: "Report downloaded successfully",
+    });
   };
 
   const reports = [
@@ -165,7 +210,7 @@ const SystemReports = () => {
             <h1 className="text-4xl font-bold text-white animate-fade-in">System Reports</h1>
           </div>
           
-          <Card className="glass-card border-emerald-500/20 bg-gradient-to-br from-emerald-500/5 to-green-500/5 animate-fade-in">
+          <Card className="agricultural-glass border-emerald-500/20 backdrop-blur-md animate-fade-in">
             <CardHeader>
               <CardTitle className="text-2xl font-bold text-white flex items-center">
                 <FileText className="w-8 h-8 mr-3 text-emerald-400" />
@@ -179,7 +224,7 @@ const SystemReports = () => {
                 {reports.map((report, index) => {
                   const IconComponent = report.icon;
                   return (
-                    <Card key={report.type} className="glass-card border-emerald-500/10 hover:border-emerald-400/30 transition-all hover:bg-emerald-500/10 animate-slide-up" style={{animationDelay: `${index * 0.1}s`}}>
+                    <Card key={report.type} className="agricultural-glass border-emerald-500/20 hover:border-emerald-400/40 transition-all hover:bg-emerald-500/10 backdrop-blur-md animate-slide-up" style={{animationDelay: `${index * 0.1}s`}}>
                       <CardContent className="p-6">
                         <div className="flex items-center space-x-4 mb-4">
                           <div className={`w-12 h-12 bg-gradient-to-r ${report.gradient} rounded-xl flex items-center justify-center shadow-lg`}>
