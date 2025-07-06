@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,12 +7,13 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
-import { CalendarIcon, Plus } from 'lucide-react';
+import { CalendarIcon, Plus, ArrowLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import Navigation from '@/components/Navigation';
+import { useKeyboard } from '@/hooks/useKeyboard';
 
 interface FeedRequest {
   id: string;
@@ -43,6 +43,7 @@ const FeedRequests = () => {
   const [loadingData, setLoadingData] = useState(true);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { isKeyboardVisible } = useKeyboard();
   
   const user = JSON.parse(localStorage.getItem('govardhini_user') || '{}');
 
@@ -197,56 +198,68 @@ const FeedRequests = () => {
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-amber-50 to-orange-50">
       <Navigation user={user} />
       
-      <div className="container mx-auto px-4 py-8">
+      <div className={`container mx-auto px-2 sm:px-4 py-4 sm:py-8 ${isKeyboardVisible ? 'pb-80' : 'pb-24'} transition-all duration-300`}>
         <div className="max-w-6xl mx-auto">
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-3xl font-bold text-gray-800">Feed Requests 🌾</h1>
+          <div className="flex justify-between items-center mb-4 sm:mb-6">
+            <div className="flex items-center">
+              <Button
+                variant="ghost"
+                onClick={() => navigate('/dashboard')}
+                className="mr-2 sm:mr-4 lg:hidden text-gray-600 hover:text-gray-800 p-2"
+              >
+                <ArrowLeft className="w-4 h-4" />
+              </Button>
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Feed Requests 🌾</h1>
+            </div>
             <Button
               onClick={() => setShowForm(!showForm)}
-              className="bg-gradient-to-r from-green-600 to-amber-600 hover:from-green-700 hover:to-amber-700"
+              className="bg-gradient-to-r from-green-600 to-amber-600 hover:from-green-700 hover:to-amber-700 text-sm sm:text-base p-2 sm:px-4 sm:py-2"
             >
-              <Plus className="mr-2 h-4 w-4" />
-              New Request
+              <Plus className="mr-1 sm:mr-2 h-4 w-4" />
+              <span className="hidden sm:inline">New Request</span>
+              <span className="sm:hidden">New</span>
             </Button>
           </div>
 
           {showForm && (
-            <Card className="bg-white/90 backdrop-blur shadow-xl border-0 mb-6">
-              <CardHeader>
-                <CardTitle>Create Feed Request</CardTitle>
-                <CardDescription>Submit a new feed request for cattle</CardDescription>
+            <Card className="bg-white/90 backdrop-blur shadow-xl border-0 mb-4 sm:mb-6 card-responsive">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-lg sm:text-xl">Create Feed Request</CardTitle>
+                <CardDescription className="text-sm sm:text-base">Submit a new feed request for cattle</CardDescription>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleSubmit} className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="cattleId">Cattle ID *</Label>
+                      <Label htmlFor="cattleId" className="text-sm sm:text-base">Cattle ID *</Label>
                       <Input
                         id="cattleId"
                         placeholder="Enter cattle ID"
                         value={formData.cattleId}
                         onChange={(e) => setFormData({ ...formData, cattleId: e.target.value })}
+                        className="h-12"
                       />
                     </div>
                     
                     <div className="space-y-2">
-                      <Label htmlFor="farmerPhone">Farmer Phone *</Label>
+                      <Label htmlFor="farmerPhone" className="text-sm sm:text-base">Farmer Phone *</Label>
                       <Input
                         id="farmerPhone"
                         placeholder="Enter farmer's phone"
                         value={formData.farmerPhone}
                         onChange={(e) => setFormData({ ...formData, farmerPhone: e.target.value })}
+                        className="h-12"
                       />
                     </div>
                     
-                    <div className="space-y-2">
-                      <Label>Request Date</Label>
+                    <div className="space-y-2 sm:col-span-2 lg:col-span-1">
+                      <Label className="text-sm sm:text-base">Request Date</Label>
                       <Popover>
                         <PopoverTrigger asChild>
                           <Button
                             variant="outline"
                             className={cn(
-                              "w-full justify-start text-left font-normal",
+                              "w-full justify-start text-left font-normal h-12",
                               !formData.requestDate && "text-muted-foreground"
                             )}
                           >
@@ -267,19 +280,20 @@ const FeedRequests = () => {
                     </div>
                   </div>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="feedType">Feed Type *</Label>
+                      <Label htmlFor="feedType" className="text-sm sm:text-base">Feed Type *</Label>
                       <Input
                         id="feedType"
                         placeholder="e.g., Green Fodder, Dry Fodder, Mineral Mix"
                         value={formData.feedType}
                         onChange={(e) => setFormData({ ...formData, feedType: e.target.value })}
+                        className="h-12"
                       />
                     </div>
                     
                     <div className="space-y-2">
-                      <Label htmlFor="quantityKg">Quantity (kg) *</Label>
+                      <Label htmlFor="quantityKg" className="text-sm sm:text-base">Quantity (kg) *</Label>
                       <Input
                         id="quantityKg"
                         type="number"
@@ -288,22 +302,24 @@ const FeedRequests = () => {
                         value={formData.quantityKg}
                         onChange={(e) => setFormData({ ...formData, quantityKg: e.target.value })}
                         min="0.1"
+                        className="h-12"
                       />
                     </div>
                   </div>
                   
-                  <div className="flex gap-4 pt-4">
+                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 pt-4">
                     <Button
                       type="button"
                       variant="outline"
                       onClick={() => setShowForm(false)}
                       disabled={isLoading}
+                      className="h-12 order-2 sm:order-1"
                     >
                       Cancel
                     </Button>
                     <Button
                       type="submit"
-                      className="bg-gradient-to-r from-green-600 to-amber-600 hover:from-green-700 hover:to-amber-700"
+                      className="bg-gradient-to-r from-green-600 to-amber-600 hover:from-green-700 hover:to-amber-700 h-12 order-1 sm:order-2"
                       disabled={isLoading}
                     >
                       {isLoading ? 'Creating...' : 'Create Request 🌾'}
@@ -314,10 +330,10 @@ const FeedRequests = () => {
             </Card>
           )}
 
-          <Card className="bg-white/90 backdrop-blur shadow-xl border-0">
+          <Card className="bg-white/90 backdrop-blur shadow-xl border-0 card-responsive">
             <CardHeader>
-              <CardTitle>Feed Requests List</CardTitle>
-              <CardDescription>Manage and track feed requests</CardDescription>
+              <CardTitle className="text-lg sm:text-xl">Feed Requests List</CardTitle>
+              <CardDescription className="text-sm sm:text-base">Manage and track feed requests</CardDescription>
             </CardHeader>
             <CardContent>
               {requests.length === 0 ? (
@@ -327,21 +343,21 @@ const FeedRequests = () => {
               ) : (
                 <div className="space-y-4">
                   {requests.map((request) => (
-                    <div key={request.id} className="border border-gray-200 rounded-lg p-4">
-                      <div className="flex justify-between items-start mb-2">
+                    <div key={request.id} className="border border-gray-200 rounded-lg p-3 sm:p-4">
+                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-2 space-y-2 sm:space-y-0">
                         <div>
-                          <h3 className="font-semibold text-lg">Cattle: {request.cattle_id}</h3>
-                          <p className="text-gray-600">Farmer: {request.farmer_phone}</p>
+                          <h3 className="font-semibold text-base sm:text-lg">Cattle: {request.cattle_id}</h3>
+                          <p className="text-gray-600 text-sm sm:text-base">Farmer: {request.farmer_phone}</p>
                         </div>
-                        <Badge className={getStatusColor(request.status)}>
+                        <Badge className={`${getStatusColor(request.status)} self-start sm:self-auto`}>
                           {request.status.toUpperCase()}
                         </Badge>
                       </div>
                       
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 text-sm">
                         <div>
                           <span className="font-medium">Feed Type:</span>
-                          <p>{request.feed_type}</p>
+                          <p className="break-words">{request.feed_type}</p>
                         </div>
                         <div>
                           <span className="font-medium">Quantity:</span>
@@ -353,17 +369,17 @@ const FeedRequests = () => {
                         </div>
                         <div>
                           <span className="font-medium">Requested By:</span>
-                          <p>{request.requested_by}</p>
+                          <p className="break-words">{request.requested_by}</p>
                         </div>
                       </div>
                       
                       {(user.role === 'admin' || user.role === 'office_staff') && request.status !== 'Delivered' && (
-                        <div className="flex gap-2 mt-4">
+                        <div className="flex flex-col sm:flex-row gap-2 mt-4">
                           {request.status === 'Pending' && (
                             <Button
                               size="sm"
                               onClick={() => updateRequestStatus(request.id, 'Approved')}
-                              className="bg-green-600 hover:bg-green-700"
+                              className="bg-green-600 hover:bg-green-700 h-10"
                             >
                               Approve
                             </Button>
@@ -372,7 +388,7 @@ const FeedRequests = () => {
                             <Button
                               size="sm"
                               onClick={() => updateRequestStatus(request.id, 'Delivered')}
-                              className="bg-blue-600 hover:bg-blue-700"
+                              className="bg-blue-600 hover:bg-blue-700 h-10"
                             >
                               Mark as Delivered
                             </Button>

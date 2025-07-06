@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -8,6 +7,7 @@ import Navigation from '@/components/Navigation';
 import { ArrowLeft } from 'lucide-react';
 import { searchPincodeByLocation, debounce } from '@/utils/pincodeSearch';
 import FarmerRegistrationForm from '@/components/FarmerOnboarding/FarmerRegistrationForm';
+import { useKeyboard } from '@/hooks/useKeyboard';
 
 const FarmerOnboarding = () => {
   const [formData, setFormData] = useState({
@@ -24,6 +24,7 @@ const FarmerOnboarding = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { isKeyboardVisible } = useKeyboard();
   
   const user = JSON.parse(localStorage.getItem('govardhini_user') || '{}');
 
@@ -205,35 +206,38 @@ const FarmerOnboarding = () => {
       {/* Enhanced animated background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -inset-10 opacity-30">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-emerald-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
-          <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-teal-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-1000"></div>
-          <div className="absolute bottom-1/4 left-1/3 w-96 h-96 bg-green-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-2000"></div>
+          <div className="absolute top-1/4 left-1/4 w-48 h-48 md:w-96 md:h-96 bg-emerald-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
+          <div className="absolute top-1/3 right-1/4 w-48 h-48 md:w-96 md:h-96 bg-teal-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-1000"></div>
+          <div className="absolute bottom-1/4 left-1/3 w-48 h-48 md:w-96 md:h-96 bg-green-400 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-2000"></div>
         </div>
       </div>
       
-      <div className="relative z-10 container mx-auto px-4 py-8">
+      <div className={`relative z-10 container mx-auto px-2 sm:px-4 py-4 sm:py-8 ${isKeyboardVisible ? 'pb-80' : 'pb-24'} transition-all duration-300`}>
         <div className="max-w-2xl mx-auto">
-          <div className="flex items-center mb-8">
+          <div className="flex items-center mb-4 sm:mb-8">
             <Button
               variant="ghost"
               onClick={() => navigate('/dashboard')}
-              className="mr-4 text-emerald-300 hover:text-emerald-100 hover:bg-emerald-500/20"
+              className="mr-2 sm:mr-4 text-emerald-300 hover:text-emerald-100 hover:bg-emerald-500/20 p-2"
             >
-              <ArrowLeft className="w-5 h-5 mr-2" />
-              Back to Dashboard
+              <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Back to Dashboard</span>
+              <span className="sm:hidden">Back</span>
             </Button>
-            <h1 className="text-4xl font-bold text-white animate-fade-in">Farmer Registration</h1>
+            <h1 className="text-2xl sm:text-4xl font-bold text-white animate-fade-in">Farmer Registration</h1>
           </div>
 
-          <FarmerRegistrationForm
-            formData={formData}
-            isLoading={isLoading}
-            user={user}
-            onSubmit={handleSubmit}
-            onStateChange={handleStateChange}
-            onInputChange={handleInputChange}
-            onCancel={() => navigate('/dashboard')}
-          />
+          <div className={`form-container ${isKeyboardVisible ? 'keyboard-visible' : ''}`}>
+            <FarmerRegistrationForm
+              formData={formData}
+              isLoading={isLoading}
+              user={user}
+              onSubmit={handleSubmit}
+              onStateChange={handleStateChange}
+              onInputChange={handleInputChange}
+              onCancel={() => navigate('/dashboard')}
+            />
+          </div>
         </div>
       </div>
     </div>

@@ -1,10 +1,10 @@
-
 import React, { useState, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { HashRouter, Routes, Route } from "react-router-dom";
+import { HashRouter, Routes, Route, useNavigate, useLocation } from "react-router-dom";
+import { App as CapacitorApp } from '@capacitor/app';
 
 import SplashScreen from "./components/SplashScreen";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -37,6 +37,33 @@ const queryClient = new QueryClient({
   },
 });
 
+// Component to handle back button navigation
+const BackButtonHandler: React.FC = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    const handleBackButton = () => {
+      // If we're on the home/dashboard page, allow app to close
+      if (location.pathname === '/' || location.pathname === '/dashboard') {
+        CapacitorApp.exitApp();
+      } else {
+        // Otherwise, navigate back
+        navigate(-1);
+      }
+    };
+
+    // Listen for the back button event
+    const backButtonListener = CapacitorApp.addListener('backButton', handleBackButton);
+
+    return () => {
+      backButtonListener.remove();
+    };
+  }, [navigate, location.pathname]);
+
+  return null;
+};
+
 const App: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
 
@@ -52,14 +79,15 @@ const App: React.FC = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        {/* Root: full-height flex column, no horizontal overflow */}
-        <div className="flex flex-col h-full w-full overflow-x-hidden">
+        {/* Root: full-height flex column, no horizontal overflow, safe area support */}
+        <div className="flex flex-col min-h-screen w-full overflow-x-hidden safe-area-padding">
           <Toaster />
           <Sonner />
 
           {/* Main: grows to fill height, scrolls vertically if needed */}
           <main className="flex-1 w-full overflow-y-auto">
             <HashRouter>
+              <BackButtonHandler />
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/auth" element={<Auth />} />

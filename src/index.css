@@ -1,42 +1,36 @@
 
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. */
 
 @layer base {
   :root {
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
-
     --card: 0 0% 100%;
     --card-foreground: 222.2 84% 4.9%;
-
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
-
-    --primary: 222.2 47.4% 11.2%;
+    --primary: 221.2 83.2% 53.3%;
     --primary-foreground: 210 40% 98%;
-
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-
-    --muted: 210 40% 96.1%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222.2 84% 4.9%;
+    --muted: 210 40% 96%;
     --muted-foreground: 215.4 16.3% 46.9%;
-
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-
+    --accent: 210 40% 96%;
+    --accent-foreground: 222.2 84% 4.9%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
-
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-
-    --radius: 0.5rem;
-
+    --ring: 221.2 83.2% 53.3%;
+    --radius: 0.75rem;
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
     --sidebar-primary: 240 5.9% 10%;
@@ -50,35 +44,32 @@
   .dark {
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
-
     --card: 222.2 84% 4.9%;
     --card-foreground: 210 40% 98%;
-
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 84% 4.9%;
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
-
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
-
     --accent: 217.2 32.6% 17.5%;
     --accent-foreground: 210 40% 98%;
-
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
-
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    --ring: 224.3 76.3% 94.1%;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-primary: 224.3 76.3% 94.1%;
+    --sidebar-primary-foreground: 240 5.9% 10%;
     --sidebar-accent: 240 3.7% 15.9%;
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
@@ -90,132 +81,136 @@
   * {
     @apply border-border;
   }
-
   body {
     @apply bg-background text-foreground;
+    font-family: "Inter", sans-serif;
   }
 }
 
-/* Agricultural Glassmorphism styles */
-.glass-card {
-  background: rgba(34, 139, 34, 0.15);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(144, 238, 144, 0.25);
-  box-shadow: 0 8px 32px 0 rgba(34, 80, 22, 0.37);
-  transition: all 0.3s ease-in-out;
+/* Mobile-first responsive design */
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  min-height: 100vh;
+  height: 100%;
+  overflow-x: hidden;
+  box-sizing: border-box;
 }
 
-.glass-card:hover {
-  background: rgba(34, 139, 34, 0.2);
-  transform: translateY(-5px);
-  box-shadow: 0 15px 35px 0 rgba(34, 80, 22, 0.5);
+body {
+  overflow-y: auto;
+  font-size: 16px; /* Prevent zoom on iOS */
+  -webkit-text-size-adjust: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-.glass-input {
-  background: rgba(245, 245, 220, 0.15);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(144, 238, 144, 0.3);
-  transition: all 0.3s ease;
+/* Safe area support for mobile devices */
+.safe-area-padding {
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
 }
 
-.glass-input:focus {
-  background: rgba(245, 245, 220, 0.25);
-  border-color: rgba(34, 139, 34, 0.6);
-  box-shadow: 0 0 20px rgba(34, 139, 34, 0.4);
+/* Keyboard handling - prevent zoom and adjust for virtual keyboard */
+input, select, textarea {
+  font-size: 16px !important; /* Prevent zoom on iOS */
+  border-radius: 0; /* Remove default styling */
+  -webkit-appearance: none;
 }
 
-.glass-button {
-  background: linear-gradient(135deg, rgba(34, 139, 34, 0.8), rgba(107, 142, 35, 0.8));
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(144, 238, 144, 0.3);
-  transition: all 0.3s ease;
+/* Form container adjustments for mobile keyboard */
+.form-container {
+  padding-bottom: 120px; /* Extra space for keyboard */
+  transition: padding-bottom 0.3s ease;
 }
 
-.glass-button:hover {
-  background: linear-gradient(135deg, rgba(34, 139, 34, 0.9), rgba(107, 142, 35, 0.9));
-  transform: translateY(-2px);
-  box-shadow: 0 10px 25px rgba(34, 139, 34, 0.5);
+.form-container.keyboard-visible {
+  padding-bottom: 280px; /* More space when keyboard is visible */
 }
 
-.animate-fade-in {
-  animation: fadeIn 0.6s ease-out;
+/* Responsive containers */
+.container {
+  max-width: 100% !important;
+  width: 100% !important;
+  margin: 0 auto !important;
+  padding: 0 1rem;
 }
 
-.animate-slide-up {
-  animation: slideUp 0.6s ease-out;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+@media (min-width: 640px) {
+  .container {
+    padding: 0 1.5rem;
   }
 }
 
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+@media (min-width: 1024px) {
+  .container {
+    padding: 0 2rem;
   }
 }
 
-.metric-card {
-  background: linear-gradient(135deg, rgba(245, 245, 220, 0.15), rgba(144, 238, 144, 0.1));
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(144, 238, 144, 0.25);
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+/* Prevent content overflow */
+* {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
 }
 
-.metric-card:hover {
-  transform: translateY(-8px) scale(1.02);
-  box-shadow: 0 20px 40px rgba(34, 80, 22, 0.2);
-  background: linear-gradient(135deg, rgba(245, 245, 220, 0.2), rgba(144, 238, 144, 0.15));
-}
-
-/* Agricultural background patterns */
-.farm-pattern {
-  background-image: 
-    radial-gradient(circle at 25% 25%, rgba(34, 139, 34, 0.1) 0%, transparent 50%),
-    radial-gradient(circle at 75% 75%, rgba(107, 142, 35, 0.1) 0%, transparent 50%);
-}
-
-/* Enhanced agricultural glassmorphism with earth tones */
+/* Glass effect for mobile */
 .agricultural-glass {
-  background: linear-gradient(135deg, rgba(139, 69, 19, 0.1), rgba(34, 139, 34, 0.1));
-  backdrop-filter: blur(15px);
-  border: 1px solid rgba(144, 238, 144, 0.2);
-  box-shadow: 0 8px 32px rgba(34, 80, 22, 0.15);
+  background: rgba(16, 185, 129, 0.1);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(16, 185, 129, 0.2);
 }
 
-/* Warm earth tone cards */
-.earth-card {
-  background: linear-gradient(135deg, rgba(210, 180, 140, 0.15), rgba(139, 69, 19, 0.1));
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(222, 184, 135, 0.3);
-  transition: all 0.3s ease;
+/* Mobile touch improvements */
+@media (hover: none) and (pointer: coarse) {
+  button, .clickable {
+    min-height: 44px; /* iOS recommended touch target size */
+    min-width: 44px;
+  }
 }
 
-.earth-card:hover {
-  background: linear-gradient(135deg, rgba(210, 180, 140, 0.2), rgba(139, 69, 19, 0.15));
-  box-shadow: 0 12px 28px rgba(139, 69, 19, 0.2);
+/* Responsive text scaling */
+@media (max-width: 640px) {
+  .text-4xl { font-size: 2rem; }
+  .text-3xl { font-size: 1.75rem; }
+  .text-2xl { font-size: 1.5rem; }
+  .text-xl { font-size: 1.25rem; }
 }
 
-/* Golden wheat accent */
-.wheat-accent {
-  background: linear-gradient(135deg, rgba(244, 164, 96, 0.8), rgba(218, 165, 32, 0.8));
-  box-shadow: 0 4px 15px rgba(244, 164, 96, 0.4);
+/* Scrollable areas */
+.scrollable {
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
 }
 
-/* Fresh grass effect for success states */
-.grass-green {
-  background: linear-gradient(135deg, rgba(34, 139, 34, 0.8), rgba(50, 205, 50, 0.8));
-  box-shadow: 0 4px 15px rgba(34, 139, 34, 0.4);
+/* Focus improvements for mobile */
+input:focus, textarea:focus, select:focus {
+  outline: 2px solid rgb(16, 185, 129);
+  outline-offset: 2px;
+  border-color: rgb(16, 185, 129);
+}
+
+/* Card responsiveness */
+.card-responsive {
+  margin: 0.5rem;
+  padding: 1rem;
+}
+
+@media (min-width: 640px) {
+  .card-responsive {
+    margin: 1rem;
+    padding: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .card-responsive {
+    margin: 1.5rem;
+    padding: 2rem;
+  }
 }
