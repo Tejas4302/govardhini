@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -191,7 +192,7 @@ const Dashboard = () => {
 
           {/* Key Statistics */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-            <Card className="glass-card text-white border-emerald-500/20 bg-gradient-to-br from-emerald-500/10 to-green-500/10 animate-fade-in" style={{animationDelay: '0.2s'}}>
+            <Card className="agricultural-glass border-emerald-500/20 backdrop-blur-md animate-fade-in" style={{animationDelay: '0.2s'}}>
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -207,7 +208,7 @@ const Dashboard = () => {
               </CardContent>
             </Card>
 
-            <Card className="glass-card text-white border-amber-500/20 bg-gradient-to-br from-amber-500/10 to-orange-500/10 animate-fade-in" style={{animationDelay: '0.3s'}}>
+            <Card className="agricultural-glass border-amber-500/20 backdrop-blur-md animate-fade-in" style={{animationDelay: '0.3s'}}>
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -223,7 +224,7 @@ const Dashboard = () => {
               </CardContent>
             </Card>
 
-            <Card className="glass-card text-white border-teal-500/20 bg-gradient-to-br from-teal-500/10 to-cyan-500/10 animate-fade-in" style={{animationDelay: '0.4s'}}>
+            <Card className="agricultural-glass border-teal-500/20 backdrop-blur-md animate-fade-in" style={{animationDelay: '0.4s'}}>
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -241,7 +242,7 @@ const Dashboard = () => {
           </div>
 
           {/* Quick Actions */}
-          <Card className="glass-card border-emerald-500/20 bg-gradient-to-br from-emerald-500/5 to-green-500/5 mb-8 animate-fade-in" style={{animationDelay: '0.5s'}}>
+          <Card className="agricultural-glass border-emerald-500/20 backdrop-blur-md mb-8 animate-fade-in" style={{animationDelay: '0.5s'}}>
             <CardHeader>
               <CardTitle className="text-2xl font-bold text-white flex items-center">
                 <Plus className="w-8 h-8 mr-3 text-emerald-400" />
@@ -280,7 +281,7 @@ const Dashboard = () => {
           </Card>
 
           {/* Navigation Cards */}
-          <Card className="glass-card border-emerald-500/20 bg-gradient-to-br from-emerald-500/5 to-green-500/5 animate-fade-in" style={{animationDelay: '0.6s'}}>
+          <Card className="agricultural-glass border-emerald-500/20 backdrop-blur-md animate-fade-in" style={{animationDelay: '0.6s'}}>
             <CardHeader>
               <CardTitle className="text-2xl font-bold text-white flex items-center">
                 <Calendar className="w-8 h-8 mr-3 text-emerald-400" />
@@ -297,7 +298,7 @@ const Dashboard = () => {
                   return (
                     <Card
                       key={card.title}
-                      className="glass-card border-emerald-500/10 hover:border-emerald-400/30 transition-all hover:bg-emerald-500/10 cursor-pointer animate-slide-up"
+                      className="agricultural-glass border-emerald-500/20 hover:border-emerald-400/40 transition-all hover:bg-emerald-500/10 cursor-pointer backdrop-blur-md animate-slide-up"
                       style={{animationDelay: `${index * 0.1}s`}}
                       onClick={card.action}
                     >
