@@ -93,7 +93,7 @@ const SearchFarmers = () => {
             <h1 className="text-4xl font-bold text-white animate-fade-in">Search Farmers</h1>
           </div>
           
-          <Card className="glass-card border-emerald-500/20 bg-gradient-to-br from-emerald-500/5 to-green-500/5 animate-fade-in">
+          <Card className="agricultural-glass border-emerald-500/20 backdrop-blur-md animate-fade-in">
             <CardHeader>
               <CardTitle className="text-2xl font-bold text-white flex items-center">
                 <Search className="w-8 h-8 mr-3 text-emerald-400" />
@@ -124,7 +124,7 @@ const SearchFarmers = () => {
                 <div className="space-y-4">
                   <h3 className="text-lg font-semibold text-white">Search Results ({farmers.length})</h3>
                   {farmers.map((farmer) => (
-                    <Card key={farmer.id} className="glass-card border-emerald-500/20 cursor-pointer hover:border-emerald-400/50 transition-all hover:bg-emerald-500/10 animate-slide-up"
+                    <Card key={farmer.id} className="agricultural-glass border-emerald-500/20 backdrop-blur-md cursor-pointer hover:border-emerald-400/50 transition-all hover:bg-emerald-500/10 animate-slide-up"
                           onClick={() => navigate(`/farmer/${farmer.id}`)}>
                       <CardContent className="p-4">
                         <div className="flex items-center justify-between">

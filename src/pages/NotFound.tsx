@@ -20,7 +20,7 @@ const NotFound = () => {
       </div>
 
       <div className="relative z-10 w-full max-w-2xl">
-        <Card className="glass-card border-emerald-500/20 bg-gradient-to-br from-emerald-500/5 to-green-500/5 animate-fade-in">
+        <Card className="agricultural-glass border-emerald-500/20 backdrop-blur-md animate-fade-in">
           <CardHeader className="text-center pb-8">
             <div className="flex justify-center mb-6">
               <div className="w-32 h-32 bg-gradient-to-br from-emerald-500 to-green-600 rounded-full flex items-center justify-center shadow-lg">

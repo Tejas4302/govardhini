@@ -116,7 +116,7 @@ const Auth = () => {
         </div>
       </div>
 
-      <Card className="w-full max-w-md glass-card border-emerald-500/20 bg-gradient-to-br from-emerald-500/5 to-green-500/5 text-white relative z-10 animate-fade-in mx-auto">
+      <Card className="w-full max-w-md agricultural-glass border-emerald-500/20 backdrop-blur-md text-white relative z-10 animate-fade-in mx-auto">
         <CardHeader className="text-center pb-6">
           <div className="mx-auto w-32 h-20 mb-4 flex items-center justify-center">
             <img 

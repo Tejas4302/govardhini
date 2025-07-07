@@ -143,7 +143,7 @@ const RecentActivities = () => {
             <h1 className="text-4xl font-bold text-white animate-fade-in">Recent Activities</h1>
           </div>
           
-          <Card className="glass-card border-emerald-500/20 bg-gradient-to-br from-emerald-500/5 to-green-500/5 animate-fade-in">
+          <Card className="agricultural-glass border-emerald-500/20 backdrop-blur-md animate-fade-in">
             <CardHeader>
               <CardTitle className="text-2xl font-bold text-white flex items-center">
                 <Clock className="w-8 h-8 mr-3 text-emerald-400" />
@@ -162,7 +162,7 @@ const RecentActivities = () => {
                   {activities.map((activity, index) => {
                     const IconComponent = getActivityIcon(activity.type);
                     return (
-                      <Card key={activity.id} className="glass-card border-emerald-500/10 hover:border-emerald-400/30 transition-all animate-slide-up" style={{animationDelay: `${index * 0.1}s`}}>
+                      <Card key={activity.id} className="agricultural-glass border-emerald-500/10 backdrop-blur-md hover:border-emerald-400/30 transition-all animate-slide-up" style={{animationDelay: `${index * 0.1}s`}}>
                         <CardContent className="p-4">
                           <div className="flex items-center space-x-4">
                             <div className={`w-12 h-12 bg-gradient-to-r ${getActivityColor(activity.type)} rounded-xl flex items-center justify-center shadow-lg`}>

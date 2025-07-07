@@ -166,7 +166,7 @@ const FarmersList = () => {
 
           {/* Enhanced Key Metrics Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <Card className="glass-card text-white border-emerald-500/20 bg-gradient-to-br from-emerald-500/10 to-green-500/10 animate-fade-in" style={{animationDelay: '0.1s'}}>
+            <Card className="agricultural-glass text-white border-emerald-500/20 backdrop-blur-md animate-fade-in" style={{animationDelay: '0.1s'}}>
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -182,7 +182,7 @@ const FarmersList = () => {
               </CardContent>
             </Card>
 
-            <Card className="glass-card text-white border-teal-500/20 bg-gradient-to-br from-teal-500/10 to-cyan-500/10 animate-fade-in" style={{animationDelay: '0.2s'}}>
+            <Card className="agricultural-glass text-white border-teal-500/20 backdrop-blur-md animate-fade-in" style={{animationDelay: '0.2s'}}>
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -198,7 +198,7 @@ const FarmersList = () => {
               </CardContent>
             </Card>
 
-            <Card className="glass-card text-white border-cyan-500/20 bg-gradient-to-br from-cyan-500/10 to-blue-500/10 animate-fade-in" style={{animationDelay: '0.3s'}}>
+            <Card className="agricultural-glass text-white border-cyan-500/20 backdrop-blur-md animate-fade-in" style={{animationDelay: '0.3s'}}>
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -216,7 +216,7 @@ const FarmersList = () => {
           </div>
 
           {/* Search Section */}
-          <Card className="glass-card border-emerald-500/20 bg-gradient-to-br from-emerald-500/5 to-green-500/5 mb-8 animate-fade-in" style={{animationDelay: '0.4s'}}>
+          <Card className="agricultural-glass border-emerald-500/20 backdrop-blur-md mb-8 animate-fade-in" style={{animationDelay: '0.4s'}}>
             <CardHeader>
               <CardTitle className="text-2xl font-bold text-white flex items-center">
                 <Search className="w-8 h-8 mr-3 text-emerald-400" />
@@ -243,7 +243,7 @@ const FarmersList = () => {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredFarmers.map((farmer, index) => (
-                <Card key={farmer.id} className="glass-card text-white border-emerald-500/20 hover:border-emerald-400/50 transition-all hover:bg-emerald-500/10 animate-slide-up" style={{animationDelay: `${index * 0.1}s`}}>
+                <Card key={farmer.id} className="agricultural-glass text-white border-emerald-500/20 backdrop-blur-md hover:border-emerald-400/50 transition-all hover:bg-emerald-500/10 animate-slide-up" style={{animationDelay: `${index * 0.1}s`}}>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <div className="flex items-center space-x-3">
                       <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-green-600 rounded-full flex items-center justify-center shadow-lg">
