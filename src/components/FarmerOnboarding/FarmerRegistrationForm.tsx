@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -36,6 +35,24 @@ const FarmerRegistrationForm: React.FC<FarmerRegistrationFormProps> = ({
   onInputChange,
   onCancel
 }) => {
+  const handleAadhaarChange = (value: string) => {
+    // Remove any non-digit characters and limit to 12 digits
+    const cleanedValue = value.replace(/\D/g, '').slice(0, 12);
+    onInputChange('aadhaarNumber', cleanedValue);
+  };
+
+  const handlePhoneChange = (value: string) => {
+    // Remove any non-digit characters and limit to 10 digits
+    const cleanedValue = value.replace(/\D/g, '').slice(0, 10);
+    onInputChange('phoneNumber', cleanedValue);
+  };
+
+  const handlePincodeChange = (value: string) => {
+    // Remove any non-digit characters and limit to 6 digits
+    const cleanedValue = value.replace(/\D/g, '').slice(0, 6);
+    onInputChange('pincode', cleanedValue);
+  };
+
   return (
     <Card className="agricultural-glass border-emerald-500/20 backdrop-blur-md animate-fade-in">
       <CardHeader className="text-center pb-4 sm:pb-6">
@@ -68,10 +85,9 @@ const FarmerRegistrationForm: React.FC<FarmerRegistrationFormProps> = ({
                 type="tel"
                 placeholder="10-digit phone number"
                 value={formData.phoneNumber}
-                onChange={(e) => onInputChange('phoneNumber', e.target.value)}
+                onChange={(e) => handlePhoneChange(e.target.value)}
                 className="glass-input border-emerald-500/30 text-white placeholder:text-emerald-300/70 h-10 sm:h-12 text-sm sm:text-base"
                 disabled={isLoading}
-                maxLength={10}
               />
             </div>
           </div>
@@ -80,13 +96,18 @@ const FarmerRegistrationForm: React.FC<FarmerRegistrationFormProps> = ({
             <Label htmlFor="aadhaarNumber" className="text-emerald-200 text-sm sm:text-base">Aadhaar Number (Optional)</Label>
             <Input
               id="aadhaarNumber"
+              type="tel"
               placeholder="12-digit Aadhaar number"
               value={formData.aadhaarNumber}
-              onChange={(e) => onInputChange('aadhaarNumber', e.target.value)}
+              onChange={(e) => handleAadhaarChange(e.target.value)}
               className="glass-input border-emerald-500/30 text-white placeholder:text-emerald-300/70 h-10 sm:h-12 text-sm sm:text-base"
               disabled={isLoading}
-              maxLength={12}
             />
+            {formData.aadhaarNumber && formData.aadhaarNumber.length < 12 && (
+              <p className="text-xs text-amber-400">
+                Aadhaar number should be 12 digits ({formData.aadhaarNumber.length}/12)
+              </p>
+            )}
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
@@ -173,12 +194,12 @@ const FarmerRegistrationForm: React.FC<FarmerRegistrationFormProps> = ({
             <Label htmlFor="pincode" className="text-emerald-200 text-sm sm:text-base">Pincode *</Label>
             <Input
               id="pincode"
+              type="tel"
               placeholder="6-digit pincode"
               value={formData.pincode}
-              onChange={(e) => onInputChange('pincode', e.target.value)}
+              onChange={(e) => handlePincodeChange(e.target.value)}
               className="glass-input border-emerald-500/30 text-white placeholder:text-emerald-300/70 h-10 sm:h-12 text-sm sm:text-base"
               disabled={isLoading}
-              maxLength={6}
             />
           </div>
           
