@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Users } from 'lucide-react';
-import { indianStates, getDistrictsByState, getTaluksByDistrict, getVillagesByTaluk } from '@/utils/locationData';
+import { getAllStates, getDistrictsByState, getTaluksByDistrict, getVillagesByTaluk } from '@/utils/comprehensiveLocationData';
 
 interface FarmerRegistrationFormProps {
   formData: {
@@ -97,7 +97,7 @@ const FarmerRegistrationForm: React.FC<FarmerRegistrationFormProps> = ({
                   <SelectValue placeholder="Select state" />
                 </SelectTrigger>
                 <SelectContent className="bg-slate-800 border-emerald-500/30">
-                  {indianStates.map(state => (
+                  {getAllStates().map(state => (
                     <SelectItem key={state} value={state} className="text-white hover:bg-emerald-600/20">
                       {state}
                     </SelectItem>
