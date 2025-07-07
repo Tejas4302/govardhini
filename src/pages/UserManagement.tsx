@@ -12,7 +12,7 @@ import CreateUserForm from '@/components/UserManagement/CreateUserForm';
 import UserActions from '@/components/UserManagement/UserActions';
 import UserRoleBadge from '@/components/UserManagement/UserRoleBadge';
 import UserStatusBadge from '@/components/UserManagement/UserStatusBadge';
-import type { User } from '@/types/userManagement';
+import type { User, RoleChangeData } from '@/types/userManagement';
 
 const UserManagement = () => {
   const [users, setUsers] = useState<User[]>([]);
@@ -20,10 +20,13 @@ const UserManagement = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [processingUserId, setProcessingUserId] = useState<string | null>(null);
+  const [roleChangeData, setRoleChangeData] = useState<RoleChangeData | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
   
   const currentUser = JSON.parse(localStorage.getItem('govardhini_user') || '{}');
+  const availableRoles = ['Field Officer', 'Office Staff', 'Admin'];
 
   useEffect(() => {
     fetchUsers();
@@ -69,6 +72,100 @@ const UserManagement = () => {
     fetchUsers();
   };
 
+  const handleStatusUpdate = async (userId: string, status: string, userName: string) => {
+    setProcessingUserId(userId);
+    try {
+      const { error } = await supabase
+        .from('users')
+        .update({ 
+          status,
+          approved_at: status === 'approved' ? new Date().toISOString() : null,
+          approved_by: status === 'approved' ? currentUser.id : null
+        })
+        .eq('id', userId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: `User ${userName} has been ${status}.`,
+      });
+
+      fetchUsers();
+    } catch (error) {
+      console.error('Error updating user status:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update user status. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setProcessingUserId(null);
+    }
+  };
+
+  const handleRoleChange = async () => {
+    if (!roleChangeData) return;
+    
+    setProcessingUserId(roleChangeData.userId);
+    try {
+      const { error } = await supabase
+        .from('users')
+        .update({ 
+          active_role: roleChangeData.newRole,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', roleChangeData.userId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: `${roleChangeData.userName}'s role has been changed to ${roleChangeData.newRole}.`,
+      });
+
+      setRoleChangeData(null);
+      fetchUsers();
+    } catch (error) {
+      console.error('Error changing user role:', error);
+      toast({
+        title: "Error",
+        description: "Failed to change user role. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setProcessingUserId(null);
+    }
+  };
+
+  const handleDelete = async (userId: string, userName: string) => {
+    setProcessingUserId(userId);
+    try {
+      const { error } = await supabase
+        .from('users')
+        .delete()
+        .eq('id', userId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: `User ${userName} has been deleted.`,
+      });
+
+      fetchUsers();
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete user. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setProcessingUserId(null);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-green-900 to-teal-900">
       <Navigation user={currentUser} />
@@ -105,22 +202,11 @@ const UserManagement = () => {
           </Button>
         </div>
 
-        {showCreateForm && (
-          <Card className="agricultural-glass border-emerald-500/20 backdrop-blur-md mb-8 animate-fade-in">
-            <CardHeader>
-              <CardTitle className="text-2xl font-bold text-white">Create New User</CardTitle>
-              <CardDescription className="text-emerald-300">
-                Add a new user to the system
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <CreateUserForm
-                onUserCreated={handleUserCreated}
-                onCancel={() => setShowCreateForm(false)}
-              />
-            </CardContent>
-          </Card>
-        )}
+        <CreateUserForm
+          isOpen={showCreateForm}
+          onClose={() => setShowCreateForm(false)}
+          onUserCreated={handleUserCreated}
+        />
 
         <Card className="agricultural-glass border-emerald-500/20 backdrop-blur-md animate-fade-in">
           <CardHeader>
@@ -162,7 +248,7 @@ const UserManagement = () => {
                         <div className="flex-1">
                           <div className="flex items-center space-x-3 mb-2">
                             <h3 className="text-lg font-semibold text-white">{user.full_name}</h3>
-                            <UserRoleBadge role={user.active_role} />
+                            <UserRoleBadge originalRole={user.designation} activeRole={user.active_role} />
                             <UserStatusBadge status={user.status} />
                           </div>
                           <div className="text-sm text-emerald-300 space-y-1">
@@ -174,8 +260,14 @@ const UserManagement = () => {
                         
                         <UserActions
                           user={user}
-                          currentUser={currentUser}
-                          onUserUpdated={handleUserUpdated}
+                          currentUserId={currentUser.id}
+                          availableRoles={availableRoles}
+                          processingUserId={processingUserId}
+                          roleChangeData={roleChangeData}
+                          setRoleChangeData={setRoleChangeData}
+                          onStatusUpdate={handleStatusUpdate}
+                          onRoleChange={handleRoleChange}
+                          onDelete={handleDelete}
                         />
                       </div>
                     </div>
